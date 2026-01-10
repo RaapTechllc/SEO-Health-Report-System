@@ -1,0 +1,18 @@
+# SEO Content & Authority Audit - Python Dependencies
+
+# Required
+requests>=2.28.0        # HTTP requests for fetching pages
+
+# Optional - for enhanced analysis
+# beautifulsoup4>=4.12.0  # Better HTML parsing
+# textstat>=0.7.0         # Advanced readability analysis
+# nltk>=3.8.0             # Natural language processing
+
+# Optional - for backlink data (requires API keys)
+# ahrefs-api             # Ahrefs integration (unofficial)
+# python-semrush         # Semrush integration (unofficial)
+
+# Development
+# pytest>=7.0.0           # Testing
+# black>=23.0.0           # Code formatting
+# mypy>=1.0.0             # Type checking
