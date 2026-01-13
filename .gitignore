@@ -58,7 +58,25 @@ reports/
 
 # Misc
 *.log
-=5.6.0
+*.db
+nul
+
+# Pip install artifacts (Windows)
+=*
+
+# Runtime state files
+.ralph-state.json
+*.pid
+
+# Temp files
+tmp*
+*.bak
 
 # Claude Code local settings
 .claude/
+
+# Sisyphus (development tool)
+.sisyphus/
+
+# Ruff cache
+.ruff_cache/
