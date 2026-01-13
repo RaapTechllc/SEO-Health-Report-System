@@ -38,6 +38,8 @@ Or agents will self-reflect when:
 Workflow coordinator for spec-driven development.
 
 ```bash
+python kiro_cli.py --agent orchestrator
+# Or use the wrapper:
 kiro-cli --agent orchestrator
 ```
 
