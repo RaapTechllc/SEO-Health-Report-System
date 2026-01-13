@@ -6,27 +6,55 @@ to assess brand visibility.
 """
 
 import os
+import sys
 import json
 import time
+import asyncio
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
 
+# Add parent directory to path for config import
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+
+try:
+    from seo_health_report.config import get_config
+except ImportError:
+    # Fallback for testing
+    try:
+        from mock_config import get_config
+    except ImportError:
+        def get_config():
+            class MockConfig:
+                anthropic_model = "claude-3-sonnet-20240229"
+            return MockConfig()
+
 # Cache imports with fallback
 try:
     from seo_health_report.scripts.cache import cached, TTL_AI_RESPONSE
+
     HAS_CACHE = True
 except ImportError:
     HAS_CACHE = False
+
     def cached(*args, **kwargs):
-        def decorator(func): 
+        def decorator(func):
             return func
+
         return decorator
+
     TTL_AI_RESPONSE = 0
+
+# Get config for model name
+_config = get_config()
+ANTHROPIC_MODEL = _config.anthropic_model
 
 
 class QueryCategory(Enum):
     """Categories of test queries for comprehensive coverage."""
+
     BRAND = "brand"
     PRODUCT = "product"
     PROBLEM = "problem"
@@ -37,6 +65,7 @@ class QueryCategory(Enum):
 @dataclass
 class TestQuery:
     """A test query to send to AI systems."""
+
     query: str
     category: QueryCategory
     expected_brand_mention: bool = True
@@ -50,6 +79,7 @@ class TestQuery:
 @dataclass
 class AIResponse:
     """Response from an AI system."""
+
     query: str
     system: str
     response: str
@@ -66,7 +96,7 @@ def generate_test_queries(
     brand_name: str,
     products_services: List[str],
     competitors: Optional[List[str]] = None,
-    custom_queries: Optional[List[str]] = None
+    custom_queries: Optional[List[str]] = None,
 ) -> List[TestQuery]:
     """
     Generate a comprehensive set of test queries for AI visibility assessment.
@@ -93,11 +123,13 @@ def generate_test_queries(
     ]
 
     for template in brand_templates:
-        queries.append(TestQuery(
-            query=template,
-            category=QueryCategory.BRAND,
-            expected_brand_mention=True
-        ))
+        queries.append(
+            TestQuery(
+                query=template,
+                category=QueryCategory.BRAND,
+                expected_brand_mention=True,
+            )
+        )
 
     # Product/service queries - category presence
     for product in products_services[:5]:  # Limit to top 5
@@ -108,12 +140,14 @@ def generate_test_queries(
             f"{product} recommendations",
         ]
         for template in product_templates:
-            queries.append(TestQuery(
-                query=template,
-                category=QueryCategory.PRODUCT,
-                expected_brand_mention=True,
-                competitors_mentioned=competitors
-            ))
+            queries.append(
+                TestQuery(
+                    query=template,
+                    category=QueryCategory.PRODUCT,
+                    expected_brand_mention=True,
+                    competitors_mentioned=competitors,
+                )
+            )
 
     # Problem queries - solution awareness
     problem_templates = [
@@ -123,11 +157,13 @@ def generate_test_queries(
     ]
 
     for template in problem_templates:
-        queries.append(TestQuery(
-            query=template,
-            category=QueryCategory.PROBLEM,
-            expected_brand_mention=True
-        ))
+        queries.append(
+            TestQuery(
+                query=template,
+                category=QueryCategory.PROBLEM,
+                expected_brand_mention=True,
+            )
+        )
 
     # Comparison queries - competitive positioning
     for competitor in competitors[:3]:  # Limit to top 3
@@ -137,12 +173,14 @@ def generate_test_queries(
             f"Is {brand_name} better than {competitor}?",
         ]
         for template in comparison_templates:
-            queries.append(TestQuery(
-                query=template,
-                category=QueryCategory.COMPARISON,
-                expected_brand_mention=True,
-                competitors_mentioned=[competitor]
-            ))
+            queries.append(
+                TestQuery(
+                    query=template,
+                    category=QueryCategory.COMPARISON,
+                    expected_brand_mention=True,
+                    competitors_mentioned=[competitor],
+                )
+            )
 
     # Reputation queries - sentiment assessment
     reputation_templates = [
@@ -153,29 +191,31 @@ def generate_test_queries(
     ]
 
     for template in reputation_templates:
-        queries.append(TestQuery(
-            query=template,
-            category=QueryCategory.REPUTATION,
-            expected_brand_mention=True
-        ))
+        queries.append(
+            TestQuery(
+                query=template,
+                category=QueryCategory.REPUTATION,
+                expected_brand_mention=True,
+            )
+        )
 
     # Add custom queries if provided
     if custom_queries:
         for query in custom_queries:
-            queries.append(TestQuery(
-                query=query,
-                category=QueryCategory.BRAND,
-                expected_brand_mention=True
-            ))
+            queries.append(
+                TestQuery(
+                    query=query,
+                    category=QueryCategory.BRAND,
+                    expected_brand_mention=True,
+                )
+            )
 
     return queries
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-def query_claude(
-    query: str,
-    brand_name: str,
-    api_key: Optional[str] = None
+async def query_claude(
+    query: str, brand_name: str, api_key: Optional[str] = None
 ) -> AIResponse:
     """
     Query Claude (Anthropic) API.
@@ -188,7 +228,7 @@ def query_claude(
     Returns:
         AIResponse with results
     """
-    api_key = api_key or os.environ.get('ANTHROPIC_API_KEY')
+    api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
 
     if not api_key:
         return AIResponse(
@@ -201,7 +241,7 @@ def query_claude(
             sentiment=None,
             competitors_mentioned=[],
             response_time_ms=0,
-            error="ANTHROPIC_API_KEY not set"
+            error="ANTHROPIC_API_KEY not set",
         )
 
     try:
@@ -211,15 +251,15 @@ def query_claude(
 
         start_time = time.time()
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[
-                {
-                    "role": "user",
-                    "content": query
-                }
-            ]
+        # Run blocking API call in thread pool
+        loop = asyncio.get_event_loop()
+        message = await loop.run_in_executor(
+            None,
+            lambda: client.messages.create(
+                model=ANTHROPIC_MODEL,
+                max_tokens=1024,
+                messages=[{"role": "user", "content": query}],
+            ),
         )
 
         response_time = int((time.time() - start_time) * 1000)
@@ -253,7 +293,7 @@ def query_claude(
             position=position,
             sentiment=None,  # Will be analyzed separately
             competitors_mentioned=[],  # Will be analyzed separately
-            response_time_ms=response_time
+            response_time_ms=response_time,
         )
 
     except ImportError:
@@ -267,7 +307,7 @@ def query_claude(
             sentiment=None,
             competitors_mentioned=[],
             response_time_ms=0,
-            error="anthropic package not installed. Run: pip install anthropic"
+            error="anthropic package not installed. Run: pip install anthropic",
         )
     except Exception as e:
         return AIResponse(
@@ -280,15 +320,13 @@ def query_claude(
             sentiment=None,
             competitors_mentioned=[],
             response_time_ms=0,
-            error=str(e)
+            error=str(e),
         )
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-def query_openai(
-    query: str,
-    brand_name: str,
-    api_key: Optional[str] = None
+async def query_openai(
+    query: str, brand_name: str, api_key: Optional[str] = None
 ) -> AIResponse:
     """
     Query OpenAI (ChatGPT) API.
@@ -301,7 +339,7 @@ def query_openai(
     Returns:
         AIResponse with results
     """
-    api_key = api_key or os.environ.get('OPENAI_API_KEY')
+    api_key = api_key or os.environ.get("OPENAI_API_KEY")
 
     if not api_key:
         return AIResponse(
@@ -314,41 +352,221 @@ def query_openai(
             sentiment=None,
             competitors_mentioned=[],
             response_time_ms=0,
-            error="OPENAI_API_KEY not set"
+            error="OPENAI_API_KEY not set",
         )
 
-    # STUB: OpenAI integration
-    # TODO: Implement when API key is available
-    #
-    # from openai import OpenAI
-    # client = OpenAI(api_key=api_key)
-    #
-    # response = client.chat.completions.create(
-    #     model="gpt-4",
-    #     messages=[{"role": "user", "content": query}]
-    # )
-    #
-    # return AIResponse(...)
+    try:
+        import httpx
 
-    return AIResponse(
-        query=query,
-        system="chatgpt",
-        response="",
-        brand_mentioned=False,
-        mention_count=0,
-        position=None,
-        sentiment=None,
-        competitors_mentioned=[],
-        response_time_ms=0,
-        error="OpenAI integration not yet implemented"
-    )
+        start_time = time.time()
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+        data = {
+            "model": "gpt-4",
+            "messages": [{"role": "user", "content": query}],
+            "max_tokens": 1024,
+        }
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers=headers,
+                json=data,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+        response_time = int((time.time() - start_time) * 1000)
+        response_text = result["choices"][0]["message"]["content"]
+
+        # Analyze the response
+        brand_lower = brand_name.lower()
+        response_lower = response_text.lower()
+
+        brand_mentioned = brand_lower in response_lower
+        mention_count = response_lower.count(brand_lower)
+
+        # Determine position of first mention
+        position = None
+        if brand_mentioned:
+            first_mention = response_lower.find(brand_lower)
+            response_len = len(response_text)
+            if first_mention < response_len * 0.25:
+                position = "first"
+            elif first_mention < response_len * 0.75:
+                position = "middle"
+            else:
+                position = "last"
+
+        return AIResponse(
+            query=query,
+            system="chatgpt",
+            response=response_text,
+            brand_mentioned=brand_mentioned,
+            mention_count=mention_count,
+            position=position,
+            sentiment=None,  # Will be analyzed separately
+            competitors_mentioned=[],  # Will be analyzed separately
+            response_time_ms=response_time,
+        )
+
+    except ImportError:
+        return AIResponse(
+            query=query,
+            system="chatgpt",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error="httpx package not installed. Run: pip install httpx",
+        )
+    except Exception as e:
+        return AIResponse(
+            query=query,
+            system="chatgpt",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error=str(e),
+        )
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-def query_perplexity(
-    query: str,
-    brand_name: str,
-    api_key: Optional[str] = None
+async def query_xai(
+    query: str, brand_name: str, api_key: Optional[str] = None
+) -> AIResponse:
+    """
+    Query xAI (Grok) API.
+
+    xAI's Grok has access to real-time X/Twitter data, making it valuable for
+    brand visibility analysis on social platforms.
+
+    Args:
+        query: The query to send
+        brand_name: Brand name to check for mentions
+        api_key: xAI API key (defaults to XAI_API_KEY env var)
+
+    Returns:
+        AIResponse with results
+    """
+    api_key = api_key or os.environ.get("XAI_API_KEY")
+
+    if not api_key:
+        return AIResponse(
+            query=query,
+            system="grok",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error="XAI_API_KEY not set",
+        )
+
+    try:
+        import httpx
+
+        start_time = time.time()
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+        # xAI uses OpenAI-compatible API format
+        data = {
+            "model": "grok-beta",
+            "messages": [{"role": "user", "content": query}],
+            "max_tokens": 1024,
+        }
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            response = await client.post(
+                "https://api.x.ai/v1/chat/completions",
+                headers=headers,
+                json=data,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+        response_time = int((time.time() - start_time) * 1000)
+        response_text = result["choices"][0]["message"]["content"]
+
+        # Analyze the response
+        brand_lower = brand_name.lower()
+        response_lower = response_text.lower()
+
+        brand_mentioned = brand_lower in response_lower
+        mention_count = response_lower.count(brand_lower)
+
+        # Determine position of first mention
+        position = None
+        if brand_mentioned:
+            first_mention = response_lower.find(brand_lower)
+            response_len = len(response_text)
+            if first_mention < response_len * 0.25:
+                position = "first"
+            elif first_mention < response_len * 0.75:
+                position = "middle"
+            else:
+                position = "last"
+
+        return AIResponse(
+            query=query,
+            system="grok",
+            response=response_text,
+            brand_mentioned=brand_mentioned,
+            mention_count=mention_count,
+            position=position,
+            sentiment=None,  # Will be analyzed separately
+            competitors_mentioned=[],  # Will be analyzed separately
+            response_time_ms=response_time,
+        )
+
+    except ImportError:
+        return AIResponse(
+            query=query,
+            system="grok",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error="httpx package not installed. Run: pip install httpx",
+        )
+    except Exception as e:
+        return AIResponse(
+            query=query,
+            system="grok",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error=str(e),
+        )
+
+
+@cached("ai_responses", TTL_AI_RESPONSE)
+async def query_perplexity(
+    query: str, brand_name: str, api_key: Optional[str] = None
 ) -> AIResponse:
     """
     Query Perplexity API.
@@ -361,7 +579,7 @@ def query_perplexity(
     Returns:
         AIResponse with results
     """
-    api_key = api_key or os.environ.get('PERPLEXITY_API_KEY')
+    api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
 
     if not api_key:
         return AIResponse(
@@ -374,49 +592,226 @@ def query_perplexity(
             sentiment=None,
             competitors_mentioned=[],
             response_time_ms=0,
-            error="PERPLEXITY_API_KEY not set"
+            error="PERPLEXITY_API_KEY not set",
         )
 
-    # STUB: Perplexity integration
-    # TODO: Implement when API key is available
-    #
-    # import requests
-    #
-    # headers = {
-    #     "Authorization": f"Bearer {api_key}",
-    #     "Content-Type": "application/json"
-    # }
-    #
-    # data = {
-    #     "model": "pplx-7b-online",
-    #     "messages": [{"role": "user", "content": query}]
-    # }
-    #
-    # response = requests.post(
-    #     "https://api.perplexity.ai/chat/completions",
-    #     headers=headers,
-    #     json=data
-    # )
+    try:
+        import httpx
 
-    return AIResponse(
-        query=query,
-        system="perplexity",
-        response="",
-        brand_mentioned=False,
-        mention_count=0,
-        position=None,
-        sentiment=None,
-        competitors_mentioned=[],
-        response_time_ms=0,
-        error="Perplexity integration not yet implemented"
-    )
+        start_time = time.time()
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+        data = {
+            "model": "llama-3.1-sonar-small-128k-online",
+            "messages": [{"role": "user", "content": query}],
+            "max_tokens": 1024,
+        }
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            response = await client.post(
+                "https://api.perplexity.ai/chat/completions",
+                headers=headers,
+                json=data,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+        response_time = int((time.time() - start_time) * 1000)
+        response_text = result["choices"][0]["message"]["content"]
+
+        # Analyze the response
+        brand_lower = brand_name.lower()
+        response_lower = response_text.lower()
+
+        brand_mentioned = brand_lower in response_lower
+        mention_count = response_lower.count(brand_lower)
+
+        # Determine position of first mention
+        position = None
+        if brand_mentioned:
+            first_mention = response_lower.find(brand_lower)
+            response_len = len(response_text)
+            if first_mention < response_len * 0.25:
+                position = "first"
+            elif first_mention < response_len * 0.75:
+                position = "middle"
+            else:
+                position = "last"
+
+        return AIResponse(
+            query=query,
+            system="perplexity",
+            response=response_text,
+            brand_mentioned=brand_mentioned,
+            mention_count=mention_count,
+            position=position,
+            sentiment=None,  # Will be analyzed separately
+            competitors_mentioned=[],  # Will be analyzed separately
+            response_time_ms=response_time,
+        )
+
+    except ImportError:
+        return AIResponse(
+            query=query,
+            system="perplexity",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error="httpx package not installed. Run: pip install httpx",
+        )
+    except Exception as e:
+        return AIResponse(
+            query=query,
+            system="perplexity",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error=str(e),
+        )
 
 
-def query_all_systems(
+@cached("ai_responses", TTL_AI_RESPONSE)
+async def query_gemini(
+    query: str, brand_name: str, api_key: Optional[str] = None
+) -> AIResponse:
+    """
+    Query Google Gemini API.
+
+    Args:
+        query: The query to send
+        brand_name: Brand name to check for mentions
+        api_key: Google API key (defaults to GOOGLE_API_KEY env var)
+
+    Returns:
+        AIResponse with results
+    """
+    api_key = api_key or os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+
+    if not api_key:
+        return AIResponse(
+            query=query,
+            system="gemini",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error="GOOGLE_API_KEY or GEMINI_API_KEY not set",
+        )
+
+    try:
+        import httpx
+
+        start_time = time.time()
+
+        # Gemini REST API format
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+        
+        data = {
+            "contents": [{
+                "parts": [{"text": query}]
+            }],
+            "generationConfig": {
+                "maxOutputTokens": 1024,
+                "temperature": 0.7
+            }
+        }
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            response = await client.post(url, json=data)
+            response.raise_for_status()
+            result = response.json()
+
+        response_time = int((time.time() - start_time) * 1000)
+        
+        # Extract response text from Gemini format
+        if "candidates" in result and result["candidates"]:
+            candidate = result["candidates"][0]
+            if "content" in candidate and "parts" in candidate["content"]:
+                response_text = candidate["content"]["parts"][0]["text"]
+            else:
+                response_text = ""
+        else:
+            response_text = ""
+
+        # Analyze the response
+        brand_lower = brand_name.lower()
+        response_lower = response_text.lower()
+
+        brand_mentioned = brand_lower in response_lower
+        mention_count = response_lower.count(brand_lower)
+
+        # Determine position of first mention
+        position = None
+        if brand_mentioned:
+            first_mention = response_lower.find(brand_lower)
+            response_len = len(response_text)
+            if first_mention < response_len * 0.25:
+                position = "first"
+            elif first_mention < response_len * 0.75:
+                position = "middle"
+            else:
+                position = "last"
+
+        return AIResponse(
+            query=query,
+            system="gemini",
+            response=response_text,
+            brand_mentioned=brand_mentioned,
+            mention_count=mention_count,
+            position=position,
+            sentiment=None,  # Will be analyzed separately
+            competitors_mentioned=[],  # Will be analyzed separately
+            response_time_ms=response_time,
+        )
+
+    except ImportError:
+        return AIResponse(
+            query=query,
+            system="gemini",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error="httpx package not installed. Run: pip install httpx",
+        )
+    except Exception as e:
+        return AIResponse(
+            query=query,
+            system="gemini",
+            response="",
+            brand_mentioned=False,
+            mention_count=0,
+            position=None,
+            sentiment=None,
+            competitors_mentioned=[],
+            response_time_ms=0,
+            error=str(e),
+        )
+
+
+async def query_all_systems(
     queries: List[TestQuery],
     brand_name: str,
     systems: Optional[List[str]] = None,
-    rate_limit_ms: int = 1000
+    rate_limit_ms: int = 1000,
 ) -> Dict[str, List[AIResponse]]:
     """
     Query multiple AI systems with a list of test queries.
@@ -430,24 +825,37 @@ def query_all_systems(
     Returns:
         Dict mapping system name to list of AIResponse objects
     """
-    systems = systems or ["claude", "chatgpt", "perplexity"]
+    systems = systems or ["claude", "chatgpt", "perplexity", "gemini", "grok"]
 
     query_functions = {
         "claude": query_claude,
         "chatgpt": query_openai,
-        "perplexity": query_perplexity
+        "perplexity": query_perplexity,
+        "gemini": query_gemini,
+        "grok": query_xai,
     }
 
     results = {system: [] for system in systems}
 
     for query in queries:
+        # Query all systems in parallel for each query
+        tasks = []
         for system in systems:
             if system in query_functions:
-                response = query_functions[system](query.query, brand_name)
-                results[system].append(response)
+                tasks.append(query_functions[system](query.query, brand_name))
 
-                # Rate limiting
-                time.sleep(rate_limit_ms / 1000)
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Map responses back to systems
+        for i, system in enumerate(systems):
+            if i < len(responses):
+                response = responses[i]
+                if not isinstance(response, Exception):
+                    results[system].append(response)
+
+        # Rate limiting
+        if rate_limit_ms > 0:
+            await asyncio.sleep(rate_limit_ms / 1000)
 
     return results
 
@@ -487,7 +895,9 @@ def calculate_presence_score(responses: Dict[str, List[AIResponse]]) -> Dict[str
 
         if system_total > 0:
             mention_rate = system_mentioned / system_total
-            findings.append(f"{system}: Brand mentioned in {system_mentioned}/{system_total} queries ({mention_rate:.0%})")
+            findings.append(
+                f"{system}: Brand mentioned in {system_mentioned}/{system_total} queries ({mention_rate:.0%})"
+            )
 
     # Calculate score (0-25)
     if total_queries == 0:
@@ -523,20 +933,42 @@ def calculate_presence_score(responses: Dict[str, List[AIResponse]]) -> Dict[str
             "total_queries": total_queries,
             "brand_mentioned": brand_mentioned,
             "prominent_mentions": prominent_mentions,
-            "mention_rate": brand_mentioned / total_queries if total_queries > 0 else 0
-        }
+            "mention_rate": brand_mentioned / total_queries if total_queries > 0 else 0,
+        },
     }
+
+
+def query_all_systems_sync(
+    queries: List[TestQuery],
+    brand_name: str,
+    systems: Optional[List[str]] = None,
+    rate_limit_ms: int = 1000,
+) -> Dict[str, List[AIResponse]]:
+    """
+    Sync wrapper for query_all_systems for backwards compatibility.
+    """
+    return asyncio.run(
+        query_all_systems(
+            queries=queries,
+            brand_name=brand_name,
+            systems=systems,
+            rate_limit_ms=rate_limit_ms,
+        )
+    )
 
 
 # Export for use by other modules
 __all__ = [
-    'QueryCategory',
-    'TestQuery',
-    'AIResponse',
-    'generate_test_queries',
-    'query_claude',
-    'query_openai',
-    'query_perplexity',
-    'query_all_systems',
-    'calculate_presence_score'
+    "QueryCategory",
+    "TestQuery",
+    "AIResponse",
+    "generate_test_queries",
+    "query_claude",
+    "query_openai",
+    "query_perplexity",
+    "query_gemini",
+    "query_xai",
+    "query_all_systems",
+    "query_all_systems_sync",
+    "calculate_presence_score",
 ]

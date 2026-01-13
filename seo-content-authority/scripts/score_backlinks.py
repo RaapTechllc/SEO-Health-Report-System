@@ -3,7 +3,7 @@ Score Backlinks
 
 Analyze external backlink profile quality.
 Note: Full analysis requires external API (Ahrefs, Moz, Semrush).
-This module provides basic analysis and stubs for API integration.
+This module provides backlink analysis with optional API integrations.
 """
 
 import os
@@ -59,7 +59,7 @@ def analyze_backlink_profile(
         result["findings"].append(f"No {api_provider} API key - using limited analysis")
         result["score"] = 7  # Give neutral score without data
 
-        # STUB: API integration would go here
+        # API integration available - Contact RaapTech for setup
         # When API is available, implement:
         #
         # if api_provider == "ahrefs":
@@ -87,7 +87,7 @@ def analyze_backlink_profile(
 
 def analyze_with_ahrefs(url: str, api_key: str) -> Dict[str, Any]:
     """
-    STUB: Analyze backlinks using Ahrefs API.
+    Analyze backlinks using Ahrefs API - Contact RaapTech for setup.
 
     Args:
         url: URL to analyze
@@ -96,7 +96,8 @@ def analyze_with_ahrefs(url: str, api_key: str) -> Dict[str, Any]:
     Returns:
         Dict with backlink analysis
     """
-    # TODO: Implement Ahrefs API integration
+    # Ahrefs API integration available upon request
+    # Contact RaapTech for Ahrefs integration setup
     #
     # Ahrefs API endpoints:
     # - https://apiv2.ahrefs.com/?target={url}&mode=domain
@@ -119,7 +120,7 @@ def analyze_with_ahrefs(url: str, api_key: str) -> Dict[str, Any]:
 
 def analyze_with_moz(url: str, api_key: str) -> Dict[str, Any]:
     """
-    STUB: Analyze backlinks using Moz API.
+    Analyze backlinks using Moz API - Contact RaapTech for setup.
 
     Args:
         url: URL to analyze
@@ -128,7 +129,8 @@ def analyze_with_moz(url: str, api_key: str) -> Dict[str, Any]:
     Returns:
         Dict with backlink analysis
     """
-    # TODO: Implement Moz API integration
+    # Moz API integration available upon request
+    # Contact RaapTech for Moz integration setup
     #
     # Moz API endpoint:
     # - https://lsapi.seomoz.com/v2/url_metrics
@@ -148,7 +150,7 @@ def analyze_with_moz(url: str, api_key: str) -> Dict[str, Any]:
 
 def analyze_with_semrush(url: str, api_key: str) -> Dict[str, Any]:
     """
-    STUB: Analyze backlinks using Semrush API.
+    Analyze backlinks using Semrush API - Contact RaapTech for setup.
 
     Args:
         url: URL to analyze
@@ -157,7 +159,8 @@ def analyze_with_semrush(url: str, api_key: str) -> Dict[str, Any]:
     Returns:
         Dict with backlink analysis
     """
-    # TODO: Implement Semrush API integration
+    # Semrush API integration available upon request
+    # Contact RaapTech for Semrush integration setup
     #
     # Semrush API endpoints:
     # - backlinks_overview

@@ -1,12 +1,16 @@
 """
 Build Report Document
 
-Assemble the complete report document from audit data.
+Assemble complete report document from audit data.
 """
 
 import os
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def build_report_document(
@@ -18,7 +22,7 @@ def build_report_document(
     brand_colors: Optional[Dict[str, str]] = None,
     output_format: str = "docx",
     output_dir: Optional[str] = None,
-    preparer_name: str = "SEO Health Report System"
+    preparer_name: str = "SEO Health Report System",
 ) -> Dict[str, Any]:
     """
     Build the complete report document.
@@ -43,7 +47,7 @@ def build_report_document(
         "format": output_format,
         "pages": 0,
         "sections": [],
-        "error": None
+        "error": None,
     }
 
     # Default output directory
@@ -60,63 +64,78 @@ def build_report_document(
     sections = []
 
     # Section 1: Cover Page
-    sections.append({
-        "type": "cover",
-        "content": {
-            "title": "SEO Health Report",
-            "company_name": company_name,
-            "date": datetime.now().strftime("%B %d, %Y"),
-            "prepared_by": preparer_name,
-            "logo": logo_file
+    sections.append(
+        {
+            "type": "cover",
+            "content": {
+                "title": "SEO Health Report",
+                "company_name": company_name,
+                "date": datetime.now().strftime("%B %d, %Y"),
+                "prepared_by": preparer_name,
+                "logo": logo_file,
+            },
         }
-    })
+    )
 
     # Section 2: Executive Summary
-    sections.append({
-        "type": "executive_summary",
-        "content": executive_summary
-    })
+    sections.append({"type": "executive_summary", "content": executive_summary})
 
     # Section 3: Technical Health
     technical_data = audit_results.get("audits", {}).get("technical", {})
-    sections.append({
-        "type": "technical",
-        "title": "Technical Health",
-        "score": scores.get("component_scores", {}).get("technical", {}).get("score", 0),
-        "content": build_technical_section(technical_data)
-    })
+    sections.append(
+        {
+            "type": "technical",
+            "title": "Technical Health",
+            "score": scores.get("component_scores", {})
+            .get("technical", {})
+            .get("score", 0),
+            "content": build_technical_section(technical_data),
+        }
+    )
 
     # Section 4: Content & Authority
     content_data = audit_results.get("audits", {}).get("content", {})
-    sections.append({
-        "type": "content",
-        "title": "Content & Authority",
-        "score": scores.get("component_scores", {}).get("content", {}).get("score", 0),
-        "content": build_content_section(content_data)
-    })
+    sections.append(
+        {
+            "type": "content",
+            "title": "Content & Authority",
+            "score": scores.get("component_scores", {})
+            .get("content", {})
+            .get("score", 0),
+            "content": build_content_section(content_data),
+        }
+    )
 
     # Section 5: AI Visibility
     ai_data = audit_results.get("audits", {}).get("ai_visibility", {})
-    sections.append({
-        "type": "ai_visibility",
-        "title": "AI Visibility",
-        "score": scores.get("component_scores", {}).get("ai_visibility", {}).get("score", 0),
-        "content": build_ai_visibility_section(ai_data)
-    })
+    sections.append(
+        {
+            "type": "ai_visibility",
+            "title": "AI Visibility",
+            "score": scores.get("component_scores", {})
+            .get("ai_visibility", {})
+            .get("score", 0),
+            "content": build_ai_visibility_section(ai_data),
+        }
+    )
 
     # Section 6: Action Plan
-    sections.append({
-        "type": "action_plan",
-        "title": "Action Plan",
-        "content": build_action_plan(audit_results, scores)
-    })
+    sections.append(
+        {
+            "type": "action_plan",
+            "title": "Action Plan",
+            "content": build_action_plan(audit_results, scores),
+        }
+    )
 
     # Section 7: Appendix
-    sections.append({
-        "type": "appendix",
-        "title": "Appendix",
-        "content": build_appendix(audit_results)
-    })
+    sections.append(
+        {
+            "type": "appendix",
+            "title": "Appendix",
+            "content": build_appendix(audit_results),
+        }
+    )
 
     result["sections"] = sections
 
@@ -141,12 +160,7 @@ def build_report_document(
 
 def build_technical_section(data: Dict[str, Any]) -> Dict[str, Any]:
     """Build technical health section content."""
-    section = {
-        "overview": [],
-        "components": [],
-        "issues": [],
-        "recommendations": []
-    }
+    section = {"overview": [], "components": [], "issues": [], "recommendations": []}
 
     if not data:
         section["overview"].append("Technical audit data not available.")
@@ -158,13 +172,15 @@ def build_technical_section(data: Dict[str, Any]) -> Dict[str, Any]:
     # Component breakdown
     for comp_name, comp_data in data.get("components", {}).items():
         if isinstance(comp_data, dict):
-            section["components"].append({
-                "name": comp_name.replace("_", " ").title(),
-                "score": comp_data.get("score", 0),
-                "max": comp_data.get("max", 0),
-                "findings": comp_data.get("findings", [])[:3],
-                "issues": comp_data.get("issues", [])[:3]
-            })
+            section["components"].append(
+                {
+                    "name": comp_name.replace("_", " ").title(),
+                    "score": comp_data.get("score", 0),
+                    "max": comp_data.get("max", 0),
+                    "findings": comp_data.get("findings", [])[:3],
+                    "issues": comp_data.get("issues", [])[:3],
+                }
+            )
 
     # Top issues
     section["issues"] = data.get("critical_issues", [])[:5]
@@ -181,7 +197,7 @@ def build_content_section(data: Dict[str, Any]) -> Dict[str, Any]:
         "overview": [],
         "eeat_assessment": {},
         "content_gaps": [],
-        "recommendations": []
+        "recommendations": [],
     }
 
     if not data:
@@ -197,7 +213,7 @@ def build_content_section(data: Dict[str, Any]) -> Dict[str, Any]:
         "score": eeat.get("score", 0),
         "has_authors": eeat.get("has_authors", False),
         "has_about_page": eeat.get("has_about_page", False),
-        "findings": eeat.get("findings", [])
+        "findings": eeat.get("findings", []),
     }
 
     # Content gaps
@@ -216,7 +232,7 @@ def build_ai_visibility_section(data: Dict[str, Any]) -> Dict[str, Any]:
         "ai_responses": [],
         "accuracy_issues": [],
         "knowledge_graph": {},
-        "recommendations": []
+        "recommendations": [],
     }
 
     if not data:
@@ -228,13 +244,15 @@ def build_ai_visibility_section(data: Dict[str, Any]) -> Dict[str, Any]:
 
     # Sample AI responses
     for response in data.get("ai_responses", [])[:3]:
-        section["ai_responses"].append({
-            "query": response.get("query", ""),
-            "system": response.get("system", ""),
-            "brand_mentioned": response.get("brand_mentioned", False),
-            "sentiment": response.get("sentiment", "neutral"),
-            "excerpt": response.get("response", "")[:200] + "..."
-        })
+        section["ai_responses"].append(
+            {
+                "query": response.get("query", ""),
+                "system": response.get("system", ""),
+                "brand_mentioned": response.get("brand_mentioned", False),
+                "sentiment": response.get("sentiment", "neutral"),
+                "excerpt": response.get("response", "")[:200] + "...",
+            }
+        )
 
     # Accuracy issues
     section["accuracy_issues"] = data.get("accuracy_issues", [])[:5]
@@ -244,7 +262,7 @@ def build_ai_visibility_section(data: Dict[str, Any]) -> Dict[str, Any]:
     section["knowledge_graph"] = {
         "score": kg.get("score", 0),
         "sources": kg.get("sources", {}),
-        "findings": kg.get("findings", [])
+        "findings": kg.get("findings", []),
     }
 
     # Recommendations
@@ -253,13 +271,11 @@ def build_ai_visibility_section(data: Dict[str, Any]) -> Dict[str, Any]:
     return section
 
 
-def build_action_plan(audit_results: Dict[str, Any], scores: Dict[str, Any]) -> Dict[str, Any]:
+def build_action_plan(
+    audit_results: Dict[str, Any], scores: Dict[str, Any]
+) -> Dict[str, Any]:
     """Build action plan section content."""
-    plan = {
-        "quick_wins": [],
-        "strategic_initiatives": [],
-        "prioritized_tasks": []
-    }
+    plan = {"quick_wins": [], "strategic_initiatives": [], "prioritized_tasks": []}
 
     # Collect all recommendations
     all_recs = []
@@ -297,7 +313,7 @@ def build_appendix(audit_results: Dict[str, Any]) -> Dict[str, Any]:
     appendix = {
         "methodology": get_methodology_text(),
         "full_issues": [],
-        "technical_details": {}
+        "technical_details": {},
     }
 
     # Collect all issues
@@ -343,7 +359,7 @@ def estimate_page_count(sections: List[Dict[str, Any]]) -> int:
         "content": 5,
         "ai_visibility": 5,
         "action_plan": 3,
-        "appendix": 2
+        "appendix": 2,
     }
 
     total = 0
@@ -357,7 +373,7 @@ def estimate_page_count(sections: List[Dict[str, Any]]) -> int:
 def generate_docx(
     sections: List[Dict[str, Any]],
     output_path: str,
-    brand_colors: Optional[Dict[str, str]] = None
+    brand_colors: Optional[Dict[str, str]] = None,
 ) -> bool:
     """
     Generate DOCX document.
@@ -408,9 +424,9 @@ def generate_docx(
                         if isinstance(value, list):
                             for item in value[:5]:
                                 if isinstance(item, dict):
-                                    doc.add_paragraph(str(item), style='List Bullet')
+                                    doc.add_paragraph(str(item), style="List Bullet")
                                 else:
-                                    doc.add_paragraph(str(item), style='List Bullet')
+                                    doc.add_paragraph(str(item), style="List Bullet")
                 doc.add_page_break()
 
         doc.save(output_path)
@@ -418,16 +434,16 @@ def generate_docx(
 
     except ImportError:
         # Fall back to markdown
-        return generate_markdown(sections, output_path.replace('.docx', '.md'))
+        return generate_markdown(sections, output_path.replace(".docx", ".md"))
     except Exception as e:
-        print(f"Error generating DOCX: {e}")
+        logger.error(f"Error generating DOCX: {e}")
         return False
 
 
 def generate_pdf(
     sections: List[Dict[str, Any]],
     output_path: str,
-    brand_colors: Optional[Dict[str, str]] = None
+    brand_colors: Optional[Dict[str, str]] = None,
 ) -> bool:
     """
     Generate PDF document using ReportLab.
@@ -448,14 +464,22 @@ def generate_pdf(
         from reportlab.lib.units import inch
         from xml.sax.saxutils import escape
         from .pdf_components import (
-            create_cover_page, create_section_header,
-            create_findings_table, create_recommendations_list,
-            create_issues_table, hex_to_reportlab_color
+            create_cover_page,
+            create_section_header,
+            create_findings_table,
+            create_recommendations_list,
+            create_issues_table,
+            hex_to_reportlab_color,
         )
 
-        doc = SimpleDocTemplate(output_path, pagesize=letter,
-                                leftMargin=0.75*inch, rightMargin=0.75*inch,
-                                topMargin=0.75*inch, bottomMargin=0.75*inch)
+        doc = SimpleDocTemplate(
+            output_path,
+            pagesize=letter,
+            leftMargin=0.75 * inch,
+            rightMargin=0.75 * inch,
+            topMargin=0.75 * inch,
+            bottomMargin=0.75 * inch,
+        )
         story = []
         styles = getSampleStyleSheet()
 
@@ -464,85 +488,103 @@ def generate_pdf(
             content = section.get("content", {})
 
             if section_type == "cover":
-                story.extend(create_cover_page(
-                    title=escape(content.get("title", "SEO Health Report")),
-                    company_name=escape(content.get("company_name", "")),
-                    date=escape(content.get("date", "")),
-                    logo_path=content.get("logo"),
-                    brand_colors=brand_colors
-                ))
+                story.extend(
+                    create_cover_page(
+                        title=escape(content.get("title", "SEO Health Report")),
+                        company_name=escape(content.get("company_name", "")),
+                        date=escape(content.get("date", "")),
+                        logo_path=content.get("logo"),
+                        brand_colors=brand_colors,
+                    )
+                )
 
             elif section_type == "executive_summary":
-                story.extend(create_section_header("Executive Summary", brand_colors=brand_colors))
-                
+                story.extend(
+                    create_section_header(
+                        "Executive Summary", brand_colors=brand_colors
+                    )
+                )
+
                 headline = escape(content.get("headline", ""))
                 if headline:
-                    story.append(Paragraph(f"<b>{headline}</b>", styles['Heading2']))
-                
+                    story.append(Paragraph(f"<b>{headline}</b>", styles["Heading2"]))
+
                 score_data = content.get("score_display", {})
                 score_text = f"Overall Score: {score_data.get('overall', 0)}/100 (Grade: {escape(str(score_data.get('grade', 'N/A')))})"
-                story.append(Paragraph(score_text, styles['Normal']))
-                story.append(Spacer(1, 0.2*inch))
-                
+                story.append(Paragraph(score_text, styles["Normal"]))
+                story.append(Spacer(1, 0.2 * inch))
+
                 what_means = escape(content.get("what_this_means", ""))
                 if what_means:
-                    story.append(Paragraph(what_means, styles['Normal']))
-                
+                    story.append(Paragraph(what_means, styles["Normal"]))
+
                 story.append(PageBreak())
 
             elif section_type in ["technical", "content", "ai_visibility"]:
                 title = section.get("title", section_type.replace("_", " ").title())
                 score = section.get("score")
                 story.extend(create_section_header(escape(title), score, brand_colors))
-                
+
                 # Overview findings
                 overview = content.get("overview", [])
                 if overview:
                     story.append(create_findings_table(overview, brand_colors))
-                    story.append(Spacer(1, 0.2*inch))
-                
+                    story.append(Spacer(1, 0.2 * inch))
+
                 # Recommendations
                 recs = content.get("recommendations", [])
                 if recs:
-                    story.append(Paragraph("<b>Recommendations</b>", styles['Heading3']))
+                    story.append(
+                        Paragraph("<b>Recommendations</b>", styles["Heading3"])
+                    )
                     story.extend(create_recommendations_list(recs, brand_colors))
-                
+
                 story.append(PageBreak())
 
             elif section_type == "action_plan":
-                story.extend(create_section_header("Action Plan", brand_colors=brand_colors))
-                
+                story.extend(
+                    create_section_header("Action Plan", brand_colors=brand_colors)
+                )
+
                 # Quick wins
                 quick_wins = content.get("quick_wins", [])
                 if quick_wins:
-                    story.append(Paragraph("<b>Quick Wins</b>", styles['Heading3']))
+                    story.append(Paragraph("<b>Quick Wins</b>", styles["Heading3"]))
                     story.extend(create_recommendations_list(quick_wins, brand_colors))
-                    story.append(Spacer(1, 0.2*inch))
-                
+                    story.append(Spacer(1, 0.2 * inch))
+
                 # Prioritized tasks
                 tasks = content.get("prioritized_tasks", [])
                 if tasks:
-                    story.append(Paragraph("<b>Prioritized Tasks</b>", styles['Heading3']))
+                    story.append(
+                        Paragraph("<b>Prioritized Tasks</b>", styles["Heading3"])
+                    )
                     story.extend(create_recommendations_list(tasks[:10], brand_colors))
-                
+
                 story.append(PageBreak())
 
             elif section_type == "appendix":
-                story.extend(create_section_header("Appendix", brand_colors=brand_colors))
-                
+                story.extend(
+                    create_section_header("Appendix", brand_colors=brand_colors)
+                )
+
                 methodology = content.get("methodology", "")
                 if methodology:
-                    story.append(Paragraph("<b>Methodology</b>", styles['Heading3']))
-                    story.append(Paragraph(escape(methodology).replace("\n", "<br/>"), styles['Normal']))
+                    story.append(Paragraph("<b>Methodology</b>", styles["Heading3"]))
+                    story.append(
+                        Paragraph(
+                            escape(methodology).replace("\n", "<br/>"), styles["Normal"]
+                        )
+                    )
 
         doc.build(story)
         return True
 
     except ImportError:
-        print("ReportLab not installed. Falling back to markdown.")
-        return generate_markdown(sections, output_path.replace('.pdf', '.md'))
+        logger.warning("ReportLab not installed. Falling back to markdown.")
+        return generate_markdown(sections, output_path.replace(".pdf", ".md"))
     except Exception as e:
-        print(f"Error generating PDF: {e}")
+        logger.error(f"Error generating PDF: {e}")
         return False
 
 
@@ -596,7 +638,9 @@ def generate_markdown(sections: List[Dict[str, Any]], output_path: str) -> bool:
                 lines.append("### Priority Actions")
                 lines.append("")
                 for action in content.get("top_actions", []):
-                    lines.append(f"- [{action.get('type', '')}] {action.get('action', '')}")
+                    lines.append(
+                        f"- [{action.get('type', '')}] {action.get('action', '')}"
+                    )
                 lines.append("")
                 lines.append("---")
                 lines.append("")
@@ -619,7 +663,11 @@ def generate_markdown(sections: List[Dict[str, Any]], output_path: str) -> bool:
                             lines.append("")
                             for item in value[:10]:
                                 if isinstance(item, dict):
-                                    item_str = item.get("description", "") or item.get("action", "") or str(item)
+                                    item_str = (
+                                        item.get("description", "")
+                                        or item.get("action", "")
+                                        or str(item)
+                                    )
                                     lines.append(f"- {item_str}")
                                 else:
                                     lines.append(f"- {item}")
@@ -629,26 +677,30 @@ def generate_markdown(sections: List[Dict[str, Any]], output_path: str) -> bool:
                 lines.append("")
 
         # Write file
-        md_path = output_path if output_path.endswith('.md') else output_path.replace('.docx', '.md').replace('.pdf', '.md')
+        md_path = (
+            output_path
+            if output_path.endswith(".md")
+            else output_path.replace(".docx", ".md").replace(".pdf", ".md")
+        )
 
-        with open(md_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
+        with open(md_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
         return True
 
     except Exception as e:
-        print(f"Error generating Markdown: {e}")
+        logger.error(f"Error generating Markdown: {e}")
         return False
 
 
 __all__ = [
-    'build_report_document',
-    'build_technical_section',
-    'build_content_section',
-    'build_ai_visibility_section',
-    'build_action_plan',
-    'build_appendix',
-    'generate_docx',
-    'generate_pdf',
-    'generate_markdown'
+    "build_report_document",
+    "build_technical_section",
+    "build_content_section",
+    "build_ai_visibility_section",
+    "build_action_plan",
+    "build_appendix",
+    "generate_docx",
+    "generate_pdf",
+    "generate_markdown",
 ]

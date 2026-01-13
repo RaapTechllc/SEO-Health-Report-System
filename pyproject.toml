@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seo-health-report"
+version = "1.0.0"
+description = "Comprehensive SEO audit system with AI visibility analysis"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "RaapTech", email = "dev@raaptech.com"}
+]
+keywords = ["seo", "audit", "ai-visibility", "health-report", "technical-seo"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Site Management",
+]
+
+dependencies = [
+    "httpx>=0.25.0",
+    "python-docx>=0.8.11",
+    "reportlab>=4.0.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
+    "aiohttp>=3.9.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "black>=23.0.0",
+]
+ai = [
+    "anthropic>=0.18.0",
+    "openai>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/raaptech/seo-health-report"
+Documentation = "https://github.com/raaptech/seo-health-report#readme"
+Repository = "https://github.com/raaptech/seo-health-report"
+Issues = "https://github.com/raaptech/seo-health-report/issues"
+
+[project.scripts]
+seo-audit = "seo_health_report.scripts.orchestrate:run_full_audit_sync"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["seo_health_report*"]
+
+[tool.setuptools.package-dir]
+seo_health_report = "seo-health-report"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["B011"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.coverage.run]
+source = ["seo-health-report"]
+omit = ["tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

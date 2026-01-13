@@ -5,27 +5,23 @@ Apply company branding (logo, colors) to report documents.
 """
 
 import os
+import sys
 from typing import Dict, Any, Optional
 
+# Add parent directory to path for config import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Default brand colors
-DEFAULT_COLORS = {
-    "primary": "#1a73e8",     # Blue
-    "secondary": "#34a853",   # Green
-    "warning": "#fbbc04",     # Yellow
-    "danger": "#ea4335",      # Red
-    "text": "#202124",        # Dark gray
-    "text_light": "#5f6368",  # Medium gray
-    "background": "#ffffff",  # White
-    "background_alt": "#f8f9fa"  # Light gray
-}
+from config import get_config
+
+# Get default colors from config
+DEFAULT_COLORS = get_config().default_colors
 
 
 def apply_branding(
     document_path: str,
     logo_file: Optional[str] = None,
     brand_colors: Optional[Dict[str, str]] = None,
-    company_name: Optional[str] = None
+    company_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Apply branding to a document.
@@ -44,7 +40,7 @@ def apply_branding(
         "document_path": document_path,
         "logo_applied": False,
         "colors_applied": False,
-        "error": None
+        "error": None,
     }
 
     # Merge colors with defaults
@@ -59,11 +55,11 @@ def apply_branding(
             return result
 
     # Determine document type
-    if document_path.endswith('.docx'):
+    if document_path.endswith(".docx"):
         result = apply_branding_docx(document_path, logo_file, colors, company_name)
-    elif document_path.endswith('.pdf'):
+    elif document_path.endswith(".pdf"):
         result["error"] = "PDF branding not yet implemented"
-    elif document_path.endswith('.md'):
+    elif document_path.endswith(".md"):
         # Markdown doesn't support branding in the same way
         result["success"] = True
         result["colors_applied"] = False
@@ -78,7 +74,7 @@ def apply_branding_docx(
     document_path: str,
     logo_file: Optional[str],
     colors: Dict[str, str],
-    company_name: Optional[str]
+    company_name: Optional[str],
 ) -> Dict[str, Any]:
     """
     Apply branding to DOCX document.
@@ -97,7 +93,7 @@ def apply_branding_docx(
         "document_path": document_path,
         "logo_applied": False,
         "colors_applied": False,
-        "error": None
+        "error": None,
     }
 
     try:
@@ -130,7 +126,7 @@ def apply_branding_docx(
         primary_color = parse_hex_color(colors.get("primary", "#1a73e8"))
 
         for paragraph in doc.paragraphs:
-            if paragraph.style and 'Heading' in paragraph.style.name:
+            if paragraph.style and "Heading" in paragraph.style.name:
                 for run in paragraph.runs:
                     run.font.color.rgb = primary_color
 
@@ -162,7 +158,7 @@ def parse_hex_color(hex_color: str):
         from docx.shared import RGBColor
 
         # Remove # if present
-        hex_color = hex_color.lstrip('#')
+        hex_color = hex_color.lstrip("#")
 
         # Parse RGB values
         r = int(hex_color[0:2], 16)
@@ -210,13 +206,14 @@ def get_score_color(score: float, colors: Dict[str, str] = None) -> str:
         Hex color string
     """
     colors = colors or DEFAULT_COLORS
+    config = get_config()
 
-    if score >= 80:
+    if score >= config.grade_b_threshold:
         return colors.get("secondary", "#34a853")  # Green
-    elif score >= 60:
-        return colors.get("warning", "#fbbc04")    # Yellow
+    elif score >= config.grade_d_threshold:
+        return colors.get("warning", "#fbbc04")  # Yellow
     else:
-        return colors.get("danger", "#ea4335")     # Red
+        return colors.get("danger", "#ea4335")  # Red
 
 
 def create_color_scheme(primary: str, secondary: str = None) -> Dict[str, str]:
@@ -249,13 +246,11 @@ def validate_colors(colors: Dict[str, str]) -> Dict[str, Any]:
     Returns:
         Dict with validation results
     """
-    result = {
-        "valid": True,
-        "errors": []
-    }
+    result = {"valid": True, "errors": []}
 
     import re
-    hex_pattern = r'^#[0-9A-Fa-f]{6}$'
+
+    hex_pattern = r"^#[0-9A-Fa-f]{6}$"
 
     for name, value in colors.items():
         if not re.match(hex_pattern, value):
@@ -266,12 +261,12 @@ def validate_colors(colors: Dict[str, str]) -> Dict[str, Any]:
 
 
 __all__ = [
-    'DEFAULT_COLORS',
-    'apply_branding',
-    'apply_branding_docx',
-    'parse_hex_color',
-    'generate_css_from_colors',
-    'get_score_color',
-    'create_color_scheme',
-    'validate_colors'
+    "DEFAULT_COLORS",
+    "apply_branding",
+    "apply_branding_docx",
+    "parse_hex_color",
+    "generate_css_from_colors",
+    "get_score_color",
+    "create_color_scheme",
+    "validate_colors",
 ]

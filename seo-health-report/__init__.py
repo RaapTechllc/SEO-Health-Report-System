@@ -9,21 +9,25 @@ import os
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
+from .scripts.logger import get_logger
 from .scripts.orchestrate import (
     run_full_audit,
+    run_full_audit_sync,
     collect_all_issues,
     collect_all_recommendations,
     identify_quick_wins,
-    identify_critical_issues
+    identify_critical_issues,
 )
 from .scripts.calculate_scores import (
     calculate_composite_score,
     determine_grade,
-    get_grade_description
+    get_grade_description,
 )
 from .scripts.generate_summary import generate_executive_summary
 from .scripts.build_report import build_report_document
 from .scripts.apply_branding import apply_branding
+
+logger = get_logger(__name__)
 
 
 __version__ = "1.0.0"
@@ -33,18 +37,20 @@ def clear_all_caches():
     """Clear all cached data."""
     try:
         from .scripts.cache import clear_cache
+
         clear_cache()
-        print("All caches cleared successfully")
+        logger.info("All caches cleared successfully")
     except ImportError:
-        print("Cache module not available")
+        logger.warning("Cache module not available")
     except Exception as e:
-        print(f"Error clearing caches: {e}")
+        logger.error(f"Error clearing caches: {e}")
 
 
 def get_cache_stats():
     """Get cache statistics."""
     try:
         from .scripts.cache import get_cache_stats
+
         return get_cache_stats()
     except ImportError:
         return {"error": "Cache module not available"}
@@ -62,7 +68,7 @@ def generate_report(
     output_format: str = "docx",
     output_dir: Optional[str] = None,
     preparer_name: str = "SEO Health Report System",
-    ground_truth: Optional[Dict[str, Any]] = None
+    ground_truth: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Generate a comprehensive SEO health report.
@@ -100,24 +106,24 @@ def generate_report(
         "report": {},
         "audit_data": {},
         "warnings": [],
-        "errors": []
+        "errors": [],
     }
 
-    print("=" * 60)
-    print("SEO HEALTH REPORT GENERATOR")
-    print("=" * 60)
-    print(f"Target: {target_url}")
-    print(f"Company: {company_name}")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("SEO HEALTH REPORT GENERATOR")
+    logger.info("=" * 60)
+    logger.info(f"Target: {target_url}")
+    logger.info(f"Company: {company_name}")
+    logger.info("=" * 60)
 
     # Step 1: Run all audits
-    print("\n[Step 1/5] Running audits...")
-    audit_results = run_full_audit(
+    logger.info("[Step 1/5] Running audits...")
+    audit_results = run_full_audit_sync(
         target_url=target_url,
         company_name=company_name,
         primary_keywords=primary_keywords,
         competitor_urls=competitor_urls,
-        ground_truth=ground_truth
+        ground_truth=ground_truth,
     )
 
     result["audit_data"] = audit_results.get("audits", {})
@@ -125,36 +131,38 @@ def generate_report(
     result["errors"].extend(audit_results.get("errors", []))
 
     # Step 2: Calculate composite scores
-    print("\n[Step 2/5] Calculating scores...")
+    logger.info("[Step 2/5] Calculating scores...")
     scores = calculate_composite_score(audit_results)
     result["overall_score"] = scores.get("overall_score", 0)
     result["grade"] = scores.get("grade", "F")
     result["component_scores"] = scores.get("component_scores", {})
 
-    print(f"Overall Score: {result['overall_score']}/100 (Grade: {result['grade']})")
+    logger.info(
+        f"Overall Score: {result['overall_score']}/100 (Grade: {result['grade']})"
+    )
 
     # Step 3: Collect issues and recommendations
-    print("\n[Step 3/5] Analyzing findings...")
+    logger.info("[Step 3/5] Analyzing findings...")
     all_issues = collect_all_issues(audit_results)
     all_recommendations = collect_all_recommendations(audit_results)
 
     result["critical_issues"] = identify_critical_issues(all_issues)
     result["quick_wins"] = identify_quick_wins(all_recommendations)
 
-    print(f"Found {len(result['critical_issues'])} critical issues")
-    print(f"Identified {len(result['quick_wins'])} quick wins")
+    logger.info(f"Found {len(result['critical_issues'])} critical issues")
+    logger.info(f"Identified {len(result['quick_wins'])} quick wins")
 
     # Step 4: Generate executive summary
-    print("\n[Step 4/5] Generating summary...")
+    logger.info("[Step 4/5] Generating summary...")
     executive_summary = generate_executive_summary(
         scores=scores,
         critical_issues=result["critical_issues"],
         quick_wins=result["quick_wins"],
-        company_name=company_name
+        company_name=company_name,
     )
 
     # Step 5: Build report document
-    print("\n[Step 5/5] Building report document...")
+    logger.info("[Step 5/5] Building report document...")
     report_result = build_report_document(
         audit_results=audit_results,
         scores=scores,
@@ -164,7 +172,7 @@ def generate_report(
         brand_colors=brand_colors,
         output_format=output_format,
         output_dir=output_dir,
-        preparer_name=preparer_name
+        preparer_name=preparer_name,
     )
 
     if report_result.get("success"):
@@ -174,36 +182,37 @@ def generate_report(
                 document_path=report_result["output_path"],
                 logo_file=logo_file,
                 brand_colors=brand_colors,
-                company_name=company_name
+                company_name=company_name,
             )
             if not branding_result.get("success"):
-                result["warnings"].append(f"Branding not fully applied: {branding_result.get('error')}")
+                result["warnings"].append(
+                    f"Branding not fully applied: {branding_result.get('error')}"
+                )
 
     result["report"] = {
         "success": report_result.get("success", False),
         "format": output_format,
         "output_path": report_result.get("output_path"),
-        "pages": report_result.get("pages", 0)
+        "pages": report_result.get("pages", 0),
     }
 
     # Final summary
-    print("\n" + "=" * 60)
-    print("REPORT COMPLETE")
-    print("=" * 60)
-    print(f"Overall Score: {result['overall_score']}/100 ({result['grade']})")
-    print(f"Report saved: {result['report'].get('output_path', 'N/A')}")
+    logger.info("=" * 60)
+    logger.info("REPORT COMPLETE")
+    logger.info(f"Overall Score: {result['overall_score']}/100 ({result['grade']})")
+    logger.info(f"Report saved: {result['report'].get('output_path', 'N/A')}")
 
     if result["warnings"]:
-        print(f"\nWarnings: {len(result['warnings'])}")
+        logger.warning(f"Warnings: {len(result['warnings'])}")
         for w in result["warnings"][:3]:
-            print(f"  - {w}")
+            logger.warning(f"  - {w}")
 
     if result["errors"]:
-        print(f"\nErrors: {len(result['errors'])}")
+        logger.error(f"Errors: {len(result['errors'])}")
         for e in result["errors"][:3]:
-            print(f"  - {e}")
+            logger.error(f"  - {e}")
 
-    print("=" * 60)
+    logger.info("=" * 60)
 
     return result
 
@@ -223,7 +232,9 @@ def format_text_report(result: Dict[str, Any]) -> str:
     lines.append("SEO HEALTH REPORT SUMMARY")
     lines.append("=" * 60)
 
-    lines.append(f"\nOVERALL SCORE: {result['overall_score']}/100 (Grade: {result['grade']})")
+    lines.append(
+        f"\nOVERALL SCORE: {result['overall_score']}/100 (Grade: {result['grade']})"
+    )
     lines.append(f"\n{get_grade_description(result['grade'])}")
 
     lines.append("\n" + "-" * 60)
@@ -233,7 +244,9 @@ def format_text_report(result: Dict[str, Any]) -> str:
     for name, data in result.get("component_scores", {}).items():
         score = data.get("score", 0)
         weight = data.get("weight", 0) * 100
-        lines.append(f"  {name.replace('_', ' ').title()}: {score:.0f}/100 ({weight:.0f}% weight)")
+        lines.append(
+            f"  {name.replace('_', ' ').title()}: {score:.0f}/100 ({weight:.0f}% weight)"
+        )
 
     if result.get("critical_issues"):
         lines.append("\n" + "-" * 60)
@@ -302,7 +315,7 @@ def main():
         brand_colors=colors,
         competitor_urls=competitors,
         output_format=output_format,
-        output_dir=output_dir
+        output_dir=output_dir,
     )
 
     # Print summary
@@ -314,14 +327,14 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    'generate_report',
-    'format_text_report',
-    'clear_all_caches',
-    'get_cache_stats',
-    'run_full_audit',
-    'calculate_composite_score',
-    'determine_grade',
-    'generate_executive_summary',
-    'build_report_document',
-    'apply_branding'
+    "generate_report",
+    "format_text_report",
+    "clear_all_caches",
+    "get_cache_stats",
+    "run_full_audit",
+    "calculate_composite_score",
+    "determine_grade",
+    "generate_executive_summary",
+    "build_report_document",
+    "apply_branding",
 ]

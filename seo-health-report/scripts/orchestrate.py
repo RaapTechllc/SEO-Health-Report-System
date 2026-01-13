@@ -6,19 +6,26 @@ Main workflow controller that runs all sub-audits and coordinates results.
 
 import sys
 import os
+import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 # Add parent directory to path for sibling imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
-def run_full_audit(
+async def run_full_audit(
     target_url: str,
     company_name: str,
     primary_keywords: List[str],
     competitor_urls: Optional[List[str]] = None,
-    ground_truth: Optional[Dict[str, Any]] = None
+    ground_truth: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Run all three audits and compile results.
@@ -37,97 +44,166 @@ def run_full_audit(
         "url": target_url,
         "company_name": company_name,
         "timestamp": datetime.now().isoformat(),
-        "audits": {
-            "technical": None,
-            "content": None,
-            "ai_visibility": None
-        },
+        "audits": {"technical": None, "content": None, "ai_visibility": None},
         "warnings": [],
-        "errors": []
+        "errors": [],
     }
 
-    # Run Technical Audit
-    print(f"[1/3] Running Technical Audit for {target_url}...")
-    try:
-        from seo_technical_audit import run_audit as run_technical_audit
-        results["audits"]["technical"] = run_technical_audit(
-            target_url=target_url,
-            depth=50,
-            competitor_urls=competitor_urls
-        )
-        print(f"      Technical Score: {results['audits']['technical'].get('score', 'N/A')}/100")
-    except ImportError as e:
-        results["warnings"].append(f"Technical audit module not found: {e}")
-        results["audits"]["technical"] = create_placeholder_result("technical")
-    except Exception as e:
-        results["errors"].append(f"Technical audit failed: {e}")
-        results["audits"]["technical"] = create_placeholder_result("technical")
+    async def run_technical():
+        logger.info(f"[1/3] Running Technical Audit for {target_url}...")
+        try:
+            import importlib.util
+            import os
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            
+            # Import from hyphenated folder
+            spec = importlib.util.spec_from_file_location(
+                "seo_technical_audit",
+                os.path.join(project_root, "seo-technical-audit", "__init__.py")
+            )
+            seo_technical_audit = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(seo_technical_audit)
+            
+            return seo_technical_audit.run_audit(
+                target_url=target_url, depth=50, competitor_urls=competitor_urls
+            )
+        except ImportError as e:
+            results["warnings"].append(f"Technical audit module not found: {e}")
+            return handle_audit_failure("technical", f"Module not found: {e}")
+        except Exception as e:
+            results["errors"].append(f"Technical audit failed: {e}")
+            return handle_audit_failure("technical", str(e))
 
-    # Run Content & Authority Audit
-    print(f"[2/3] Running Content & Authority Audit...")
-    try:
-        from seo_content_authority import run_audit as run_content_audit
-        results["audits"]["content"] = run_content_audit(
-            target_url=target_url,
-            primary_keywords=primary_keywords,
-            competitor_urls=competitor_urls
-        )
-        print(f"      Content Score: {results['audits']['content'].get('score', 'N/A')}/100")
-    except ImportError as e:
-        results["warnings"].append(f"Content audit module not found: {e}")
-        results["audits"]["content"] = create_placeholder_result("content")
-    except Exception as e:
-        results["errors"].append(f"Content audit failed: {e}")
-        results["audits"]["content"] = create_placeholder_result("content")
+    async def run_content():
+        logger.info(f"[2/3] Running Content & Authority Audit...")
+        try:
+            import importlib.util
+            import os
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            
+            # Import from hyphenated folder
+            spec = importlib.util.spec_from_file_location(
+                "seo_content_authority",
+                os.path.join(project_root, "seo-content-authority", "__init__.py")
+            )
+            seo_content_authority = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(seo_content_authority)
+            
+            return seo_content_authority.run_audit(
+                target_url=target_url,
+                primary_keywords=primary_keywords,
+                competitor_urls=competitor_urls,
+            )
+        except ImportError as e:
+            results["warnings"].append(f"Content audit module not found: {e}")
+            return handle_audit_failure("content", f"Module not found: {e}")
+        except Exception as e:
+            results["errors"].append(f"Content audit failed: {e}")
+            return handle_audit_failure("content", str(e))
 
-    # Run AI Visibility Audit
-    print(f"[3/3] Running AI Visibility Audit...")
-    try:
-        from ai_visibility_audit import run_audit as run_ai_audit
-        results["audits"]["ai_visibility"] = run_ai_audit(
-            brand_name=company_name,
-            target_url=target_url,
-            products_services=primary_keywords,
-            competitor_names=[extract_domain(url) for url in (competitor_urls or [])],
-            ground_truth=ground_truth
-        )
-        print(f"      AI Visibility Score: {results['audits']['ai_visibility'].get('score', 'N/A')}/100")
-    except ImportError as e:
-        results["warnings"].append(f"AI visibility audit module not found: {e}")
-        results["audits"]["ai_visibility"] = create_placeholder_result("ai_visibility")
-    except Exception as e:
-        results["errors"].append(f"AI visibility audit failed: {e}")
-        results["audits"]["ai_visibility"] = create_placeholder_result("ai_visibility")
+    async def run_ai():
+        logger.info(f"[3/3] Running AI Visibility Audit...")
+        try:
+            import importlib.util
+            import os
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            
+            # Import from hyphenated folder
+            spec = importlib.util.spec_from_file_location(
+                "ai_visibility_audit",
+                os.path.join(project_root, "ai-visibility-audit", "__init__.py")
+            )
+            ai_visibility_audit = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(ai_visibility_audit)
+            
+            return ai_visibility_audit.run_audit(
+                brand_name=company_name,
+                target_url=target_url,
+                products_services=primary_keywords,
+                competitor_names=[
+                    extract_domain(url) for url in (competitor_urls or [])
+                ],
+                ground_truth=ground_truth,
+            )
+        except ImportError as e:
+            results["warnings"].append(f"AI visibility audit module not found: {e}")
+            return handle_audit_failure("ai_visibility", f"Module not found: {e}")
+        except Exception as e:
+            results["errors"].append(f"AI visibility audit failed: {e}")
+            return handle_audit_failure("ai_visibility", str(e))
+
+    # Run all three audits in parallel
+    audit_results = await asyncio.gather(
+        run_technical(), run_content(), run_ai(), return_exceptions=True
+    )
+
+    results["audits"]["technical"] = audit_results[0]
+    results["audits"]["content"] = audit_results[1]
+    results["audits"]["ai_visibility"] = audit_results[2]
+
+    # Log scores
+    logger.info(
+        f"      Technical Score: {results['audits']['technical'].get('score', 'N/A')}/100"
+    )
+    logger.info(
+        f"      Content Score: {results['audits']['content'].get('score', 'N/A')}/100"
+    )
+    logger.info(
+        f"      AI Visibility Score: {results['audits']['ai_visibility'].get('score', 'N/A')}/100"
+    )
 
     return results
 
 
-def create_placeholder_result(audit_type: str) -> Dict[str, Any]:
+def handle_audit_failure(audit_type: str, error_message: str) -> Dict[str, Any]:
     """
-    Create a placeholder result when an audit fails.
+    Handle audit failure with transparent error reporting.
 
     Args:
         audit_type: Type of audit that failed
+        error_message: Specific error that occurred
 
     Returns:
-        Dict with placeholder data
+        Dict with honest failure information
     """
+    logger.warning(f"{audit_type} audit failed: {error_message}")
+    
     return {
-        "score": 50,  # Neutral score
-        "grade": "?",
+        "score": None,
+        "grade": "N/A", 
+        "status": "unavailable",
+        "error_type": "system_unavailable",
+        "message": f"{audit_type.title()} analysis temporarily unavailable",
+        "reason": "Technical issue - manual analysis recommended",
         "components": {},
         "issues": [],
-        "findings": ["Audit could not be completed"],
-        "recommendations": [],
-        "_placeholder": True
+        "findings": [
+            f"{audit_type.title()} audit could not be completed",
+            "This does not affect other audit components",
+            "Manual analysis available upon request"
+        ],
+        "recommendations": [
+            f"Contact RaapTech for manual {audit_type} analysis",
+            "Review available audit sections for actionable insights",
+            "Schedule follow-up audit when systems restored"
+        ],
+        "next_steps": [
+            "Focus on available audit results",
+            "Contact support for detailed consultation", 
+            "Request manual analysis for missing components"
+        ]
     }
 
 
 def extract_domain(url: str) -> str:
     """Extract domain name from URL for competitor comparison."""
     from urllib.parse import urlparse
+
     parsed = urlparse(url)
     domain = parsed.netloc
+    # Remove port number if present
+    if ":" in domain:
+        domain = domain.split(":")[0]
     # Remove www. prefix
     if domain.startswith("www."):
         domain = domain[4:]
@@ -146,22 +222,25 @@ def collect_all_issues(audit_results: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     all_issues = []
 
-    audits = audit_results.get("audits", {})
+    audits = audit_results.get("audits") or {}
 
     for audit_name, audit_data in audits.items():
         if not audit_data:
             continue
 
         # Get issues from main audit
-        for issue in audit_data.get("issues", []):
+        issues = audit_data.get("issues") or []
+        for issue in issues:
             issue_copy = issue.copy()
             issue_copy["source"] = audit_name
             all_issues.append(issue_copy)
 
         # Get issues from components
-        for comp_name, comp_data in audit_data.get("components", {}).items():
+        components = audit_data.get("components") or {}
+        for comp_name, comp_data in components.items():
             if isinstance(comp_data, dict):
-                for issue in comp_data.get("issues", []):
+                comp_issues = comp_data.get("issues") or []
+                for issue in comp_issues:
                     issue_copy = issue.copy()
                     issue_copy["source"] = f"{audit_name}/{comp_name}"
                     all_issues.append(issue_copy)
@@ -185,13 +264,14 @@ def collect_all_recommendations(audit_results: Dict[str, Any]) -> List[Dict[str,
     """
     all_recs = []
 
-    audits = audit_results.get("audits", {})
+    audits = audit_results.get("audits") or {}
 
     for audit_name, audit_data in audits.items():
         if not audit_data:
             continue
 
-        for rec in audit_data.get("recommendations", []):
+        recs = audit_data.get("recommendations") or []
+        for rec in recs:
             rec_copy = rec.copy()
             rec_copy["source"] = audit_name
             all_recs.append(rec_copy)
@@ -244,12 +324,34 @@ def identify_critical_issues(issues: List[Dict[str, Any]]) -> List[Dict[str, Any
     return critical[:10]  # Top 10 critical issues
 
 
+def run_full_audit_sync(
+    target_url: str,
+    company_name: str,
+    primary_keywords: List[str],
+    competitor_urls: Optional[List[str]] = None,
+    ground_truth: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Sync wrapper for run_full_audit for backwards compatibility.
+    """
+    return asyncio.run(
+        run_full_audit(
+            target_url=target_url,
+            company_name=company_name,
+            primary_keywords=primary_keywords,
+            competitor_urls=competitor_urls,
+            ground_truth=ground_truth,
+        )
+    )
+
+
 __all__ = [
-    'run_full_audit',
-    'create_placeholder_result',
-    'extract_domain',
-    'collect_all_issues',
-    'collect_all_recommendations',
-    'identify_quick_wins',
-    'identify_critical_issues'
+    "run_full_audit",
+    "run_full_audit_sync", 
+    "handle_audit_failure",
+    "extract_domain",
+    "collect_all_issues",
+    "collect_all_recommendations",
+    "identify_quick_wins",
+    "identify_critical_issues",
 ]

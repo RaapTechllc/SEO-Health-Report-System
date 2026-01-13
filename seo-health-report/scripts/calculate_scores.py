@@ -4,21 +4,28 @@ Calculate Composite Scores
 Calculate weighted composite scores from individual audits.
 """
 
+import os
+import sys
 from typing import Dict, Any
 
+# Add parent directory to path for config import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Default weights
-# AI weighted higher - it's your differentiator
+from config import get_config
+
+# Get configuration
+_config = get_config()
+
+# Default weights from config
 WEIGHTS = {
-    "technical": 0.30,      # 30% - foundation
-    "content": 0.35,        # 35% - most impactful for rankings
-    "ai_visibility": 0.35   # 35% - differentiator
+    "technical": _config.score_weight_technical,
+    "content": _config.score_weight_content,
+    "ai_visibility": _config.score_weight_ai,
 }
 
 
 def calculate_composite_score(
-    audit_results: Dict[str, Any],
-    weights: Dict[str, float] = None
+    audit_results: Dict[str, Any], weights: Dict[str, float] = None
 ) -> Dict[str, Any]:
     """
     Calculate weighted composite score from audit results.
@@ -36,7 +43,7 @@ def calculate_composite_score(
         "overall_score": 0,
         "grade": "F",
         "component_scores": {},
-        "weights_used": weights
+        "weights_used": weights,
     }
 
     audits = audit_results.get("audits", {})
@@ -45,7 +52,7 @@ def calculate_composite_score(
     audit_to_weight = {
         "technical": "technical",
         "content": "content",
-        "ai_visibility": "ai_visibility"
+        "ai_visibility": "ai_visibility",
     }
 
     total_weighted = 0
@@ -56,7 +63,12 @@ def calculate_composite_score(
         weight = weights.get(weight_key, 0)
 
         if audit_data:
-            score = audit_data.get("score", 0)
+            score = audit_data.get("score")
+            
+            # Skip audits with None score (failed audits)
+            if score is None:
+                continue
+                
             max_score = audit_data.get("max", 100)
 
             # Normalize to 100-point scale if needed
@@ -71,7 +83,7 @@ def calculate_composite_score(
                 "score": round(normalized_score, 1),
                 "max": 100,
                 "weight": weight,
-                "weighted_score": round(weighted_score, 1)
+                "weighted_score": round(weighted_score, 1),
             }
 
             total_weighted += weighted_score
@@ -102,13 +114,15 @@ def determine_grade(score: int) -> str:
     Returns:
         Letter grade (A, B, C, D, F)
     """
-    if score >= 90:
+    config = get_config()
+
+    if score >= config.grade_a_threshold:
         return "A"
-    elif score >= 80:
+    elif score >= config.grade_b_threshold:
         return "B"
-    elif score >= 70:
+    elif score >= config.grade_c_threshold:
         return "C"
-    elif score >= 60:
+    elif score >= config.grade_d_threshold:
         return "D"
     else:
         return "F"
@@ -129,7 +143,7 @@ def get_grade_description(grade: str) -> str:
         "B": "Good - Your site is performing well with some room for improvement.",
         "C": "Needs Work - There are significant gaps that should be addressed.",
         "D": "Poor - Major issues are impacting your SEO performance.",
-        "F": "Critical - Urgent attention required to fix fundamental issues."
+        "F": "Critical - Urgent attention required to fix fundamental issues.",
     }
     return descriptions.get(grade, "Unknown grade")
 
@@ -155,10 +169,7 @@ def get_component_status(score: float, max_score: float = 100) -> str:
         return "poor"
 
 
-def compare_scores(
-    current: Dict[str, Any],
-    previous: Dict[str, Any]
-) -> Dict[str, Any]:
+def compare_scores(current: Dict[str, Any], previous: Dict[str, Any]) -> Dict[str, Any]:
     """
     Compare current scores with previous audit.
 
@@ -174,7 +185,7 @@ def compare_scores(
         "component_changes": {},
         "improved": [],
         "declined": [],
-        "unchanged": []
+        "unchanged": [],
     }
 
     # Overall change
@@ -194,7 +205,7 @@ def compare_scores(
         comparison["component_changes"][comp_name] = {
             "previous": prev,
             "current": curr,
-            "change": change
+            "change": change,
         }
 
         if change > 0:
@@ -208,8 +219,7 @@ def compare_scores(
 
 
 def calculate_benchmark_comparison(
-    scores: Dict[str, Any],
-    benchmarks: Dict[str, float] = None
+    scores: Dict[str, Any], benchmarks: Dict[str, float] = None
 ) -> Dict[str, Any]:
     """
     Compare scores against industry benchmarks.
@@ -226,7 +236,7 @@ def calculate_benchmark_comparison(
         "technical": 75,
         "content": 70,
         "ai_visibility": 50,  # Lower because it's new
-        "overall": 70
+        "overall": 70,
     }
 
     benchmarks = benchmarks or default_benchmarks
@@ -235,9 +245,10 @@ def calculate_benchmark_comparison(
         "overall": {
             "score": scores.get("overall_score", 0),
             "benchmark": benchmarks.get("overall", 70),
-            "vs_benchmark": scores.get("overall_score", 0) - benchmarks.get("overall", 70)
+            "vs_benchmark": scores.get("overall_score", 0)
+            - benchmarks.get("overall", 70),
         },
-        "components": {}
+        "components": {},
     }
 
     for comp_name, comp_data in scores.get("component_scores", {}).items():
@@ -248,18 +259,18 @@ def calculate_benchmark_comparison(
             "score": comp_score,
             "benchmark": comp_benchmark,
             "vs_benchmark": comp_score - comp_benchmark,
-            "status": "above" if comp_score >= comp_benchmark else "below"
+            "status": "above" if comp_score >= comp_benchmark else "below",
         }
 
     return comparison
 
 
 __all__ = [
-    'WEIGHTS',
-    'calculate_composite_score',
-    'determine_grade',
-    'get_grade_description',
-    'get_component_status',
-    'compare_scores',
-    'calculate_benchmark_comparison'
+    "WEIGHTS",
+    "calculate_composite_score",
+    "determine_grade",
+    "get_grade_description",
+    "get_component_status",
+    "compare_scores",
+    "calculate_benchmark_comparison",
 ]
