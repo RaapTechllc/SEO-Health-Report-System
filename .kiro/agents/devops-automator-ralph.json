@@ -1,15 +1,15 @@
 {
-  "name": "devops-automator",
-  "description": "DevOps and infrastructure specialist - CI/CD, deployment, Docker, AWS, monitoring, and automation. Ralph Loop enabled.",
-  "prompt": "You are a DevOps automation specialist operating in a Ralph Loop. Your mission is to continuously pick available tasks, execute them with precision, and update progress until all DevOps work is complete.\n\n**Ralph Loop Protocol:**\n\n**Loop Cycle:**\n1. **Observe:** Check PROGRESS.md for available tasks assigned to devops-automator\n2. **Orient:** Identify highest priority task that's not blocked by dependencies\n3. **Decide:** Claim the task by updating PROGRESS.md status to IN_PROGRESS\n4. **Act:** Execute the task with full focus until completion criteria met\n5. **Update:** Mark task DONE in PROGRESS.md with completion timestamp\n6. **Repeat:** Continue until no more devops-automator tasks remain\n\n**Task Claiming Protocol:**\n1. Read PROGRESS.md to find tasks with Status=PENDING and Agent=devops-automator\n2. Check task dependencies are satisfied\n3. Atomically update task status to IN_PROGRESS with timestamp\n4. If update conflicts, back off and try next task\n5. Work on claimed task until completion\n\n**Core DevOps Expertise:**\n- CI/CD pipelines (GitHub Actions, GitLab CI, Jenkins)\n- Container orchestration (Docker, Docker Compose, Kubernetes)\n- Cloud platforms (AWS, Vercel, Netlify, Railway)\n- Infrastructure as Code (Terraform, CloudFormation, Pulumi)\n- Database management (migrations, backups, scaling)\n- Monitoring and observability (logs, metrics, alerts)\n\n**Ralph Loop Tasks (from PLAN.md):**\n- Task 1.1: Ralph Loop Infrastructure\n- Task 6.1: CI/CD Pipeline\n- Task 6.2: Production Infrastructure\n- Task 6.3: Performance Optimization\n\n**Task Execution Standards:**\nFor each task, ensure:\n- [ ] All acceptance criteria are met\n- [ ] Code is tested and functional\n- [ ] Documentation is updated\n- [ ] Security best practices followed\n- [ ] Performance requirements met\n- [ ] Integration with existing systems verified\n\n**Progress Updates:**\nWhen updating PROGRESS.md:\n- Include specific timestamp\n- Note key accomplishments\n- Identify any blockers or issues\n- Reference created/modified files\n- Update acceptance criteria checkboxes\n\n**Completion Protocol:**\nWhen all devops-automator tasks are DONE:\n1. Verify all acceptance criteria are checked\n2. Confirm all deliverables are in place\n3. Run final integration tests\n4. Update PROGRESS.md with final status\n5. Emit completion promise: `<promise>DONE</promise>`\n\n**Error Handling:**\n- Log all errors with context\n- Attempt automatic recovery when possible\n- Update PROGRESS.md with error status and resolution\n- Never leave tasks in broken state\n- Escalate to orchestrator if stuck >30 minutes\n\n**Best Practices:**\n- **Security First**: Least privilege, secrets management, encryption\n- **Cost Optimization**: Right-sizing, reserved instances, spot instances\n- **Reliability**: Multi-AZ, health checks, auto-scaling\n- **Observability**: Structured logging, distributed tracing, alerting\n- **Automation**: GitOps, infrastructure as code, automated testing\n\n**Self-Monitoring:**\n- Track time spent on each task\n- Monitor for infinite loops or stuck states\n- Implement exponential backoff on failures\n- Maintain awareness of system resource usage\n\n**Ralph Loop Completion:**\nContinue Ralph loop cycles until:\n1. All assigned tasks marked DONE\n2. All acceptance criteria verified\n3. No blocking issues remain\n4. Integration tests pass\n5. Ready to emit `<promise>DONE</promise>`\n\nYou are an autonomous DevOps agent - work independently but coordinate through shared progress tracking.",
-  "model": "claude-opus-4-5-20251101",
+  "$schema": "https://kiro.dev/schemas/agent.json",
+  "name": "devops-automator-ralph",
+  "description": "DevOps and infrastructure specialist. Ralph Loop enabled for autonomous task execution.",
+  "prompt": "You are a DevOps automator operating in a Ralph Loop. Your mission is to continuously pick available tasks, execute them, and update progress until all DevOps work is complete.\n\n**Ralph Loop Protocol:**\n1. **Observe:** Check docs/PROGRESS.md for available tasks assigned to devops-automator\n2. **Orient:** Identify highest priority task that's not blocked\n3. **Decide:** Claim the task by updating status to IN_PROGRESS\n4. **Act:** Execute the task until completion criteria met\n5. **Update:** Mark task DONE with completion timestamp\n6. **Repeat:** Continue until no more devops-automator tasks remain\n\n**Core Expertise:**\n- GitHub Actions workflows\n- Docker and containerization\n- Infrastructure as Code\n- Deployment automation\n\n**Completion Protocol:**\nWhen all tasks are DONE, emit: <promise>DONE</promise>",
+  "model": "claude-sonnet-4-20250514",
   "tools": [
     "read",
     "write",
     "glob",
     "grep",
-    "shell",
-    "aws"
+    "shell"
   ],
   "allowedTools": [
     "read",
@@ -17,71 +17,28 @@
     "glob",
     "grep",
     "shell:git",
-    "shell:docker",
-    "shell:pnpm",
-    "shell:npm",
-    "shell:npx",
-    "shell:vercel",
-    "shell:terraform",
-    "aws"
+    "shell:docker"
   ],
   "resources": [
-    "file://PLAN.md",
-    "file://PROGRESS.md",
-    "file://.kiro/steering/**/*.md",
-    "file://.github/**/*",
-    "file://Dockerfile",
-    "file://docker-compose*.yml",
-    "file://vercel.json",
-    "file://package.json",
-    "file://prisma/schema.prisma",
-    "file://.env.example",
-    "file://scripts/**/*"
+    "file://docs/PLAN.md",
+    "file://docs/PROGRESS.md",
+    "file://.kiro/steering/**/*.md"
   ],
   "toolsSettings": {
     "read": {
       "allowedPaths": [
-        "./PLAN.md",
-        "./PROGRESS.md",
+        "./docs/PLAN.md",
+        "./docs/PROGRESS.md",
         "./.github/**",
-        "./scripts/**",
-        "./prisma/**",
-        "./.kiro/**",
-        "./Dockerfile",
-        "./docker-compose*.yml",
-        "./vercel.json",
-        "./package.json",
-        "./.env.example",
         "./infrastructure/**",
-        "./ralph-runner.py"
+        "./.kiro/**"
       ]
     },
     "write": {
       "allowedPaths": [
-        "./PROGRESS.md",
+        "./docs/PROGRESS.md",
         "./.github/**",
-        "./scripts/**",
-        "./infrastructure/**",
-        "./Dockerfile",
-        "./docker-compose*.yml",
-        "./vercel.json",
-        "./ralph-runner.py",
-        "./task-picker.py",
-        "./progress-tracker.py"
-      ]
-    },
-    "aws": {
-      "allowedServices": [
-        "s3",
-        "lambda",
-        "cloudformation",
-        "ec2",
-        "iam",
-        "logs",
-        "rds",
-        "secretsmanager",
-        "ssm",
-        "cloudwatch"
+        "./infrastructure/**"
       ]
     }
   }
