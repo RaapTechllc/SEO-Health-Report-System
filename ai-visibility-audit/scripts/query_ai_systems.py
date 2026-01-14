@@ -28,7 +28,7 @@ except ImportError:
     except ImportError:
         def get_config():
             class MockConfig:
-                anthropic_model = "claude-3-sonnet-20240229"
+                anthropic_model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
             return MockConfig()
 
 # Cache imports with fallback
@@ -47,9 +47,12 @@ except ImportError:
 
     TTL_AI_RESPONSE = 0
 
-# Get config for model name
-_config = get_config()
-ANTHROPIC_MODEL = _config.anthropic_model
+# Get model names from environment (with fallbacks)
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+PERPLEXITY_MODEL = os.environ.get("PERPLEXITY_MODEL", "llama-3.1-sonar-small-128k-online")
+GROK_MODEL = os.environ.get("GROK_MODEL", "grok-beta")
 
 
 class QueryCategory(Enum):
@@ -366,7 +369,7 @@ async def query_openai(
         }
 
         data = {
-            "model": "gpt-4",
+            "model": OPENAI_MODEL,
             "messages": [{"role": "user", "content": query}],
             "max_tokens": 1024,
         }
@@ -488,7 +491,7 @@ async def query_xai(
 
         # xAI uses OpenAI-compatible API format
         data = {
-            "model": "grok-beta",
+            "model": GROK_MODEL,
             "messages": [{"role": "user", "content": query}],
             "max_tokens": 1024,
         }
@@ -606,7 +609,7 @@ async def query_perplexity(
         }
 
         data = {
-            "model": "llama-3.1-sonar-small-128k-online",
+            "model": PERPLEXITY_MODEL,
             "messages": [{"role": "user", "content": query}],
             "max_tokens": 1024,
         }
@@ -719,7 +722,7 @@ async def query_gemini(
         start_time = time.time()
 
         # Gemini REST API format
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key={api_key}"
         
         data = {
             "contents": [{

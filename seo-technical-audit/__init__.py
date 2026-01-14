@@ -17,7 +17,7 @@ from .scripts.validate_schema import validate_structured_data
 __version__ = "1.0.0"
 
 
-def run_audit(
+async def run_audit(
     target_url: str,
     depth: int = 50,
     competitor_urls: Optional[List[str]] = None,
@@ -69,7 +69,7 @@ def run_audit(
     }
 
     # Component 3: Speed (25 points)
-    speed_result = analyze_speed(target_url, strategy=strategy)
+    speed_result = await analyze_speed(target_url, strategy=strategy)
     results["components"]["speed"] = {
         "score": speed_result["score"],
         "max": speed_result["max"],
@@ -81,11 +81,12 @@ def run_audit(
     }
 
     # Component 4: Mobile (15 points) - Derived from mobile PSI
-    mobile_result = analyze_speed(target_url, strategy="mobile")
-    mobile_score = 15 if mobile_result.get("psi_score", 0) >= 90 else \
-                   12 if mobile_result.get("psi_score", 0) >= 75 else \
-                   9 if mobile_result.get("psi_score", 0) >= 50 else \
-                   6 if mobile_result.get("psi_score", 0) >= 25 else 3
+    mobile_result = await analyze_speed(target_url, strategy="mobile")
+    mobile_psi = mobile_result.get("psi_score") or 0
+    mobile_score = 15 if mobile_psi >= 90 else \
+                   12 if mobile_psi >= 75 else \
+                   9 if mobile_psi >= 50 else \
+                   6 if mobile_psi >= 25 else 3
     results["components"]["mobile"] = {
         "score": mobile_score,
         "max": 15,
@@ -137,11 +138,16 @@ def run_audit(
     # Collect critical issues
     for comp_name, comp_data in results["components"].items():
         for issue in comp_data.get("issues", []):
-            if issue.get("severity") == "critical":
+            # Handle both dict and dataclass issues
+            severity = issue.get("severity") if isinstance(issue, dict) else getattr(issue, "severity", None)
+            description = issue.get("description") if isinstance(issue, dict) else getattr(issue, "description", "")
+            recommendation = issue.get("recommendation") if isinstance(issue, dict) else getattr(issue, "recommendation", "")
+            
+            if severity == "critical":
                 results["critical_issues"].append({
                     "component": comp_name,
-                    "description": issue.get("description"),
-                    "recommendation": issue.get("recommendation")
+                    "description": description,
+                    "recommendation": recommendation
                 })
 
     # Generate recommendations
@@ -156,6 +162,13 @@ def run_audit(
     return results
 
 
+def _get_issue_attr(issue, attr, default=""):
+    """Get attribute from issue (handles both dict and dataclass)."""
+    if isinstance(issue, dict):
+        return issue.get(attr, default)
+    return getattr(issue, attr, default)
+
+
 def generate_recommendations(results: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate prioritized recommendations based on audit results."""
     recommendations = []
@@ -166,12 +179,12 @@ def generate_recommendations(results: Dict[str, Any]) -> List[Dict[str, Any]]:
     security = components.get("security", {})
     if security.get("score", 0) < 8:
         for issue in security.get("issues", []):
-            if issue.get("severity") in ["critical", "high"]:
+            if _get_issue_attr(issue, "severity") in ["critical", "high"]:
                 recommendations.append({
                     "priority": "high",
                     "category": "security",
-                    "action": issue.get("description", "Fix security issue"),
-                    "details": issue.get("recommendation", ""),
+                    "action": _get_issue_attr(issue, "description", "Fix security issue"),
+                    "details": _get_issue_attr(issue, "recommendation", ""),
                     "impact": "high",
                     "effort": "medium"
                 })
@@ -182,10 +195,10 @@ def generate_recommendations(results: Dict[str, Any]) -> List[Dict[str, Any]]:
         # Add top opportunities
         for opp in speed.get("opportunities", [])[:3]:
             recommendations.append({
-                "priority": "high" if opp.get("savings_ms", 0) > 1000 else "medium",
+                "priority": "high" if _get_issue_attr(opp, "savings_ms", 0) > 1000 else "medium",
                 "category": "speed",
-                "action": opp.get("title", "Optimize performance"),
-                "details": f"Potential savings: {opp.get('savings_display', 'N/A')}",
+                "action": _get_issue_attr(opp, "title", "Optimize performance"),
+                "details": f"Potential savings: {_get_issue_attr(opp, 'savings_display', 'N/A')}",
                 "impact": "high",
                 "effort": "medium"
             })
@@ -194,12 +207,12 @@ def generate_recommendations(results: Dict[str, Any]) -> List[Dict[str, Any]]:
     crawl = components.get("crawlability", {})
     if crawl.get("score", 0) < 15:
         for issue in crawl.get("issues", []):
-            if issue.get("severity") in ["critical", "high"]:
+            if _get_issue_attr(issue, "severity") in ["critical", "high"]:
                 recommendations.append({
                     "priority": "high",
                     "category": "crawlability",
-                    "action": issue.get("description", "Fix crawlability issue"),
-                    "details": issue.get("recommendation", ""),
+                    "action": _get_issue_attr(issue, "description", "Fix crawlability issue"),
+                    "details": _get_issue_attr(issue, "recommendation", ""),
                     "impact": "high",
                     "effort": "low"
                 })
@@ -218,12 +231,12 @@ def generate_recommendations(results: Dict[str, Any]) -> List[Dict[str, Any]]:
             })
         else:
             for issue in schema.get("issues", []):
-                if issue.get("severity") == "high":
+                if _get_issue_attr(issue, "severity") == "high":
                     recommendations.append({
                         "priority": "medium",
                         "category": "structured_data",
-                        "action": issue.get("description", "Fix schema issue"),
-                        "details": issue.get("recommendation", ""),
+                        "action": _get_issue_attr(issue, "description", "Fix schema issue"),
+                        "details": _get_issue_attr(issue, "recommendation", ""),
                         "impact": "medium",
                         "effort": "low"
                     })

@@ -99,6 +99,32 @@ def identify_topic_clusters(
     """
     clusters = []
 
+    def fuzzy_match(text: str, keyword: str) -> bool:
+        """Check if text contains keyword or related terms."""
+        text_lower = text.lower()
+        keyword_lower = keyword.lower()
+        
+        # Exact match
+        if keyword_lower in text_lower:
+            return True
+        
+        # Check individual words (for multi-word keywords)
+        keyword_words = keyword_lower.split()
+        if len(keyword_words) > 1:
+            # If most words match, consider it relevant
+            matches = sum(1 for w in keyword_words if w in text_lower and len(w) > 3)
+            if matches >= len(keyword_words) * 0.6:  # 60% of words match
+                return True
+        
+        # Check for word stems (simple stemming)
+        for kw_word in keyword_words:
+            if len(kw_word) > 4:
+                stem = kw_word[:4]  # Simple prefix matching
+                if stem in text_lower:
+                    return True
+        
+        return False
+
     for keyword in primary_keywords:
         keyword_lower = keyword.lower()
 
@@ -112,12 +138,15 @@ def identify_topic_clusters(
             url = page.get("url", "")
             page_keywords = page.get("keywords", [])
             word_count = page.get("word_count", 0)
+            title = page.get("title", "")
+            content = page.get("content", "")
 
-            # Check if page is relevant to this keyword
+            # Check if page is relevant to this keyword (fuzzy matching)
             is_relevant = (
-                keyword_lower in url.lower() or
-                any(keyword_lower in kw.lower() for kw in page_keywords) or
-                keyword_lower in page.get("title", "").lower()
+                fuzzy_match(url, keyword) or
+                fuzzy_match(title, keyword) or
+                any(fuzzy_match(kw, keyword) for kw in page_keywords) or
+                (content and fuzzy_match(content[:500], keyword))  # Check first 500 chars
             )
 
             if is_relevant:
@@ -135,7 +164,7 @@ def identify_topic_clusters(
 
                 # Track keyword variations covered
                 for kw in page_keywords:
-                    if keyword_lower in kw.lower() and kw not in covered_keywords:
+                    if fuzzy_match(kw, keyword) and kw not in covered_keywords:
                         covered_keywords.append(kw)
 
         # Calculate depth score (1-5)

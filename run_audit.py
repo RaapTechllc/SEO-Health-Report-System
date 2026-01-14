@@ -101,8 +101,8 @@ def main():
         )
         
         # Calculate overall score
-        from scripts.calculate_scores import calculate_overall_score
-        scores = calculate_overall_score(result)
+        from scripts.calculate_scores import calculate_composite_score
+        scores = calculate_composite_score(result)
         result["overall_score"] = scores.get("overall_score", 0)
         result["grade"] = scores.get("grade", "N/A")
         result["component_scores"] = scores.get("component_scores", {})

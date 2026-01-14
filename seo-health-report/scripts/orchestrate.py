@@ -7,13 +7,32 @@ Main workflow controller that runs all sub-audits and coordinates results.
 import sys
 import os
 import asyncio
+import importlib.util
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 # Add parent directory to path for sibling imports
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+
+# Register seo_health_report module so sub-modules can import from it
+seo_health_report_path = os.path.join(project_root, "seo-health-report")
+if seo_health_report_path not in sys.path:
+    sys.path.insert(0, seo_health_report_path)
+
+# Register as seo_health_report in sys.modules
+if "seo_health_report" not in sys.modules:
+    spec = importlib.util.spec_from_file_location(
+        "seo_health_report",
+        os.path.join(seo_health_report_path, "__init__.py"),
+        submodule_search_locations=[seo_health_report_path]
+    )
+    seo_health_report_module = importlib.util.module_from_spec(spec)
+    sys.modules["seo_health_report"] = seo_health_report_module
+    try:
+        spec.loader.exec_module(seo_health_report_module)
+    except Exception:
+        pass  # Module may have circular imports, but we just need it registered
 
 from .logger import get_logger
 
@@ -55,16 +74,23 @@ async def run_full_audit(
             import importlib.util
             import os
             project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            module_path = os.path.join(project_root, "seo-technical-audit")
+            
+            # Add to sys.path for submodule imports
+            if module_path not in sys.path:
+                sys.path.insert(0, module_path)
             
             # Import from hyphenated folder
             spec = importlib.util.spec_from_file_location(
                 "seo_technical_audit",
-                os.path.join(project_root, "seo-technical-audit", "__init__.py")
+                os.path.join(module_path, "__init__.py"),
+                submodule_search_locations=[module_path]
             )
             seo_technical_audit = importlib.util.module_from_spec(spec)
+            sys.modules["seo_technical_audit"] = seo_technical_audit
             spec.loader.exec_module(seo_technical_audit)
             
-            return seo_technical_audit.run_audit(
+            return await seo_technical_audit.run_audit(
                 target_url=target_url, depth=50, competitor_urls=competitor_urls
             )
         except ImportError as e:
@@ -80,13 +106,20 @@ async def run_full_audit(
             import importlib.util
             import os
             project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            module_path = os.path.join(project_root, "seo-content-authority")
+            
+            # Add to sys.path for submodule imports
+            if module_path not in sys.path:
+                sys.path.insert(0, module_path)
             
             # Import from hyphenated folder
             spec = importlib.util.spec_from_file_location(
                 "seo_content_authority",
-                os.path.join(project_root, "seo-content-authority", "__init__.py")
+                os.path.join(module_path, "__init__.py"),
+                submodule_search_locations=[module_path]
             )
             seo_content_authority = importlib.util.module_from_spec(spec)
+            sys.modules["seo_content_authority"] = seo_content_authority
             spec.loader.exec_module(seo_content_authority)
             
             return seo_content_authority.run_audit(
@@ -107,16 +140,23 @@ async def run_full_audit(
             import importlib.util
             import os
             project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            module_path = os.path.join(project_root, "ai-visibility-audit")
+            
+            # Add to sys.path for submodule imports
+            if module_path not in sys.path:
+                sys.path.insert(0, module_path)
             
             # Import from hyphenated folder
             spec = importlib.util.spec_from_file_location(
                 "ai_visibility_audit",
-                os.path.join(project_root, "ai-visibility-audit", "__init__.py")
+                os.path.join(module_path, "__init__.py"),
+                submodule_search_locations=[module_path]
             )
             ai_visibility_audit = importlib.util.module_from_spec(spec)
+            sys.modules["ai_visibility_audit"] = ai_visibility_audit
             spec.loader.exec_module(ai_visibility_audit)
             
-            return ai_visibility_audit.run_audit(
+            return await ai_visibility_audit.run_audit(
                 brand_name=company_name,
                 target_url=target_url,
                 products_services=primary_keywords,

@@ -124,6 +124,10 @@ def check_wikipedia(brand_name: str) -> KnowledgeSource:
     try:
         import requests
 
+        headers = {
+            "User-Agent": "SEOHealthReport/1.0 (https://raaptech.com; info@raaptech.com)"
+        }
+
         # Search Wikipedia API
         search_url = "https://en.wikipedia.org/w/api.php"
         search_params = {
@@ -134,7 +138,7 @@ def check_wikipedia(brand_name: str) -> KnowledgeSource:
             "srlimit": 5,
         }
 
-        response = requests.get(search_url, params=search_params, timeout=10)
+        response = requests.get(search_url, params=search_params, headers=headers, timeout=10)
         response.raise_for_status()
         data = response.json()
 
@@ -161,7 +165,7 @@ def check_wikipedia(brand_name: str) -> KnowledgeSource:
                     }
 
                     extract_response = requests.get(
-                        search_url, params=extract_params, timeout=10
+                        search_url, params=extract_params, headers=headers, timeout=10
                     )
                     extract_data = extract_response.json()
 
@@ -211,6 +215,10 @@ def check_wikidata(brand_name: str) -> KnowledgeSource:
     try:
         import requests
 
+        headers = {
+            "User-Agent": "SEOHealthReport/1.0 (https://raaptech.com; info@raaptech.com)"
+        }
+
         # Search Wikidata API
         url = "https://www.wikidata.org/w/api.php"
         params = {
@@ -222,7 +230,7 @@ def check_wikidata(brand_name: str) -> KnowledgeSource:
             "type": "item",
         }
 
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
         data = response.json()
 

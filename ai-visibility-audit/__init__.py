@@ -31,7 +31,7 @@ from .scripts.score_citability import analyze_content_citability
 __version__ = "1.0.0"
 
 
-def run_audit(
+async def run_audit(
     brand_name: str,
     target_url: str,
     products_services: List[str],
@@ -61,6 +61,9 @@ def run_audit(
         - accuracy_issues: List of inaccuracies found
         - recommendations: Prioritized action items
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     results = {
         "brand_name": brand_name,
         "target_url": target_url,
@@ -74,6 +77,8 @@ def run_audit(
 
     # Default to Claude only if no systems specified
     ai_systems = ai_systems or ["claude"]
+    
+    logger.info(f"AI Visibility Audit: Querying {ai_systems} for {brand_name}")
 
     # Step 1: Generate test queries
     queries = generate_test_queries(
@@ -82,13 +87,24 @@ def run_audit(
         competitors=competitor_names,
         custom_queries=test_queries
     )
+    
+    # Limit queries to avoid rate limits and long wait times
+    max_queries = 5  # Reduced for faster audits
+    queries = queries[:max_queries]
 
     # Step 2: Query AI systems
-    responses = query_all_systems(
-        queries=queries,
-        brand_name=brand_name,
-        systems=ai_systems
-    )
+    try:
+        responses = await query_all_systems(
+            queries=queries,
+            brand_name=brand_name,
+            systems=ai_systems,
+            rate_limit_ms=500  # Faster rate limit
+        )
+    except Exception as e:
+        print(f"[AI-AUDIT] ERROR: query_all_systems failed: {e}")
+        import traceback
+        traceback.print_exc()
+        responses = {s: [] for s in ai_systems}
 
     # Flatten responses for storage
     for system, system_responses in responses.items():

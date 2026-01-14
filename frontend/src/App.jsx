@@ -13,13 +13,16 @@ function App() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  const handleAnalyze = (url) => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setReport({ ...mockReport, url }); // Inject the requested URL
-      setIsLoading(false);
-    }, 2000);
+  const handleAnalyze = (data) => {
+    // Handle both URL string (fallback) and full audit data
+    if (typeof data === 'string') {
+      // Fallback to mock data
+      setReport({ ...mockReport, url: data });
+    } else {
+      // Real audit data
+      setReport(data);
+    }
+    setIsLoading(false);
   };
 
   const handleReset = () => {
@@ -82,7 +85,7 @@ function App() {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center justify-center min-h-[60vh]"
             >
-              <AuditForm onAnalyze={handleAnalyze} isLoading={isLoading} />
+              <AuditForm onAnalyze={handleAnalyze} isLoading={isLoading} setIsLoading={setIsLoading} />
             </motion.div>
           ) : (
             <motion.div

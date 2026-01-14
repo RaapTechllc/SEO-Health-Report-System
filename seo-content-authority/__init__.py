@@ -58,6 +58,28 @@ def run_audit(
     import re
     from urllib.parse import urlparse, urljoin
 
+    # File extensions to skip (not content pages)
+    SKIP_EXTENSIONS = {
+        '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
+        '.woff', '.woff2', '.ttf', '.eot', '.pdf', '.zip', '.xml', '.json',
+        '.mp3', '.mp4', '.avi', '.mov', '.webm', '.wav'
+    }
+    
+    def is_content_url(url: str) -> bool:
+        """Check if URL is likely a content page (not asset)."""
+        parsed = urlparse(url)
+        path = parsed.path.lower()
+        # Skip if has file extension that's not HTML
+        if '.' in path.split('/')[-1]:
+            ext = '.' + path.split('.')[-1]
+            if ext in SKIP_EXTENSIONS:
+                return False
+        # Skip common asset paths
+        if any(x in path for x in ['/wp-content/themes/', '/wp-content/plugins/', 
+                                    '/assets/', '/static/', '/dist/', '/build/']):
+            return False
+        return True
+
     # Crawl to find pages
     html = fetch_page(target_url)
     pages_to_analyze = [target_url]
@@ -72,7 +94,7 @@ def run_audit(
             full_url = urljoin(target_url, link)
             parsed = urlparse(full_url)
             if parsed.netloc == parsed_base.netloc:
-                if full_url not in pages_to_analyze:
+                if full_url not in pages_to_analyze and is_content_url(full_url):
                     pages_to_analyze.append(full_url)
 
     # Analyze pages

@@ -317,13 +317,19 @@ def analyze_sentiment(
             positive_count = sum(1 for kw in positive_keywords if kw in response_lower)
             negative_count = sum(1 for kw in negative_keywords if kw in response_lower)
 
-            # Determine sentiment
-            if positive_count > negative_count + 2:
+            # Determine sentiment (adjusted thresholds for typical AI responses)
+            if positive_count > 0 and negative_count == 0:
                 sentiment = "positive"
-                confidence = min(1.0, (positive_count - negative_count) / 5)
-            elif negative_count > positive_count + 2:
+                confidence = min(1.0, positive_count / 3)
+            elif negative_count > 0 and positive_count == 0:
                 sentiment = "negative"
-                confidence = min(1.0, (negative_count - positive_count) / 5)
+                confidence = min(1.0, negative_count / 3)
+            elif positive_count > negative_count:
+                sentiment = "positive"
+                confidence = min(1.0, (positive_count - negative_count) / 3)
+            elif negative_count > positive_count:
+                sentiment = "negative"
+                confidence = min(1.0, (negative_count - positive_count) / 3)
             else:
                 sentiment = "neutral"
                 confidence = 0.5
