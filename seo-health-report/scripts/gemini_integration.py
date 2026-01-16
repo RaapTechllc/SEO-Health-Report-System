@@ -26,9 +26,9 @@ logger = get_logger(__name__)
 class GeminiConfig:
     """Configuration for Gemini API."""
     api_key: str
-    model: str = "gemini-2.0-flash"
-    pro_model: str = "gemini-1.5-pro"
-    imagen_model: str = "imagen-3.0-generate-002"
+    model: str = os.environ.get("GOOGLE_MODEL", "gemini-3.0-flash")
+    pro_model: str = os.environ.get("GOOGLE_PRO_MODEL", "gemini-1.5-pro")
+    imagen_model: str = os.environ.get("GOOGLE_IMAGE_MODEL", "imagen-3.0")
     base_url: str = "https://generativelanguage.googleapis.com/v1beta"
     timeout: int = 60
 

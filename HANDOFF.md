@@ -2,27 +2,26 @@
 
 ## Project Status: SEO Health Report System
 **Date:** January 16, 2026
-**Current Focus:** Tiered Reporting & AI Visibility Branding
+**Current Focus:** Tiered Reporting, Pricing Integration & Google Ecosystem Migration
 
 ### 1. System State
-*   **Frontend**: React/Vite running on `http://localhost:5173`.
+*   **Frontend**: React/Vite running on `http://localhost:5173`. Added Features, Pricing, and Docs pages.
 *   **Backend**: FastAPI running on `http://localhost:8000`.
+*   **AI Access**: Switched to Google Ecosystem (Gemini 3.0 Flash + Imagen 3.0) as primary. xAI/Claude available as fallbacks.
 *   **Startup**: Use `start_app.sh` (Git Bash) or manually run:
     *   Backend: `python api_server.py`
     *   Frontend: `npm run dev` (in `frontend/` dir)
 
 ### 2. Recently Completed Tasks
-*   **Tiered Reporting UI**: Implemented three report views in `ReportViewer.jsx`:
-    1.  **Executive Brief**: High-level summary for business owners (Score, Critical Issues, Bottom Line Impact).
-    2.  **Action Plan**: Strategic roadmap (Immediate, Short-term, Long-term).
-    3.  **Technical Data**: Full detailed audit view.
-*   **Frontend/Backend Integration**: Verified `AuditForm.jsx` successfully communicates with the API, polls for status, and retrieves full results. Added robust completion logging.
-*   **Dependencies**: Installed `framer-motion`, `lucide-react`, and other UI libs.
+*   **Frontend Pages**: Implemented `Features.jsx`, `Pricing.jsx`, and `Docs.jsx` with navigation in `App.jsx`.
+*   **Google Integration**: Updated `.env` and scripts to default to `gemini-3.0-flash` for text and `imagen-3.0` for visuals.
+*   **Tiered Reporting UI**: Implemented three report views (Executive Brief, Action Plan, Technical Data).
+*   **Frontend/Backend Integration**: Verified `AuditForm.jsx` successfully communicates with the API.
 
 ### 3. Key files
-*   `frontend/src/components/ReportViewer.jsx`: Controls the tiered view logic.
-*   `frontend/src/components/dashboard/ExecutiveBrief.jsx`: Component for the high-level summary.
-*   `frontend/src/components/AuditForm.jsx`: handling submission and polling.
+*   `frontend/src/App.jsx`: Main routing logic.
+*   `frontend/src/components/pages/`: New marketing pages (Features, Pricing, Docs).
+*   `seo-health-report/scripts/gemini_integration.py`: Updated Gemini client.
 *   `api_server.py`: Main entry for the backend.
 
 ### 4. Next Steps (User Requests)
@@ -30,20 +29,20 @@ The user has outlined a clear vision for the next phase. **Do not lose this cont
 
 1.  **Data Accuracy Verification**:
     *   *User Goal*: "Make sure data is 100% accurate... better than just asking ChatGPT."
-    *   *Action*: Run audits on known high-quality sites (e.g., Stripe, Vercel, etc.) to calibrate scoring. Ensure the "AI Visibility" score reflects reality, not just random numbers.
+    *   *Action*: Run audits on known high-quality sites to calibrate scoring.
 
 2.  **"Grokopedia" / AI Knowledge Graph**:
-    *   *User Vision*: "The future of Wikipedia is actually going to be Grokopedia for the AI-driven searches."
-    *   *Action*: Investigate how we can audit/influence a brand's presence in xAI's Grok and other "Answer Engines." This ties into the "Knowledge Graph" component of the audit.
+    *   *User Vision*: "The future of Wikipedia is actually going to be Grokopedia."
+    *   *Action*: Investigate how we can audit/influence a brand's presence in xAI's Grok.
 
 3.  **Premium Experience**:
     *   *User Vision*: "Spruce up the platform... somebody would pay $10,000 for a one-on-one session."
-    *   *Action*: Polish the UI further. The current "Executive Brief" is clean but could be more "premium" (better typography, animations, print-ready PDF export that matches the web view).
+    *   *Action*: Continue polishing the UI. "Executive Brief" is clean; look for ways to make it even more premium.
 
 4.  **Backend Logic**:
-    *   Ensure `seo-health-report` scripts are actually calling real APIs (Claude, OpenAI, Perplexity) and not defaulting to mocks. Check `.env` usage in `ai-visibility-audit`.
+    *   Ensure `seo-health-report` scripts are using the real Google APIs now configured.
 
 ### 5. Notes for Next Agent
-*   The system is **fully functional** in terms of flow (Start -> Audit -> Result).
-*   The "Action Plan" data in `ReportViewer.jsx` currently maps recommendations simplistically. You might need to enhance the backend to return structured "Phases" (Immediate vs Strategic) more explicitly.
-*   **Aesthetics are critical**. The user values "Rich Aesthetics" and a "WOW" factor.
+*   **Google First**: We are now prioritizing the Google ecosystem (Gemini 3 Flash).
+*   **Pricing Tiers**: The `Pricing.jsx` page reflects the user's desired tiers (DIY, Strategic, Enterprise).
+*   **Aesthetics**: Continue to prioritize "Rich Aesthetics".

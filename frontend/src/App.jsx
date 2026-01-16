@@ -4,10 +4,14 @@ import AuditForm from './components/AuditForm';
 import ReportViewer from './components/ReportViewer';
 import { DashboardShowcase } from './components/dashboard/DashboardShowcase';
 import { ExecutiveBrief } from './components/dashboard/ExecutiveBrief';
+import { Features } from './components/pages/Features';
+import { Pricing } from './components/pages/Pricing';
+import { Docs } from './components/pages/Docs';
 import { mockReport } from './mockData';
 import { Activity } from 'lucide-react';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('home');
   const [report, setReport] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -23,11 +27,19 @@ function App() {
       setReport(data);
     }
     setIsLoading(false);
+    setShowDashboard(false); // Ensure we show the report
   };
 
   const handleReset = () => {
     setReport(null);
     setShowDashboard(false);
+    setCurrentPage('home');
+  };
+
+  const navigateTo = (page) => {
+    setCurrentPage(page);
+    setShowDashboard(false);
+    setReport(null);
   };
 
   return (
@@ -42,23 +54,26 @@ function App() {
             <span className="font-bold text-xl tracking-tight">SEO Health</span>
           </div>
           <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-500">
-            <button 
-              onClick={() => setShowDashboard(!showDashboard)}
-              className="hover:text-brand-600 transition-colors"
+            <button
+              onClick={() => {
+                setShowDashboard(!showDashboard);
+                setCurrentPage('home');
+              }}
+              className={`hover:text-brand-600 transition-colors ${showDashboard ? 'text-brand-600' : ''}`}
             >
               {showDashboard ? 'Form View' : 'Dashboard'}
             </button>
             {showDashboard && (
-              <button 
+              <button
                 onClick={() => setIsMobileView(!isMobileView)}
                 className="hover:text-brand-600 transition-colors"
               >
                 {isMobileView ? 'Desktop' : 'Mobile Brief'}
               </button>
             )}
-            <a href="#" className="hover:text-brand-600 transition-colors">Features</a>
-            <a href="#" className="hover:text-brand-600 transition-colors">Pricing</a>
-            <a href="#" className="hover:text-brand-600 transition-colors">Docs</a>
+            <button onClick={() => navigateTo('features')} className={`hover:text-brand-600 transition-colors ${currentPage === 'features' ? 'text-brand-600' : ''}`}>Features</button>
+            <button onClick={() => navigateTo('pricing')} className={`hover:text-brand-600 transition-colors ${currentPage === 'pricing' ? 'text-brand-600' : ''}`}>Pricing</button>
+            <button onClick={() => navigateTo('docs')} className={`hover:text-brand-600 transition-colors ${currentPage === 'docs' ? 'text-brand-600' : ''}`}>Docs</button>
           </nav>
         </div>
       </header>
@@ -66,7 +81,19 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
         <AnimatePresence mode="wait">
-          {showDashboard ? (
+          {currentPage === 'features' ? (
+            <motion.div key="features" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
+              <Features />
+            </motion.div>
+          ) : currentPage === 'pricing' ? (
+            <motion.div key="pricing" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
+              <Pricing />
+            </motion.div>
+          ) : currentPage === 'docs' ? (
+            <motion.div key="docs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
+              <Docs />
+            </motion.div>
+          ) : showDashboard ? (
             <motion.div
               key="dashboard"
               initial={{ opacity: 0, x: 20 }}
@@ -77,7 +104,7 @@ function App() {
               {isMobileView ? <ExecutiveBrief /> : <DashboardShowcase />}
             </motion.div>
           ) : !report ? (
-            <motion.div 
+            <motion.div
               key="form"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

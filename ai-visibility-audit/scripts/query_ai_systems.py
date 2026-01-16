@@ -50,7 +50,8 @@ except ImportError:
 # Get model names from environment (with fallbacks)
 ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+# Update default to Gemini 3.0 Flash per user request
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.0-flash")
 PERPLEXITY_MODEL = os.environ.get("PERPLEXITY_MODEL", "llama-3.1-sonar-small-128k-online")
 GROK_MODEL = os.environ.get("GROK_MODEL", "grok-beta")
 
