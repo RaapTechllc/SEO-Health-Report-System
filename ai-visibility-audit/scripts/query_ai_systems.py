@@ -28,7 +28,7 @@ except ImportError:
     except ImportError:
         def get_config():
             class MockConfig:
-                anthropic_model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+                anthropic_model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
             return MockConfig()
 
 # Cache imports with fallback
@@ -47,13 +47,12 @@ except ImportError:
 
     TTL_AI_RESPONSE = 0
 
-# Get model names from environment (with fallbacks)
-ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4")
-# Update default to Gemini 3.0 Flash per user request
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.0-flash")
-PERPLEXITY_MODEL = os.environ.get("PERPLEXITY_MODEL", "llama-3.1-sonar-small-128k-online")
-GROK_MODEL = os.environ.get("GROK_MODEL", "grok-beta")
+# Get model names from environment (with fallbacks) - Updated Jan 2026
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5-2-mini")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3-flash-preview")
+PERPLEXITY_MODEL = os.environ.get("PERPLEXITY_MODEL", "sonar-pro")
+GROK_MODEL = os.environ.get("GROK_MODEL", "grok-4-1-fast")
 
 
 class QueryCategory(Enum):
@@ -723,7 +722,7 @@ async def query_gemini(
         start_time = time.time()
 
         # Gemini REST API format
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
         
         data = {
             "contents": [{

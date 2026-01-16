@@ -18,7 +18,7 @@ class TestConfigDefaults:
     def test_anthropic_model_default(self):
         """Test default Anthropic model."""
         config = Config()
-        assert config.anthropic_model == "claude-sonnet-4-20250514"
+        assert config.anthropic_model == "claude-sonnet-4-5"
 
     def test_cache_dir_default(self):
         """Test default cache directory."""
@@ -77,9 +77,9 @@ class TestConfigEnvironmentVariables:
 
     def test_anthropic_model_from_env(self, monkeypatch):
         """Test Anthropic model from environment variable."""
-        monkeypatch.setenv("ANTHROPIC_MODEL", "claude-3-opus-20240229")
+        monkeypatch.setenv("ANTHROPIC_MODEL", "claude-opus-4-5")
         config = Config()
-        assert config.anthropic_model == "claude-3-opus-20240229"
+        assert config.anthropic_model == "claude-opus-4-5"
 
     def test_cache_dir_from_env(self, monkeypatch):
         """Test cache directory from environment variable."""

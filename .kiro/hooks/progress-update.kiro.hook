@@ -1,0 +1,12 @@
+{
+  "name": "Progress Update Reminder",
+  "description": "Reminds agent to update PROGRESS.md after completing work",
+  "trigger": {
+    "type": "fileSave",
+    "pattern": "src/**/*"
+  },
+  "action": {
+    "type": "sendMessage",
+    "message": "Remember to update PROGRESS.md with your changes if this completes a task."
+  }
+}

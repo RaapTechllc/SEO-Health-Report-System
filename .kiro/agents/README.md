@@ -38,8 +38,6 @@ Or agents will self-reflect when:
 Workflow coordinator for spec-driven development.
 
 ```bash
-python kiro_cli.py --agent orchestrator
-# Or use the wrapper:
 kiro-cli --agent orchestrator
 ```
 
@@ -250,7 +248,7 @@ Copy an existing agent JSON and customize:
   "name": "my-agent",
   "description": "What this agent does",
   "prompt": "System prompt with expertise and workflow",
-  "model": "claude-sonnet-4-20250514",
+  "model": "claude-sonnet-4-5",
   "tools": ["read", "write", "glob", "grep", "shell"],
   "allowedTools": ["read", "glob", "grep"],
   "resources": ["file://relevant/files/**/*"],

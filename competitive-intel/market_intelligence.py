@@ -15,8 +15,8 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from urllib.parse import urlparse
 
-# Get model from environment
-ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+# Get model from environment (updated Jan 2026)
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
 
 logger = logging.getLogger(__name__)
 

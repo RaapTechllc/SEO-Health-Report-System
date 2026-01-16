@@ -1,164 +1,136 @@
+# Create Product Requirement Document
+
+Create a structured PRD with implementation phases for: $ARGUMENTS
+
+## Process
+
+1. **Analyze the request** - Understand what's being asked
+2. **Research the codebase** - Find relevant files, patterns, dependencies
+3. **Create the PRD** with all sections below
+
+## Output: Save to `.kiro/specs/prds/{feature-slug}.prd.md`
+
 ---
-description: Create a Product Requirements Document from conversation
-argument-hint: [output-filename]
+
+## PRD Template
+
+```markdown
+# PRD: {Feature Name}
+
+**Created:** {date}
+**Status:** ACTIVE
+**Author:** AI Orchestrator
+
+## Goal
+
+{What are we building? One paragraph max.}
+
+## Why
+
+{Business value, user impact. Why now?}
+
+- Reason 1
+- Reason 2
+- Reason 3
+
+## What
+
+{Detailed feature description}
+
+### Success Criteria
+
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
+
+### Out of Scope
+
+- Item 1
+- Item 2
+
+## Implementation Phases
+
+| Phase | Description | Status | Dependencies | Estimated Effort |
+|-------|-------------|--------|--------------|------------------|
+| 1 | {phase 1 description} | PENDING | None | Small |
+| 2 | {phase 2 description} | PENDING | Phase 1 | Medium |
+| 3 | {phase 3 description} | PENDING | Phase 2 | Medium |
+
+### Phase Details
+
+#### Phase 1: {Name}
+- Task 1.1: ...
+- Task 1.2: ...
+- Validation: {how to verify this phase is complete}
+
+#### Phase 2: {Name}
+- Task 2.1: ...
+- Task 2.2: ...
+- Validation: {how to verify this phase is complete}
+
+#### Phase 3: {Name}
+- Task 3.1: ...
+- Task 3.2: ...
+- Validation: {how to verify this phase is complete}
+
+## Technical Context
+
+### Relevant Files
+- `path/to/file.ts` - {why relevant}
+- `path/to/other.ts` - {why relevant}
+
+### Dependencies
+- Package 1: {version, purpose}
+- Package 2: {version, purpose}
+
+### Patterns to Follow
+- {existing pattern 1}
+- {existing pattern 2}
+
+## Known Gotchas
+
+<!-- Mark critical items that could derail implementation -->
+
+> CRITICAL: {gotcha 1}
+
+> CRITICAL: {gotcha 2}
+
+> NOTE: {less critical consideration}
+
+## Validation Strategy
+
+### Level 1: Syntax & Style
+```bash
+npm run lint
+npm run typecheck
+```
+
+### Level 2: Unit Tests
+```bash
+npm run test:unit
+```
+
+### Level 3: Integration
+```bash
+npm run test:integration
+```
+
+## Progress Log
+
+| Date | Phase | Update |
+|------|-------|--------|
+| {date} | - | PRD created |
+
+```
+
 ---
-
-# Create PRD: Generate Product Requirements Document
-
-## Overview
-
-Generate a comprehensive Product Requirements Document (PRD) based on the current conversation context and requirements discussed. Use the structure and sections defined below to create a thorough, professional PRD.
-
-## Output File
-
-Write the PRD to: `$ARGUMENTS` (default: `PRD.md`)
-
-## PRD Structure
-
-Create a well-structured PRD with the following sections. Adapt depth and detail based on available information:
-
-### Required Sections
-
-**1. Executive Summary**
-- Concise product overview (2-3 paragraphs)
-- Core value proposition
-- MVP goal statement
-
-**2. Mission**
-- Product mission statement
-- Core principles (3-5 key principles)
-
-**3. Target Users**
-- Primary user personas
-- Technical comfort level
-- Key user needs and pain points
-
-**4. MVP Scope**
-- **In Scope:** Core functionality for MVP (use ✅ checkboxes)
-- **Out of Scope:** Features deferred to future phases (use ❌ checkboxes)
-- Group by categories (Core Functionality, Technical, Integration, Deployment)
-
-**5. User Stories**
-- Primary user stories (5-8 stories) in format: "As a [user], I want to [action], so that [benefit]"
-- Include concrete examples for each story
-- Add technical user stories if relevant
-
-**6. Core Architecture & Patterns**
-- High-level architecture approach
-- Directory structure (if applicable)
-- Key design patterns and principles
-- Technology-specific patterns
-
-**7. Tools/Features**
-- Detailed feature specifications
-- If building an agent: Tool designs with purpose, operations, and key features
-- If building an app: Core feature breakdown
-
-**8. Technology Stack**
-- Backend/Frontend technologies with versions
-- Dependencies and libraries
-- Optional dependencies
-- Third-party integrations
-
-**9. Security & Configuration**
-- Authentication/authorization approach
-- Configuration management (environment variables, settings)
-- Security scope (in-scope and out-of-scope)
-- Deployment considerations
-
-**10. API Specification** (if applicable)
-- Endpoint definitions
-- Request/response formats
-- Authentication requirements
-- Example payloads
-
-**11. Success Criteria**
-- MVP success definition
-- Functional requirements (use ✅ checkboxes)
-- Quality indicators
-- User experience goals
-
-**12. Implementation Phases**
-- Break down into 3-4 phases
-- Each phase includes: Goal, Deliverables (✅ checkboxes), Validation criteria
-- Realistic timeline estimates
-
-**13. Future Considerations**
-- Post-MVP enhancements
-- Integration opportunities
-- Advanced features for later phases
-
-**14. Risks & Mitigations**
-- 3-5 key risks with specific mitigation strategies
-
-**15. Appendix** (if applicable)
-- Related documents
-- Key dependencies with links
-- Repository/project structure
 
 ## Instructions
 
-### 1. Extract Requirements
-- Review the entire conversation history
-- Identify explicit requirements and implicit needs
-- Note technical constraints and preferences
-- Capture user goals and success criteria
-
-### 2. Synthesize Information
-- Organize requirements into appropriate sections
-- Fill in reasonable assumptions where details are missing
-- Maintain consistency across sections
-- Ensure technical feasibility
-
-### 3. Write the PRD
-- Use clear, professional language
-- Include concrete examples and specifics
-- Use markdown formatting (headings, lists, code blocks, checkboxes)
-- Add code snippets for technical sections where helpful
-- Keep Executive Summary concise but comprehensive
-
-### 4. Quality Checks
-- ✅ All required sections present
-- ✅ User stories have clear benefits
-- ✅ MVP scope is realistic and well-defined
-- ✅ Technology choices are justified
-- ✅ Implementation phases are actionable
-- ✅ Success criteria are measurable
-- ✅ Consistent terminology throughout
-
-## Style Guidelines
-
-- **Tone:** Professional, clear, action-oriented
-- **Format:** Use markdown extensively (headings, lists, code blocks, tables)
-- **Checkboxes:** Use ✅ for in-scope items, ❌ for out-of-scope
-- **Specificity:** Prefer concrete examples over abstract descriptions
-- **Length:** Comprehensive but scannable (typically 30-60 sections worth of content)
-
-## Output Confirmation
-
-After creating the PRD:
-1. Confirm the file path where it was written
-2. Provide a brief summary of the PRD contents
-3. Highlight any assumptions made due to missing information
-4. Suggest next steps (e.g., review, refinement, planning)
-
-## Notes
-
-- If critical information is missing, ask clarifying questions before generating
-- Adapt section depth based on available details
-- For highly technical products, emphasize architecture and technical stack
-- For user-facing products, emphasize user stories and experience
-- This command contains the complete PRD template structure - no external references needed
-
-## Finish
-
-Print summary:
-```
-✅ PRD Created
-
-File: [path]
-Sections: [count]
-Assumptions made: [list if any]
-
-Next: Review PRD, then @plan-feature for implementation
-```
+1. Fill in ALL sections of the template
+2. Break down into 2-5 phases (not too granular)
+3. Each phase should be independently valuable
+4. Include file paths that you actually found
+5. Mark dependencies between phases
+6. Add CRITICAL notes for common mistakes
+7. Save the file and confirm the path

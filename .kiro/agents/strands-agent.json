@@ -1,0 +1,39 @@
+{
+  "name": "strands-agent",
+  "description": "Context efficiency specialist - reviews code using deletion hierarchy. Every character must earn its place.",
+  "model": "claude-sonnet-4",
+  "tools": ["read", "shell", "glob", "grep"],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep",
+    "shell:grep",
+    "shell:find",
+    "shell:wc",
+    "shell:head",
+    "shell:tail",
+    "shell:cat",
+    "shell:diff",
+    "shell:git diff",
+    "shell:git log",
+    "shell:git show",
+    "shell:tokei",
+    "shell:scc",
+    "shell:cloc"
+  ],
+  "resources": [
+    "file://README.md",
+    "file://.kiro/steering/**/*.md"
+  ],
+  "prompt": {
+    "$ref": "file://.kiro/agents/strands-prompt.md"
+  },
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo '=== Context Baseline ===' && (tokei 2>/dev/null || find . -name '*.sh' -o -name '*.md' -o -name '*.json' | xargs wc -l 2>/dev/null | tail -1) && echo '' && echo '=== Recent Changes ===' && git log --oneline -5 2>/dev/null || true",
+        "timeout_ms": 10000
+      }
+    ]
+  }
+}

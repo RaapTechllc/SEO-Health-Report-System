@@ -1,329 +1,50 @@
-# Kiro CLI Quick Start Wizard
+# Project Quick Start Wizard
 
 ## Welcome
-🚀 Welcome to the Kiro CLI Quick Start Wizard! This will help you set up your development environment with Kiro CLI by walking you through completing your project's steering documents and understanding all available features.
-
-## Overview
-This wizard will help you:
-1. **Complete your steering documents** - Fill out the skeleton templates with your project details
-2. **Understand your development workflow** - Learn about the available prompts and commands
-3. **Explore advanced features** - Discover MCP servers, custom agents, hooks, and more
-
-## Step 1: Complete Steering Documents
-
-You already have skeleton steering documents in `.kiro/steering/`. Let's fill them out with your project details.
-
-### Gather Project Information
-**Note** (tell the user): The more detailed you can be, the better! Specific information about what you're building, who it's for, and the components you want helps create better context for your coding assistant and future development work. But don't worry - you can always keep it brief if you prefer.
-
-Ask the user these essential questions:
-
-**Core Questions (Required):**
-1. **Project Name**: "What's your project name?"
-2. **Project Description**: "What does your project do? (1-2 sentences, or more detail if you'd like)"
-3. **Target Users**: "Who will use this? (e.g., developers, end users, businesses - feel free to be specific about their needs)"
-4. **Main Technology**: "What's your primary technology? (e.g., Python, JavaScript, React, etc.)"
-
-**Optional Details:**
-5. **Architecture** (if they want to specify): "Any specific architecture or patterns you're using? (optional - I can suggest based on your tech stack)"
-6. **Special Requirements** (if any): "Any specific requirements for testing, deployment, or performance? (optional)"
-
-### Update Steering Documents
-After collecting responses, update the existing steering documents with intelligent defaults:
-
-#### Update `.kiro/steering/product.md`:
-Fill out based on user responses and intelligent assumptions:
-
-```markdown
-# Product Overview
-
-## Product Purpose
-[USER'S PROJECT DESCRIPTION - expand with context and value proposition]
-
-## Target Users
-[USER'S TARGET USERS - expand with needs and use cases]
-
-## Key Features
-[Infer from project description and tech stack]
-- Core functionality based on project type
-- User interface (if applicable)
-- Data management (if applicable)
-- Integration capabilities (if applicable)
-
-## Business Objectives
-[Infer based on project type and users]
-- User satisfaction and adoption
-- Performance and reliability
-- Scalability and growth
-
-## User Journey
-[Create typical workflow based on project description]
-
-## Success Criteria
-[Define based on project type and objectives]
-```
-
-#### Update `.kiro/steering/tech.md`:
-Use tech stack to make intelligent recommendations:
-
-```markdown
-# Technical Architecture
-
-## Technology Stack
-[USER'S MAIN TECHNOLOGY + recommended complementary technologies]
-- Primary: [User's specified tech]
-- Recommended additions based on project type
-- Standard tooling for the ecosystem
-
-## Architecture Overview
-[Suggest architecture based on tech stack and project type]
-- [Infer components based on technology choice]
-- [Suggest patterns common to their tech stack]
-
-## Development Environment
-[Standard setup for their technology]
-- [Tech-specific development tools]
-- [Common package managers and build tools]
-- [Recommended IDE/editor setup]
-
-## Code Standards
-[Industry standards for their tech stack]
-- [Language-specific formatting standards]
-- [Common naming conventions]
-- [Documentation practices]
-
-## Testing Strategy
-[Standard testing approach for their technology]
-- [Framework-appropriate testing tools]
-- [Common testing patterns]
-- [Coverage expectations]
-
-## Deployment Process
-[Modern deployment practices for their stack]
-- [CI/CD recommendations]
-- [Deployment platforms]
-- [Environment management]
-
-## Performance Requirements
-[Reasonable defaults based on project type]
-
-## Security Considerations
-[Standard security practices for their tech stack]
-```
-
-#### Update `.kiro/steering/structure.md`:
-Create structure based on technology and project type:
-
-```markdown
-# Project Structure
-
-## Directory Layout
-[Standard structure for their technology]
-```
-[PROJECT NAME]/
-├── [tech-appropriate source folder]
-├── tests/
-├── docs/
-├── [tech-specific config folders]
-└── .kiro/
-```
-
-## File Naming Conventions
-[Standard conventions for their technology ecosystem]
-
-## Module Organization
-[Best practices for their tech stack]
-
-## Configuration Files
-[Standard config files for their technology]
-
-## Documentation Structure
-[Common documentation patterns]
-
-## Asset Organization
-[If applicable to project type]
-
-## Build Artifacts
-[Standard build outputs for their technology]
-
-## Environment-Specific Files
-[Standard environment handling for their stack]
-```
-
-## Step 2: Development Workflow Overview
-
-Now that your steering documents are complete, let's review your development workflow. You have access to these powerful prompts:
-
-### Core Development Loop
-- **`@prime`** - Load project context and understand your codebase
-- **`@plan-feature`** - Create comprehensive implementation plans for new features
-- **`@execute`** - Execute development plans with systematic task management
-- **`@create-prd`** - Generate Product Requirements Documents
-
-### Quality Assurance & Validation
-- **`@code-review`** - Perform technical code reviews for quality and bugs
-- **`@code-review-fix`** - Fix issues found in code reviews
-- **`@execution-report`** - Generate implementation reports for completed work
-- **`@system-review`** - Analyze implementation vs plan for process improvements
-- **`@memory`** - End-of-session capture and documentation updates
-
-### GitHub Issue Management
-- **`@rca`** - Perform root cause analysis for GitHub issues
-- **`@implement-fix`** - Implement fixes based on RCA documents
-
-### Typical Workflow
-1. **Start with `@prime`** to understand your project context
-2. **Use `@plan-feature`** to plan new features or changes
-3. **Execute with `@execute`** to implement the plan systematically
-4. **Review with `@code-review`** to ensure quality
-5. **Fix issues with `@code-review-fix`** if needed
-6. **Generate reports** with `@execution-report` for documentation
-7. **Improve process** with `@system-review` to identify patterns
-8. **Close session** with `@memory` to capture learnings
-
-## Step 3: Advanced Kiro Features
-
-Beyond the core prompts, Kiro CLI offers powerful advanced features to enhance your development workflow:
-
-### 🔧 MCP Servers (Model Context Protocol)
-Connect external tools and APIs to extend Kiro's capabilities (AWS docs, git operations, database management, custom integrations).
-
-### 🤖 Custom Agents
-Create specialized AI assistants for specific workflows (backend specialist, frontend expert, DevOps agent, security reviewer, API designer).
-
-### ⚡ Hooks (Automation)
-Automate workflows and processes at specific lifecycle points (pre-commit hooks, post-deployment hooks, agent spawn hooks, tool execution hooks).
-
-### 📚 Context Management
-Optimize how Kiro understands your project (agent resources, session context, knowledge bases, context optimization).
-
-### 🧠 Knowledge Management (Experimental)
-Advanced knowledge base features (semantic search, code indexing, documentation integration, pattern learning).
-
-### 🔄 Tangent Mode (Experimental)
-Explore side topics without disrupting main conversation (side explorations, what-if scenarios, learning mode, context switching).
-
-### 📋 TODO Lists & Checkpointing (Experimental)
-Advanced task and progress management (persistent TODO lists, progress checkpoints, task dependencies, progress visualization).
-
-### 🔀 Subagents
-Delegate complex tasks to specialized subagents (parallel processing, specialized expertise, independent context, task delegation).
-
-**Would you like help with any of these advanced features?** For example, I can help you set up MCP servers, create custom agents for specialized workflows, configure automation hooks, or enable experimental features like knowledge management and tangent mode.
-
-## Step 4: Next Steps and Recommendations
-
-Based on your project setup, here are recommended next steps:
-
-### Immediate Actions
-1. **Test your setup**: Try `@prime` to load your project context
-2. **Plan your first feature**: Use `@plan-feature` for your next development task
-3. **Set up your preferred model**: Use `/model` to choose the best AI model for your needs
-
-### Recommended Configurations
-Based on your project type and tech stack, suggest specific configurations:
-- **For web applications**: Recommend frontend/backend agents and deployment hooks
-- **For APIs**: Suggest API design agents and testing automation
-- **For data projects**: Recommend database MCP servers and analysis agents
-- **For open source**: Suggest GitHub integration and community management tools
-
-## Completion Summary
-
-🎉 **Kiro CLI Quick Start Complete!**
-
-### ✅ What You've Accomplished
-- **Steering Documents**: Completed product.md, tech.md, and structure.md with your project details
-- **Development Workflow**: Ready to use 11 powerful development prompts
-- **Advanced Features**: Aware of MCP servers, custom agents, hooks, and experimental features
-
-### 🚀 **Your Development Arsenal**
-**Core Workflow**: @prime → @plan-feature → @execute → @code-review → @code-review-fix → @execution-report → @system-review → @memory
-**Quality Assurance**: @code-review, @code-review-fix, @system-review
-**Issue Management**: @rca, @implement-fix
-**Documentation**: @create-prd, @memory
-
-### 🔧 **Available Advanced Features**
-- MCP Servers for external tool integration
-- Custom Agents for specialized workflows
-- Hooks for workflow automation
-- Context Management optimization
-- Experimental features (Knowledge, Tangent Mode, TODO Lists, Subagents)
-
-### 💡 **Getting Started**
-1. **Right now**: Try `@prime` to understand your project
-2. **Next**: Use `@plan-feature` to plan your next development task
-3. **Then**: Explore the advanced features that interest you most
-
-### 🆘 **Need Help?**
-- Ask about any specific feature: "How do I set up MCP servers?"
-- Request workflow guidance: "What's the best way to handle code reviews?"
-- Get feature explanations: "Tell me more about custom agents"
-
-**Let me know if you want help with any of these advanced features** - I can guide you through setting up MCP servers, creating custom agents, configuring automation hooks, or enabling experimental features!
-
-**Welcome to supercharged development with Kiro CLI!** 🚀
-
----
-
-## 🚀 **Production Development Best Practices**
-
-### 📝 **Maintain Your DEVLOG.md**
-Keep a running log of development decisions and progress:
-- **Timeline**: Key milestones and releases
-- **Decisions**: Why you chose specific approaches (ADRs)
-- **Challenges**: Problems encountered and solutions
-- **Technical Debt**: Items deferred and why
-
-### ⚙️ **Optimize Your .kiro/ Directory**
-Your `.kiro/steering/` and `.kiro/prompts/` directories define your development workflow:
-- **Customize steering documents** for your project's standards
-- **Create custom prompts** for repeatable workflows
-- **Document patterns** that should apply to all future work
-
-### 🔄 **Use the Full Development Loop**
-For production-quality code, follow the complete workflow:
-1. `@prime` → Load context
-2. `@plan-feature` → Plan with quality gates
-3. `@execute` → Implement systematically
-4. `@code-review` → Validate quality
-5. `@execution-report` + `@system-review` → Document and improve
-6. `@memory` → Capture learnings
-
-### ✅ **Quality Gates**
-Before shipping, ensure:
-- [ ] All tests pass (unit + integration)
-- [ ] Linting and type checking clean
-- [ ] Security review completed
-- [ ] Migration plan documented (if schema changes)
-- [ ] Rollback plan exists (if risky deployment)
-- [ ] Observability in place (logging, metrics, error reporting)
-
----
-
-**Welcome to production-grade development with Kiro CLI!** 🚀
-
-## Instructions for Assistant
-
-### Critical Requirements
-1. **Ask only 4-6 questions maximum** - Keep it simple and user-friendly
-2. **Make intelligent assumptions** - Fill in details based on tech stack and project type
-3. **Update existing files** - Don't create new steering documents, update the existing skeletons
-4. **Use tech-appropriate defaults** - Recommend standard practices for their technology
-5. **Allow customization later** - Users can always edit the steering documents afterward
-6. **Focus on UX** - Prioritize user experience over comprehensive data collection
-
-### Quality Checklist
-- [ ] Asked minimal essential questions (4-6 max)
-- [ ] Made intelligent assumptions based on responses
-- [ ] All three steering documents updated with meaningful content
-- [ ] Workflow overview provided with specific prompt usage
-- [ ] Advanced features mentioned with offer to help
-- [ ] Next steps provided based on their project
-- [ ] User feels confident and not overwhelmed
-
-### Success Metrics
-- User completes the wizard without feeling overwhelmed
-- User has useful, personalized steering documents
-- User understands their development workflow
-- User knows about advanced features without information overload
-- User feels confident to start using Kiro CLI effectively
+This wizard bootstraps a new project with the orchestrator template.
+
+## What I will create or verify
+- `.kiro/steering/*` - Project context files
+- `.kiro/prompts/*` - Custom prompts
+- `docs/` - Documentation structure
+- `README.md` - Project readme
+- Basic project scaffold
+
+## Step 1 — Gather inputs
+Ask:
+1) Project name
+2) Tech stack (or confirm defaults)
+3) Database choice (if applicable)
+
+## Step 2 — Repository hygiene check
+**CRITICAL**: Before scaffolding, verify:
+1. `.gitignore` exists with appropriate entries
+2. If `.gitignore` is missing, CREATE IT FIRST
+3. If `node_modules/` or build artifacts are committed, STOP and warn user
+
+## Step 3 — Scaffold commands
+Provide the exact commands to run, in order.
+Use safe defaults appropriate for the chosen stack.
+
+## Step 4 — Write baseline docs
+Ensure these exist with project-specific content:
+- `.kiro/steering/product.md` - Fill in product overview
+- `.kiro/steering/tech.md` - Fill in tech stack
+- `.kiro/steering/structure.md` - Fill in project structure
+- `docs/prd/[project-name].md` - Product requirements
+- `README.md` - Setup, run, and usage instructions
+
+## Step 5 — Minimal working demo
+Create a minimal route/endpoint that:
+- Demonstrates the core concept
+- Runs without external dependencies (where possible)
+
+## Step 6 — Add test guardrail
+Create a basic test that:
+- Verifies the app starts
+- Checks the primary path works
+
+## Output
+- A checklist of what was created
+- Any missing items
+- The next command to run

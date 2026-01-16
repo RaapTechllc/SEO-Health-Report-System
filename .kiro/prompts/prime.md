@@ -1,94 +1,33 @@
-# Prime: Load Project Context
+# Project Primer
 
-## Purpose
+Load all project context and provide a comprehensive overview.
 
-Build comprehensive understanding of the codebase by analyzing structure, documentation, and key files. Run at the start of every session.
+## Non-negotiables
+1. **Paper trading / educational only** disclaimers (if applicable)
+2. **No real money** flows
+3. **Accessibility** compliance
+4. **Mobile-first** responsive design
+5. **Zero external dependencies** for local demo mode
 
-## Inputs to Read
+## Context Files to Load
+- `.kiro/steering/product.md` - Product overview
+- `.kiro/steering/tech.md` - Technical architecture
+- `.kiro/steering/structure.md` - Project organization
+- `docs/prd/` - Detailed requirements
+- `README.md` - Setup and usage
 
-- Git repository structure (if available)
-- README files
-- Steering documents (already in context)
-- Key entry points and config files
+## Project Summary
+Provide a concise overview covering:
+1. **Purpose**: What this project does
+2. **Tech Stack**: Key technologies used
+3. **Current Status**: What's been completed
+4. **Next Steps**: What needs to be done
 
-## Process
+## Key Files
+List the most important files for understanding the codebase.
 
-### 1. Analyze Project Structure
-If this is a git repository, list tracked files:
-```bash
-git ls-files
-```
+## Known Issues
+Note any bugs, technical debt, or blockers.
 
-Show directory structure:
-```bash
-tree -L 3 -I 'node_modules|__pycache__|.git|dist|build'
-```
-(or use `ls -la` and explore key directories if tree is not available)
-
-### 2. Read Core Documentation
-- Read README files at project root and major directories
-- Read any architecture documentation
-- Review steering documents for project context (already loaded in context)
-- Avoid reading anything in examples or content_plan folders
-
-### 3. Identify Key Files
-Based on the structure, identify and read:
-- Main entry points (main.py, index.ts, app.py, etc.)
-- Core configuration files (pyproject.toml, package.json, tsconfig.json)
-- Key model/schema definitions
-- Important service or controller files
-
-### 4. Understand Current State (if git repository)
-Check recent activity:
-```bash
-git log -10 --oneline
-```
-
-Check current branch and status:
-```bash
-git status
-```
-
-## Output Report
-Provide a concise summary covering:
-
-### Project Overview
-- Purpose and type of application
-- Primary technologies and frameworks
-- Current version/state
-
-### Architecture
-- Overall structure and organization
-- Key architectural patterns identified
-- Important directories and their purposes
-
-### Tech Stack
-- Languages and versions
-- Frameworks and major libraries
-- Build tools and package managers
-- Testing frameworks
-
-### Core Principles
-- Code style and conventions observed
-- Documentation standards
-- Testing approach
-
-### Current State
-- Active branch (if git repository)
-- Recent changes or development focus (if git repository)
-- Any immediate observations or concerns
-
-**Make this summary easy to scan - use bullet points and clear headers.**
-
-## Finish
-
-Print summary and confirm ready for next step:
-```
-✅ Project Context Loaded
-
-Project: [name]
-Stack: [primary technologies]
-State: [current branch, recent focus]
-
-Ready for: @plan-feature or direct questions
-```
+## Demo Path
+Describe the critical user journey that must work for demos.

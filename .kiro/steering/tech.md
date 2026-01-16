@@ -177,8 +177,8 @@ The system uses different AI models for different tasks:
 | AI Visibility Queries | Multiple (Claude, GPT, etc.) | Coverage across AI systems |
 
 **Gemini Integration** (`gemini_integration.py`):
-- `gemini-2.0-flash` - Fast text generation, formatting
-- `gemini-1.5-pro` - Complex visual descriptions
+- `gemini-3-flash-preview` - Fast text generation, formatting
+- `gemini-3-pro-preview` - Complex visual descriptions
 - `imagen-3.0-generate-002` - Image/infographic generation
 
 ```python
@@ -209,6 +209,6 @@ The `query_all_systems()` function queries these AI systems by default:
 **xAI/Grok API format** (OpenAI-compatible):
 ```python
 headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-data = {"model": "grok-beta", "messages": [{"role": "user", "content": query}]}
+data = {"model": "grok-4-1-fast", "messages": [{"role": "user", "content": query}]}
 response = await client.post("https://api.x.ai/v1/chat/completions", headers=headers, json=data)
 ```

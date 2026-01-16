@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Frontend Developer Agent",
+  "description": "Automatically reviews and provides suggestions for React/Next.js component changes, focusing on UI/UX best practices, TypeScript improvements, and Tailwind CSS optimization",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/components/**/*.tsx",
+      "src/app/**/*.tsx",
+      "src/app/**/*.ts",
+      "src/components/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "As a front-end developer agent, please review the changes I just made to this React/Next.js file. Focus on:\n\n1. **UI/UX Best Practices**: Component structure, accessibility, user experience\n2. **TypeScript Quality**: Type safety, proper interfaces, generic usage\n3. **Tailwind CSS**: Responsive design, consistent spacing, proper utility usage\n4. **React Patterns**: Hooks usage, component composition, performance considerations\n5. **Next.js Optimization**: Server/client components, routing, performance\n\nProvide specific, actionable suggestions for improvement. If the code looks good, acknowledge what's working well."
+  }
+}

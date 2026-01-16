@@ -1,0 +1,36 @@
+{
+  "name": "specialist-template",
+  "description": "Base template for creating specialized agents. Copy and customize for your domain.",
+  "prompt": "You are a specialized agent for [DOMAIN]. Your mission is to [PRIMARY_GOAL].\n\n**Core Responsibilities:**\n1. [Responsibility 1]\n2. [Responsibility 2]\n3. [Responsibility 3]\n\n**Workflow:**\n1. Understand the task context\n2. Execute using available tools\n3. Validate your work\n4. Report completion with <promise>DONE</promise>\n\n**Quality Standards:**\n- Follow existing code patterns\n- Document your changes\n- Test before marking complete\n\n**Self-Reflection:**\nAt session end, use @self-reflect to log improvements.",
+  "model": "claude-sonnet-4-5",
+  "tools": [
+    "read",
+    "write",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep"
+  ],
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://README.md"
+  ],
+  "toolsSettings": {
+    "read": {
+      "allowedPaths": [
+        "./.kiro/**",
+        "./src/**",
+        "./README.md"
+      ]
+    },
+    "write": {
+      "allowedPaths": [
+        "./src/**"
+      ]
+    }
+  }
+}

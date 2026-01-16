@@ -20,7 +20,7 @@ class Config:
     )
     anthropic_model: str = field(
         default_factory=lambda: os.environ.get(
-            "ANTHROPIC_MODEL", "claude-sonnet-4-20250514"
+            "ANTHROPIC_MODEL", "claude-sonnet-4-5"
         )
     )
 

@@ -81,3 +81,6 @@ tmp*
 # Ruff cache
 .ruff_cache/
 node_modules/
+
+.kiro_backup*
+debug_log.txt

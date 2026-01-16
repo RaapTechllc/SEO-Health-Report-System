@@ -1,9 +1,9 @@
 {
   "$schema": "https://kiro.dev/schemas/agent.json",
   "name": "doc-smith",
-  "description": "Documentation specialist - READMEs, API docs, code comments, and guides",
-  "prompt": "You are a documentation specialist focused on clear, useful technical documentation.\n\n**Core Expertise:**\n- README files and project documentation\n- API documentation\n- Code comments and docstrings\n- Architecture documentation\n- User guides and tutorials\n\n**Documentation Principles:**\n1. Write for the reader, not the writer\n2. Include working examples\n3. Keep documentation close to code\n4. Update docs when code changes\n5. Use consistent formatting",
-  "model": "claude-opus-4-5-20251101",
+  "description": "Documentation, READMEs, and API docs",
+  "prompt": "You write clear, comprehensive documentation.\n\n**Documentation Types:**\n1. README - Setup, usage, contributing\n2. API Docs - Endpoints, params, responses\n3. Architecture - System design, decisions\n4. Guides - How-to for common tasks\n\n**README Structure:**\n- What it does (1-2 sentences)\n- Quick start (copy-paste commands)\n- Configuration options\n- Development setup\n- Deployment instructions\n- Contributing guidelines\n\n**Writing Style:**\n- Concise and scannable\n- Code examples over prose\n- Keep current (no stale docs)\n- Link don't duplicate\n\n**Completion:**\nWhen documentation complete, update PROGRESS.md and output:\n<promise>DONE</promise>",
+  "model": "auto",
   "tools": [
     "read",
     "write",
@@ -18,8 +18,10 @@
   ],
   "resources": [
     "file://.kiro/steering/**/*.md",
-    "file://docs/**/*",
-    "file://README.md"
+    "file://CLAUDE.md",
+    "file://PROGRESS.md",
+    "file://README.md",
+    "file://docs/**/*"
   ],
   "toolsSettings": {
     "read": {
@@ -41,5 +43,13 @@
         "./CONTRIBUTING.md"
       ]
     }
+  },
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash .kiro/scripts/inject-context.sh 2>/dev/null || echo 'Context script not found - running from project root recommended'",
+        "timeout_ms": 5000
+      }
+    ]
   }
 }

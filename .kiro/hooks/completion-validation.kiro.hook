@@ -1,0 +1,11 @@
+{
+  "name": "Completion Validation",
+  "description": "Validates completion criteria before allowing agent to finish",
+  "trigger": {
+    "type": "agentComplete"
+  },
+  "action": {
+    "type": "sendMessage", 
+    "message": "Before completing, verify: 1) All acceptance criteria met, 2) Tests pass, 3) PROGRESS.md updated, 4) No linting errors. Output <promise>DONE</promise> only when ALL conditions are satisfied."
+  }
+}

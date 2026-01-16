@@ -47,7 +47,7 @@ Goal: help an AI coding agent become productive quickly in this repo by highligh
 - Add unit tests under a `tests/` folder if adding logic complexity — the project currently does not contain tests, but dev requirements list `pytest` as optional.
 
 ## Prominent code examples to reference
-- Querying Claude: `ai-visibility-audit/scripts/query_ai_systems.py` — uses `anthropic` and model `claude-sonnet-4-20250514` and returns `AIResponse` dataclass. Missing key -> `error: "ANTHROPIC_API_KEY not set"`.
+- Querying Claude: `ai-visibility-audit/scripts/query_ai_systems.py` — uses `anthropic` and model `claude-sonnet-4-5` and returns `AIResponse` dataclass. Missing key -> `error: "ANTHROPIC_API_KEY not set"`.
 - Fetching pages: `seo-technical-audit/scripts/crawl_site.py` -> `fetch_url` sets header `User-Agent: SEO-Health-Report-Bot/1.0` and returns text or None on error.
 - Scoring & recommendations: each `__init__.py` builds `components` dicts with `score`/`max` and uses `generate_recommendations` functions; prefer modifying those to change thresholds or add rules.
 

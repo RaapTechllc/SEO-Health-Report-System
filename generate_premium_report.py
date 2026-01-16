@@ -62,8 +62,8 @@ def rgb_to_hex(r: int, g: int, b: int) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-# Get model names from environment
-GEMINI_TEXT_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash')
+# Get model names from environment (updated Jan 2026)
+GEMINI_TEXT_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3-flash-preview')
 GEMINI_IMAGE_MODEL = os.environ.get('GEMINI_IMAGE_MODEL', 'imagen-3.0-generate-002')
 
 

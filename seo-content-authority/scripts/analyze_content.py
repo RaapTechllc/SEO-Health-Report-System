@@ -212,6 +212,28 @@ def check_content_freshness(html: str, url: str) -> Dict[str, Any]:
     return result
 
 
+def is_technical_content(html: str, text: str) -> bool:
+    """
+    Detect if content is technical documentation.
+    
+    Args:
+        html: HTML content
+        text: Extracted text
+        
+    Returns:
+        True if content appears to be technical/developer documentation
+    """
+    # Check for code blocks
+    code_count = len(re.findall(r'<code[^>]*>', html, re.IGNORECASE))
+    pre_count = len(re.findall(r'<pre[^>]*>', html, re.IGNORECASE))
+    
+    # Check for keywords
+    tech_keywords = ['api', 'sdk', 'webhook', 'json', 'boolean', 'endpoint', 'authentication', 'curl', 'python', 'javascript', 'parameter', 'config', 'install']
+    keyword_count = sum(1 for k in tech_keywords if k in text.lower())
+    
+    return code_count > 2 or pre_count > 1 or keyword_count > 5
+
+
 def analyze_page_content(url: str) -> Dict[str, Any]:
     """
     Comprehensive content analysis for a single page.
@@ -271,17 +293,37 @@ def analyze_page_content(url: str) -> Dict[str, Any]:
 
     # Readability analysis
     result["readability"] = calculate_readability(text)
+    is_technical = is_technical_content(html, text)
+    result["is_technical"] = is_technical
 
-    if result["readability"]["flesch_reading_ease"] < 30:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "readability",
-            "description": "Content is very difficult to read",
-            "url": url,
-            "recommendation": "Simplify language, use shorter sentences"
-        })
-    elif result["readability"]["flesch_reading_ease"] >= 60:
-        result["findings"].append("Good readability score")
+    flesch_score = result["readability"]["flesch_reading_ease"]
+
+    if is_technical:
+        # Relaxed standards for technical content
+        if flesch_score < 15:
+            result["issues"].append({
+                "severity": "medium",
+                "category": "readability",
+                "description": "Technical content is very dense",
+                "url": url,
+                "recommendation": "Use more bullet points and examples to break up text"
+            })
+        elif flesch_score < 40:
+            result["findings"].append(f"Acceptable complexity for technical content (Score: {flesch_score})")
+        else:
+            result["findings"].append("Good readability for technical content")
+    else:
+        # Standard scoring
+        if flesch_score < 30:
+            result["issues"].append({
+                "severity": "medium",
+                "category": "readability",
+                "description": "Content is very difficult to read",
+                "url": url,
+                "recommendation": "Simplify language, use shorter sentences"
+            })
+        elif flesch_score >= 60:
+            result["findings"].append("Good readability score")
 
     # Media analysis
     result["media"] = analyze_media_richness(html)
@@ -399,10 +441,16 @@ def assess_content_quality(pages: List[Dict[str, Any]]) -> Dict[str, Any]:
         result["findings"].append(f"Significant thin content ({result['thin_content_pages']} pages)")
 
     # Readability
+    threshold = 30 if any(p.get("is_technical") for p in successful_pages) else 50
+    
     if result["avg_readability"] >= 60:
         result["findings"].append("Good overall readability")
-    elif result["avg_readability"] >= 40:
-        score -= 2
+    elif result["avg_readability"] >= threshold:
+        # Acceptable range, no penalty or small penalty
+        if not any(p.get("is_technical") for p in successful_pages):
+            score -= 2
+        else:
+            result["findings"].append("Technical content complexity detected")
     else:
         score -= 4
         result["findings"].append("Content readability needs improvement")

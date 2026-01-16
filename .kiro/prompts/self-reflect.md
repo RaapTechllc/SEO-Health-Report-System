@@ -1,71 +1,83 @@
 # Self-Reflection Prompt
 
-You are an AI agent capable of self-improvement through reflection and evolution.
+Trigger the agent self-evolution protocol using the RBT (Roses, Buds, Thorns) framework.
 
-## Task
-Analyze your recent session performance using the RBT (Roses-Buds-Thorns) framework and generate evolution recommendations.
+## When to Use
+- At the end of a significant work session
+- After completing a major task
+- When encountering repeated errors
+- When explicitly asked to reflect
 
-## RBT Analysis Framework
+## Reflection Process
 
-### Roses (What Worked Well)
-- Identify successful strategies, efficient workflows, good decisions
-- Note positive outcomes and effective tool usage
-- Highlight moments of clear communication or problem-solving
+### 1. Session Context
+Document:
+- Project name
+- Task attempted
+- Approximate duration
+- Tools used
 
-### Buds (Opportunities for Improvement)  
-- Identify areas with potential for growth
-- Note inefficiencies that could be optimized
-- Suggest new capabilities or resources that would help
+### 2. RBT Analysis
 
-### Thorns (What Didn't Work)
-- Identify failures, errors, or suboptimal decisions
-- Note context losses, communication breakdowns, or tool misuse
-- Highlight blockers or frustrations encountered
+#### 🌹 Roses (What Worked)
+- Successful patterns
+- Effective tool usage
+- Good outcomes
 
-## Evolution Output Format
+#### 🌱 Buds (Opportunities)
+- Minor improvements possible
+- Tools that would help
+- Patterns to formalize
 
-Provide your analysis in this exact JSON format:
+#### 🌵 Thorns (Failures)
+- Errors encountered
+- Time wasted
+- Confusion points
 
-```json
-{
-  "agent_name": "your-agent-name",
-  "confidence_score": 8,
-  "roses": [
-    "Successfully completed task X",
-    "Efficient use of tool Y"
-  ],
-  "buds": [
-    "Could improve error handling",
-    "Add validation for input Z"
-  ],
-  "thorns": [
-    "Lost context during handoff",
-    "Tool timeout caused delays"
-  ],
-  "proposed_changes": {
-    "resources": {
-      "add": ["file://.kiro/specs/**/*.md"]
-    },
-    "toolsSettings": {
-      "read": {
-        "allowedPaths": ["./tests/**"]
-      }
-    }
-  }
-}
+### 3. Proposed Changes
+Based on the analysis, propose:
+- Prompt improvements
+- Tool recommendations
+- Resource suggestions
+
+### 4. Confidence Score
+Rate 1-10 how confident you are the changes will help.
+
+## Output Location
+Record insights to:
+```
+~/.kiro/evolution/[agent-name]-evolution.md
 ```
 
-## Confidence Scoring (1-10)
-- **8-10**: High confidence - Generate specific JSON patches for immediate application
-- **6-7**: Medium confidence - Suggest improvements but don't generate patches  
-- **1-5**: Low confidence - Focus on observation and learning
+## Example Entry
 
-## Evolution Rules
-- Only propose changes to: `prompt`, `resources`, `toolsSettings`
-- Be specific and actionable in proposed changes
-- Focus on measurable improvements
-- Consider impact on other agents and workflows
+```markdown
+## Session: [Date] - [Brief Description]
 
-## Next Steps
-If confidence >= 8, your proposed changes will be automatically applied and verified.
-If confidence < 8, your insights will be logged for future consideration.
+### Context
+- Project: [project name]
+- Task: [what was attempted]
+- Duration: [time spent]
+
+### RBT Analysis
+
+#### 🌹 Roses
+- [What worked well]
+
+#### 🌱 Buds
+- [Improvement opportunities]
+
+#### 🌵 Thorns
+- [Failures and friction]
+
+### Proposed Changes
+[Specific improvements]
+
+### Confidence Score
+[1-10]
+```
+
+## Guardrails
+- Maximum 3 prompt additions per session
+- Maximum 2 tool changes per session
+- Flag for human review if confidence < 5
