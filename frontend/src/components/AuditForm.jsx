@@ -11,12 +11,18 @@ export default function AuditForm({ onAnalyze, isLoading, setIsLoading }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!url) return;
+    console.log('Form submitted', { url, company, keywords });
+    
+    if (!url) {
+      console.error('URL is missing');
+      return;
+    }
     
     setError('');
     if (setIsLoading) setIsLoading(true);
     
     try {
+      console.log('Sending request to:', `${API_URL}/audit`);
       // Start audit
       const response = await fetch(`${API_URL}/audit`, {
         method: 'POST',
@@ -29,9 +35,17 @@ export default function AuditForm({ onAnalyze, isLoading, setIsLoading }) {
         }),
       });
       
-      if (!response.ok) throw new Error('Failed to start audit');
+      console.log('Response status:', response.status);
       
-      const { audit_id } = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error(`Failed to start audit: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Audit started:', data);
+      const { audit_id } = data;
       
       // Poll for results
       let attempts = 0;
@@ -40,17 +54,26 @@ export default function AuditForm({ onAnalyze, isLoading, setIsLoading }) {
       while (attempts < maxAttempts) {
         await new Promise(r => setTimeout(r, 2000));
         
+        console.log(`Polling attempt ${attempts + 1}/${maxAttempts} for audit ${audit_id}...`);
         const statusRes = await fetch(`${API_URL}/audit/${audit_id}`);
+        
+        if (!statusRes.ok) {
+           console.warn(`Poll failed: ${statusRes.status}`);
+           continue;
+        }
+
         const status = await statusRes.json();
+        console.log('Poll status:', status.status);
         
         if (status.status === 'completed') {
           // Get full results
+          console.log('Audit completed, fetching full results...');
           const fullRes = await fetch(`${API_URL}/audit/${audit_id}/full`);
           const fullData = await fullRes.json();
           onAnalyze(fullData);
           return;
         } else if (status.status === 'failed') {
-          throw new Error('Audit failed');
+          throw new Error('Audit failed on server');
         }
         
         attempts++;
@@ -59,9 +82,10 @@ export default function AuditForm({ onAnalyze, isLoading, setIsLoading }) {
       throw new Error('Audit timed out');
       
     } catch (err) {
+      console.error('Submission error:', err);
       setError(err.message || 'Failed to run audit');
-      // Fall back to mock data for demo
-      onAnalyze(url);
+      // Fall back to mock data for demo ONLY if explicit error
+      // onAnalyze(url); 
     } finally {
       if (setIsLoading) setIsLoading(false);
     }
