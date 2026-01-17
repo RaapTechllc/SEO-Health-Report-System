@@ -1,0 +1,5 @@
+timestamp,metric,value,thread_type,session_id
+2026-01-16T22:12:44-06:00,session_start,1,p-thread,1768623164
+2026-01-16T22:15:01-06:00,worktree_created,security-specialist,worktree,1768623190
+2026-01-16T22:17:03-06:00,worktree_created,code-surgeon,worktree,1768623310
+2026-01-16T22:19:07-06:00,worktree_created,test-architect,worktree,1768623430

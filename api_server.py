@@ -69,6 +69,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+<<<<<<< HEAD
 # Rate limiting middleware
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -97,6 +98,18 @@ async def rate_limit_middleware(request: Request, call_next):
     response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS)
     response.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_REQUESTS - len(rate_limit_store[client_ip]))
     return response
+=======
+
+class ErrorResponse(BaseModel):
+    error: str
+    detail: str
+    timestamp: str = None
+    
+    def __init__(self, **data):
+        if 'timestamp' not in data:
+            data['timestamp'] = datetime.now().isoformat()
+        super().__init__(**data)
+>>>>>>> agent/code-surgeon
 
 # Store for audit results
 audit_results = {}
