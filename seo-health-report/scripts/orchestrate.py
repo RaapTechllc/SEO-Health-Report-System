@@ -36,6 +36,19 @@ if "seo_health_report" not in sys.modules:
 
 from .logger import get_logger
 
+
+class AuditError(Exception):
+    """Base exception for audit operations."""
+    pass
+
+class APIError(AuditError):
+    """API-related errors."""
+    pass
+
+class ValidationError(AuditError):
+    """Data validation errors."""
+    pass
+
 logger = get_logger(__name__)
 
 

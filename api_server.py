@@ -41,6 +41,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+class ErrorResponse(BaseModel):
+    error: str
+    detail: str
+    timestamp: str = None
+    
+    def __init__(self, **data):
+        if 'timestamp' not in data:
+            data['timestamp'] = datetime.now().isoformat()
+        super().__init__(**data)
+
 # Store for audit results
 audit_results = {}
 

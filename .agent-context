@@ -1,0 +1,11 @@
+# Agent Worktree Context
+AGENT_NAME=code-surgeon
+BRANCH=agent/code-surgeon
+CREATED=2026-01-16T22:17:03-06:00
+MAIN_BRANCH=main
+PROJECT=seo-health-report
+
+# Instructions for agent:
+# - Work only in this directory
+# - Commit frequently with descriptive messages
+# - Run validation before signaling completion
