@@ -26,7 +26,9 @@ from ooda_orchestrator import ooda_orchestrator
 
 # Security
 security = HTTPBearer()
-API_KEY = os.getenv("OODA_API_KEY", "ooda-demo-key-change-in-production")
+API_KEY = os.getenv("OODA_API_KEY")
+if not API_KEY:
+    raise ValueError("OODA_API_KEY environment variable is required")
 
 # Rate limiting
 rate_limit_store = defaultdict(list)

@@ -17,14 +17,42 @@ from typing import Optional, List
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root / "seo-health-report"))
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, HttpUrl
+from collections import defaultdict
+from time import time
 
 # Import audit functions
-from scripts.orchestrate import run_full_audit
-from scripts.calculate_scores import calculate_composite_score
+from scripts.orchestrate import run_full_audit, collect_quick_wins
+from scripts.calculate_scores import calculate_composite_score, generate_blocker_summary
+from business_profiles import list_available_profiles, get_business_profile
+
+# Security configuration
+security = HTTPBearer()
+
+def verify_api_key(credentials: HTTPAuthorizationCredentials = Security(security)):
+    """Verify API key from Authorization header."""
+    expected_key = os.environ.get("API_KEY")
+    if not expected_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="API_KEY not configured"
+        )
+    
+    if credentials.credentials != expected_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key"
+        )
+    return credentials.credentials
+
+# Rate limiting configuration
+rate_limit_store = defaultdict(list)
+RATE_LIMIT_REQUESTS = 100  # requests per window
+RATE_LIMIT_WINDOW = 3600   # 1 hour in seconds
 
 app = FastAPI(
     title="SEO Health Report API",
@@ -35,11 +63,40 @@ app = FastAPI(
 # CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Rate limiting middleware."""
+    client_ip = request.client.host
+    now = time()
+    window_start = now - RATE_LIMIT_WINDOW
+    
+    # Clean old requests
+    rate_limit_store[client_ip] = [
+        req_time for req_time in rate_limit_store[client_ip] 
+        if req_time > window_start
+    ]
+    
+    # Check rate limit
+    if len(rate_limit_store[client_ip]) >= RATE_LIMIT_REQUESTS:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded"
+        )
+    
+    # Record this request
+    rate_limit_store[client_ip].append(now)
+    
+    response = await call_next(request)
+    response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS)
+    response.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_REQUESTS - len(rate_limit_store[client_ip]))
+    return response
 
 # Store for audit results
 audit_results = {}
