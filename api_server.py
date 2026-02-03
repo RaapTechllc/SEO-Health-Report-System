@@ -60,16 +60,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS for frontend
+# CORS for frontend (3000 = alternate dev, 5173 = Vite default)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
 # Rate limiting middleware
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -77,39 +76,40 @@ async def rate_limit_middleware(request: Request, call_next):
     client_ip = request.client.host
     now = time()
     window_start = now - RATE_LIMIT_WINDOW
-    
+
     # Clean old requests
     rate_limit_store[client_ip] = [
-        req_time for req_time in rate_limit_store[client_ip] 
+        req_time for req_time in rate_limit_store[client_ip]
         if req_time > window_start
     ]
-    
+
     # Check rate limit
     if len(rate_limit_store[client_ip]) >= RATE_LIMIT_REQUESTS:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded"
         )
-    
+
     # Record this request
     rate_limit_store[client_ip].append(now)
-    
+
     response = await call_next(request)
     response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS)
     response.headers["X-RateLimit-Remaining"] = str(RATE_LIMIT_REQUESTS - len(rate_limit_store[client_ip]))
     return response
-=======
+
 
 class ErrorResponse(BaseModel):
+    """Standard error response model."""
     error: str
     detail: str
     timestamp: str = None
-    
+
     def __init__(self, **data):
-        if 'timestamp' not in data:
-            data['timestamp'] = datetime.now().isoformat()
+        if "timestamp" not in data:
+            data["timestamp"] = datetime.now().isoformat()
         super().__init__(**data)
->>>>>>> agent/code-surgeon
+
 
 # Store for audit results
 audit_results = {}

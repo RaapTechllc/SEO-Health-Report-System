@@ -185,6 +185,43 @@ python -m seo_health_report \
     --output ./reports/example-report.docx
 ```
 
+### Web Interface
+
+Run the API and the React frontend together to use the web UI (form, live audit, report viewer):
+
+**1. Install dependencies** (once):
+
+```bash
+pip install -r seo-health-report/requirements.txt
+pip install -r ai-visibility-audit/requirements.txt
+pip install -r seo-technical-audit/requirements.txt
+pip install -r seo-content-authority/requirements.txt
+pip install fastapi uvicorn
+
+cd frontend && npm install && cd ..
+```
+
+**2. Start the API** (terminal 1):
+
+```bash
+# From project root; set ANTHROPIC_API_KEY for AI visibility
+python api_server.py
+# Or: uvicorn api_server:app --reload --host 127.0.0.1 --port 8000
+```
+
+**3. Start the frontend** (terminal 2):
+
+```bash
+cd frontend && npm run dev
+```
+
+**4. Open the app:** [http://localhost:5173](http://localhost:5173) (Vite default). Enter a URL and company name, then **Run Full SEO Audit**. The UI polls the API until the audit completes and shows the report.
+
+**One-command start (Unix):** From project root, run `./start_app.sh` to start both the API and frontend; then open http://localhost:5173.
+
+- API base URL is `http://localhost:8000` by default; override with `VITE_API_URL` when building the frontend if your API runs elsewhere.
+- Audits run in the background and may take 1–2 minutes; the page will update when done.
+
 ### Individual Audits
 
 ```python
