@@ -6,7 +6,7 @@ This allows the system to run without needing live AI image generation for every
 """
 
 import os
-from PIL import Image, ImageDraw, ImageFont, ImageColor
+from PIL import Image, ImageDraw
 from pathlib import Path
 
 # Configuration

@@ -32,7 +32,7 @@ def verify_cost_events_table():
     print("\n📦 Checking Cost Events Table...")
     
     try:
-        from database import CostEvent, Base
+        from database import CostEvent
         
         # Check model exists
         assert hasattr(CostEvent, '__tablename__')
@@ -61,9 +61,6 @@ def verify_cost_tracker_module():
     try:
         from packages.core.cost_tracker import (
             calculate_cost,
-            record_cost_event,
-            get_audit_cost_summary,
-            check_cost_ceiling,
             MODEL_PRICING,
         )
         

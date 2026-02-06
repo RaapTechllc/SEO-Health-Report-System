@@ -7,7 +7,6 @@ falls back to on-page signal estimation.
 
 import logging
 import os
-import re
 from typing import Any, Optional
 from urllib.parse import urlparse
 

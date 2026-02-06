@@ -10,13 +10,11 @@ Tests the complete audit flow across all tiers (LOW, MEDIUM, HIGH) with:
 These tests validate that the system can rival $10K-$30K/year SEO analytics services.
 """
 
-import json
 import os
 import sys
-import time
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -41,7 +39,7 @@ from fastapi.testclient import TestClient
 
 def _init_test_db():
     """Initialize test database with all required tables."""
-    from database import Base, engine, init_db
+    from database import engine, init_db
     from sqlalchemy import text
     
     init_db()
@@ -707,7 +705,7 @@ class TestReportQualityGates:
         bad_banned = has_banned_phrases(bad_summary)
         
         assert len(good_banned) == 0, f"Good summary contains banned phrases: {good_banned}"
-        assert len(bad_banned) >= 5, f"Bad summary should trigger multiple banned phrases"
+        assert len(bad_banned) >= 5, "Bad summary should trigger multiple banned phrases"
 
 
 class TestCostCeiling:

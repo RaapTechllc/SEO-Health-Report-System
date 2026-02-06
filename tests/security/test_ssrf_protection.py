@@ -16,7 +16,6 @@ from packages.core.safe_fetch import (
     SSRFProtectionError,
     is_private_ip,
     is_url_safe,
-    resolve_and_validate,
     validate_url,
 )
 

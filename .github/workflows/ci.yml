@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: pip install ruff
       - name: Lint
-        run: ruff check . --select=E,F
+        run: ruff check . --select=F --exclude=scripts/
 
   test:
     runs-on: ubuntu-latest

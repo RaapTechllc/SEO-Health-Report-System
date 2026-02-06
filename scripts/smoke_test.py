@@ -51,7 +51,7 @@ class SmokeTest:
             response = requests.request(method, url, timeout=self.timeout, **kwargs)
             duration_ms = int((time.time() - start) * 1000)
             return response, duration_ms
-        except requests.RequestException as e:
+        except requests.RequestException:
             duration_ms = int((time.time() - start) * 1000)
             return None, duration_ms
 
