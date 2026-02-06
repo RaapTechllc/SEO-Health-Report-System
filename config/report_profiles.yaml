@@ -1,0 +1,38 @@
+# Report Profiles Configuration
+# Maps industry classifications to visual profiles and specific assets.
+
+profiles:
+  manufacturing:
+    theme: "industrial"
+    banner_asset: "manufacturing.png"
+    primary_color: "#1a365d"
+    secondary_color: "#2a4365"
+    keywords: ["manufacturing", "industrial", "fabrication", "machining", "steel", "metal", "factory"]
+
+  professional_services:
+    theme: "corporate"
+    banner_asset: "professional_services.png"
+    primary_color: "#2c5282"
+    secondary_color: "#2b6cb0"
+    keywords: ["consulting", "legal", "law", "accounting", "agency", "marketing", "finance"]
+
+  healthcare:
+    theme: "medical"
+    banner_asset: "healthcare.png"
+    primary_color: "#276749"
+    secondary_color: "#2f855a"
+    keywords: ["health", "medical", "clinic", "hospital", "doctor", "dentist", "wellness"]
+
+  technology:
+    theme: "tech"
+    banner_asset: "technology.png"
+    primary_color: "#44337a"
+    secondary_color: "#553c9a"
+    keywords: ["software", "tech", "saas", "it services", "cybersecurity", "app", "data"]
+
+  default:
+    theme: "standard"
+    banner_asset: "default.png"
+    primary_color: "#2d3748"
+    secondary_color: "#4a5568"
+    keywords: []

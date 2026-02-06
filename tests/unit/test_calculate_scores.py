@@ -2,15 +2,14 @@
 Tests for calculate_scores module.
 """
 
-import pytest
 from seo_health_report.scripts.calculate_scores import (
     WEIGHTS,
-    calculate_composite_score,
-    determine_grade,
-    get_grade_description,
-    get_component_status,
-    compare_scores,
     calculate_benchmark_comparison,
+    calculate_composite_score,
+    compare_scores,
+    determine_grade,
+    get_component_status,
+    get_grade_description,
 )
 
 

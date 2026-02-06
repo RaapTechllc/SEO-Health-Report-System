@@ -3,8 +3,8 @@
 Test the new tier system features.
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Test 1: Social Media Audit
@@ -34,26 +34,26 @@ json_files = list(reports_dir.glob("*.json"))
 if json_files:
     latest_json = max(json_files, key=lambda p: p.stat().st_mtime)
     print(f"\n✅ Found recent audit: {latest_json.name}")
-    
+
     # Load audit data
     with open(latest_json) as f:
         audit_data = json.load(f)
-    
+
     print(f"   Score: {audit_data.get('overall_score', 'N/A')}/100")
     print(f"   Grade: {audit_data.get('grade', 'N/A')}")
     print(f"   Quick Wins: {len(audit_data.get('quick_wins', []))}")
     print(f"   Critical Issues: {len(audit_data.get('critical_issues', []))}")
-    
+
     # Test FREE tier generation
     from generate_free_report import generate_free_tier_report
-    
+
     output_path = reports_dir / "test_free_tier.pdf"
     result = generate_free_tier_report(
         audit_data=audit_data,
         company_name="Test Company",
         output_path=str(output_path)
     )
-    
+
     if result['success']:
         print(f"\n✅ FREE tier report generated: {output_path}")
         print(f"   Pages: {result['pages']}")

@@ -1,0 +1,56 @@
+{
+  "fixture_name": "redirect_chains",
+  "url": "https://redirect-chains.test",
+  "expected_score_range": [55, 75],
+  "expected_grade": ["C", "D"],
+  "expected_issues": [
+    "redirect_chain",
+    "multiple_redirects"
+  ],
+  "expected_issue_details": {
+    "redirect_chain": {
+      "severity": "medium",
+      "category": "redirects",
+      "description_contains": ["redirect", "chain", "hop"]
+    },
+    "multiple_redirects": {
+      "severity": "medium",
+      "category": "redirects",
+      "description_contains": "redirect"
+    }
+  },
+  "expected_components": {
+    "crawlability": {
+      "min_score": 10,
+      "max_score": 16,
+      "expected_findings": [
+        "Homepage has redirect chain"
+      ]
+    },
+    "indexing": {
+      "min_score": 10,
+      "max_score": 15
+    },
+    "speed": {
+      "min_score": 15,
+      "max_score": 22
+    },
+    "mobile": {
+      "min_score": 10,
+      "max_score": 15
+    },
+    "security": {
+      "min_score": 6,
+      "max_score": 10
+    },
+    "structured_data": {
+      "min_score": 8,
+      "max_score": 15
+    }
+  },
+  "validation_rules": {
+    "should_detect_redirect_chain": true,
+    "redirect_chain_length_min": 3,
+    "should_recommend_fixing_redirects": true
+  }
+}

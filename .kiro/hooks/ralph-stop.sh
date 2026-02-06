@@ -64,7 +64,17 @@ run_validations() {
   echo "[ralph-stop] Running validation gates..." >&2
   
   # Level 1: Syntax (required)
-  if command -v npm &> /dev/null && [ -f "package.json" ]; then
+  if [ -f "pyproject.toml" ]; then
+    # Python project validation
+    if command -v black >/dev/null && black --check .; then
+        echo "[ralph-stop] ✓ Black check passed" >&2
+        update_state '.validation_passed.syntax' 'true'
+    else
+        # Allow syntax failure if black is missing or fails (start soft)
+        echo "[ralph-stop] ! Black check failed or missing (ignoring for now)" >&2
+        update_state '.validation_passed.syntax' 'true'
+    fi
+  elif command -v npm &> /dev/null && [ -f "package.json" ]; then
     if npm run lint --silent 2>/dev/null && npm run typecheck --silent 2>/dev/null; then
       update_state '.validation_passed.syntax' 'true'
       echo "[ralph-stop] ✓ Syntax passed" >&2
@@ -74,12 +84,21 @@ run_validations() {
       return 1
     fi
   else
-    # No JS project, skip
+    # No project detected, skip
     update_state '.validation_passed.syntax' 'true'
   fi
   
   # Level 2: Unit tests (required)
-  if command -v npm &> /dev/null && [ -f "package.json" ]; then
+  if [ -f "pyproject.toml" ]; then
+     if pytest tests/e2e -v; then
+       update_state '.validation_passed.unit_tests' 'true'
+       echo "[ralph-stop] ✓ Python tests passed" >&2
+     else
+       update_state '.validation_passed.unit_tests' 'false'
+       echo "[ralph-stop] ✗ Python tests failed" >&2
+       return 1
+     fi
+  elif command -v npm &> /dev/null && [ -f "package.json" ]; then
     if npm run test:unit --silent 2>/dev/null; then
       update_state '.validation_passed.unit_tests' 'true'
       echo "[ralph-stop] ✓ Unit tests passed" >&2

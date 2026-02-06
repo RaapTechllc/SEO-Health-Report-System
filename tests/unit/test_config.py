@@ -3,8 +3,8 @@ Tests for config module.
 """
 
 import os
-import pytest
-from seo_health_report.config import Config, get_config, set_config, reload_config
+
+from seo_health_report.config import Config, get_config, reload_config, set_config
 
 
 class TestConfigDefaults:

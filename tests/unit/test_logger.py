@@ -2,16 +2,14 @@
 Tests for logger module.
 """
 
-import os
 import logging
-import pytest
+import os
+
 from seo_health_report.scripts.logger import (
+    _get_default_log_file,
+    _get_log_level,
     get_logger,
     set_log_level,
-    _get_log_level,
-    _get_default_log_file,
-    _get_console_handler,
-    _get_file_handler,
 )
 
 

@@ -1,7 +1,8 @@
-import pytest
-import sys
 import os
+import sys
 import time
+
+import pytest
 
 # Add project paths
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,20 +20,20 @@ def smoke_timing():
 
 @pytest.mark.smoke
 def test_orchestrate_loads():
-    """Verify orchestrate.py can be imported and has main function."""
+    """Verify orchestrate.py can be imported and has run_full_audit function."""
     try:
         from seo_health_report.scripts import orchestrate
-        assert hasattr(orchestrate, 'run_all_audits') or hasattr(orchestrate, 'main')
+        assert hasattr(orchestrate, 'run_full_audit') or hasattr(orchestrate, 'run_full_audit_sync')
     except ImportError:
         pytest.skip("seo_health_report not available")
 
-@pytest.mark.smoke 
+@pytest.mark.smoke
 def test_orchestrate_basic_flow(sample_url, sample_config):
     """Test basic orchestration flow doesn't crash."""
     try:
         from seo_health_report.scripts import orchestrate
         # Just test it doesn't crash on import and basic validation
-        assert callable(getattr(orchestrate, 'run_all_audits', None)) or \
-               callable(getattr(orchestrate, 'main', None))
+        assert callable(getattr(orchestrate, 'run_full_audit', None)) or \
+               callable(getattr(orchestrate, 'run_full_audit_sync', None))
     except ImportError:
         pytest.skip("seo_health_report not available")

@@ -1,2 +1,1 @@
-# Smoke Test Suite
-# Fast critical path tests (< 60 seconds total)
+"""Smoke tests for post-deployment verification."""

@@ -4,12 +4,11 @@ End-to-end tests for CLI interface.
 Tests the command-line interface for generating reports.
 """
 
-import pytest
 import os
 import sys
-import subprocess
-from unittest.mock import patch, MagicMock
-from io import StringIO
+from unittest.mock import patch
+
+import pytest
 
 # Add project root to path
 project_root = os.path.dirname(
@@ -26,7 +25,7 @@ class TestCLIArgumentParsing:
     def test_cli_requires_url(self):
         """Test that CLI requires --url argument."""
         import argparse
-        from seo_health_report import main
+
 
         # Capture parser behavior
         with patch("sys.argv", ["seo_health_report"]):
@@ -121,7 +120,6 @@ class TestCLIOutputFormatting:
     def test_format_text_report(self):
         """Test text report formatting for console output."""
         from seo_health_report import format_text_report
-        from seo_health_report.scripts.calculate_scores import get_grade_description
 
         result = {
             "overall_score": 75,
@@ -185,8 +183,9 @@ class TestCLIIntegration:
     @pytest.mark.integration
     def test_generate_report_function_signature(self):
         """Test generate_report accepts expected parameters."""
-        from seo_health_report import generate_report
         import inspect
+
+        from seo_health_report import generate_report
 
         sig = inspect.signature(generate_report)
         params = list(sig.parameters.keys())
@@ -331,11 +330,11 @@ class TestCLIWithMocks:
     @pytest.mark.integration
     def test_generate_report_with_mocked_audits(self, tmp_path):
         """Test generate_report with mocked audit modules."""
+        from seo_health_report.scripts.build_report import build_report_document
         from seo_health_report.scripts.calculate_scores import calculate_composite_score
         from seo_health_report.scripts.generate_summary import (
             generate_executive_summary,
         )
-        from seo_health_report.scripts.build_report import build_report_document
 
         # Mock audit results (simulating what run_full_audit would return)
         mock_audit_results = {

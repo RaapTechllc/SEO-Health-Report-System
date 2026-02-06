@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4">
+    <div class="w-full max-w-md">
+        <div class="bg-raap-card rounded-xl border border-raap-border p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-raap-primary to-raap-secondary flex items-center justify-center mb-4">
+                    <span class="text-white font-bold text-2xl">R</span>
+                </div>
+                <h1 class="text-2xl font-bold text-white">Welcome Back</h1>
+                <p class="text-gray-400 mt-2">Sign in to your RaapTech SEO account</p>
+            </div>
+
+            {% if error %}
+            <div class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30" role="alert" aria-live="polite">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-red-400 text-sm">{{ error }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <form id="loginForm" method="POST" action="/dashboard/login" class="space-y-6" novalidate>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        autocomplete="email"
+                        class="w-full px-4 py-3 bg-raap-dark border border-raap-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:border-transparent transition-all"
+                        placeholder="you@example.com"
+                    >
+                    <p id="emailError" class="mt-2 text-sm text-red-400 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            autocomplete="current-password"
+                            class="w-full px-4 py-3 bg-raap-dark border border-raap-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:border-transparent transition-all pr-12"
+                            placeholder="••••••••"
+                        >
+                        <button 
+                            type="button" 
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-raap-primary rounded"
+                            aria-label="Toggle password visibility"
+                            aria-pressed="false"
+                        >
+                            <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <svg id="eyeOffIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="passwordError" class="mt-2 text-sm text-red-400 hidden"></p>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-raap-border bg-raap-dark text-raap-primary focus:ring-raap-primary focus:ring-offset-0">
+                        <span class="ml-2 text-sm text-gray-400">Remember me</span>
+                    </label>
+                    <a href="#" class="text-sm text-raap-primary hover:text-raap-secondary transition-colors">Forgot password?</a>
+                </div>
+
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="w-full py-3 px-4 bg-gradient-to-r from-raap-primary to-raap-secondary text-white font-medium rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:ring-offset-2 focus:ring-offset-raap-card transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <span id="btnText">Sign In</span>
+                    <span id="btnLoading" class="hidden items-center justify-center">
+                        <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Signing in...
+                    </span>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-500 text-sm">
+                    Don't have an account? 
+                    <a href="#" class="text-raap-primary hover:text-raap-secondary transition-colors">Contact us</a>
+                </p>
+            </div>
+        </div>
+
+        <p class="mt-8 text-center text-xs text-gray-600">
+            Protected by RaapTech Security
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoading = document.getElementById('btnLoading');
+    const togglePassword = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeOffIcon = document.getElementById('eyeOffIcon');
+
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        eyeIcon.classList.toggle('hidden');
+        eyeOffIcon.classList.toggle('hidden');
+    });
+
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function showError(input, errorEl, message) {
+        input.classList.add('border-red-500', 'focus:ring-red-500');
+        input.classList.remove('border-raap-border', 'focus:ring-raap-primary');
+        errorEl.textContent = message;
+        errorEl.classList.remove('hidden');
+    }
+
+    function clearError(input, errorEl) {
+        input.classList.remove('border-red-500', 'focus:ring-red-500');
+        input.classList.add('border-raap-border', 'focus:ring-raap-primary');
+        errorEl.classList.add('hidden');
+    }
+
+    emailInput.addEventListener('blur', function() {
+        if (this.value && !validateEmail(this.value)) {
+            showError(this, emailError, 'Please enter a valid email address');
+        } else {
+            clearError(this, emailError);
+        }
+    });
+
+    emailInput.addEventListener('input', function() {
+        if (validateEmail(this.value)) {
+            clearError(this, emailError);
+        }
+    });
+
+    passwordInput.addEventListener('blur', function() {
+        if (this.value && this.value.length < 6) {
+            showError(this, passwordError, 'Password must be at least 6 characters');
+        } else {
+            clearError(this, passwordError);
+        }
+    });
+
+    passwordInput.addEventListener('input', function() {
+        if (this.value.length >= 6) {
+            clearError(this, passwordError);
+        }
+    });
+
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        if (!emailInput.value) {
+            showError(emailInput, emailError, 'Email is required');
+            isValid = false;
+        } else if (!validateEmail(emailInput.value)) {
+            showError(emailInput, emailError, 'Please enter a valid email address');
+            isValid = false;
+        }
+
+        if (!passwordInput.value) {
+            showError(passwordInput, passwordError, 'Password is required');
+            isValid = false;
+        } else if (passwordInput.value.length < 6) {
+            showError(passwordInput, passwordError, 'Password must be at least 6 characters');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        btnLoading.classList.add('flex');
+    });
+});
+</script>
+{% endblock %}

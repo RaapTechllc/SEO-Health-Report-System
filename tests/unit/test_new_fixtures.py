@@ -2,7 +2,6 @@
 Quick test to verify all new fixtures work correctly.
 """
 
-import pytest
 
 
 def test_mock_config_fixture(mock_config):

@@ -1,6 +1,7 @@
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
@@ -20,15 +21,18 @@ def test_score_calculation_basic():
     """Test basic score calculation works."""
     try:
         from seo_health_report.scripts import calculate_scores
-        # Test with mock data
+        # Test with mock data - use 'audits' wrapper as expected by calculate_composite_score
         mock_data = {
-            'technical': {'score': 80},
-            'content': {'score': 70}, 
-            'ai_visibility': {'score': 90}
+            'audits': {
+                'technical': {'score': 80},
+                'content': {'score': 70},
+                'ai_visibility': {'score': 90}
+            }
         }
         if hasattr(calculate_scores, 'calculate_composite_score'):
             result = calculate_scores.calculate_composite_score(mock_data)
-            assert isinstance(result, (int, float))
-            assert 0 <= result <= 100
+            assert isinstance(result, dict)
+            assert 'overall_score' in result
+            assert 0 <= result['overall_score'] <= 100
     except ImportError:
         pytest.skip("seo_health_report not available")

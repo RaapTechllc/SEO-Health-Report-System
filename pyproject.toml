@@ -27,12 +27,17 @@ classifiers = [
 
 dependencies = [
     "httpx>=0.25.0",
+    "requests>=2.31.0",
     "python-docx>=0.8.11",
     "reportlab>=4.0.0",
     "beautifulsoup4>=4.12.0",
     "lxml>=4.9.0",
     "aiohttp>=3.9.0",
     "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
 ]
 
 [project.optional-dependencies]
@@ -58,12 +63,16 @@ Issues = "https://github.com/raaptech/seo-health-report/issues"
 [project.scripts]
 seo-audit = "seo_health_report.scripts.orchestrate:run_full_audit_sync"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["seo_health_report*"]
+[tool.setuptools]
+packages = ["config", "core", "seo_health_report", "seo_technical_audit", "seo_content_authority", "ai_visibility_audit", "competitive_intel"]
 
 [tool.setuptools.package-dir]
-seo_health_report = "seo-health-report"
+config = "packages/config"
+core = "packages/core"
+seo_health_report = "packages/seo_health_report"
+seo_technical_audit = "packages/seo_technical_audit"
+seo_content_authority = "packages/seo_content_authority"
+ai_visibility_audit = "packages/ai_visibility_audit"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -76,11 +85,39 @@ addopts = "-v --tb=short"
 [tool.ruff]
 line-length = 100
 target-version = "py39"
-select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
-ignore = ["E501"]
 
-[tool.ruff.per-file-ignores]
-"tests/*" = ["B011"]
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = [
+    "E501",  # Line too long - handled by formatter
+    "E402",  # Module-level import ordering (needed for path setup)
+    "N999",  # Invalid module name (multi-tier-reports uses hyphens)
+    "N806",  # Non-lowercase variable in function (OK for mock classes like MockService)
+    "N811",  # Constant imported as non-constant (OK for aliased imports)
+    "E741",  # Ambiguous variable name (l, O, I) - context makes it clear
+    "E701",  # Multiple statements on one line (colon) - OK for simple conditionals
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "B017", "B007"]  # Test patterns: assert False, assert raises Exception, unused loop vars
+"apps/cli/*" = ["E402"]  # CLI scripts need path setup before imports
+"apps/api/*" = ["E402", "B008", "B904"]  # FastAPI patterns
+"apps/admin/*" = ["B008"]  # FastAPI pattern
+"apps/dashboard/*" = ["B008"]  # FastAPI pattern
+"apps/worker/*" = ["B904"]  # Worker exception handling
+"packages/*/__init__.py" = ["F401"]  # Re-exports are intentional
+"competitive_intel/__init__.py" = ["F401"]  # Re-exports are intentional
+"packages/storage/*" = ["B904"]  # Re-raising with context is intentional
+"packages/*/scripts/*" = ["B904"]  # Script exception handling
+"packages/config/*" = ["B008", "B904"]  # FastAPI Depends pattern, exception re-raising
+"multi-tier-reports/*" = ["B904"]  # FastAPI exception handling
+"payments.py" = ["B904"]  # Stripe exception re-raising
+"scripts/*" = ["B904"]  # Script exception handling
+"auth.py" = ["B008"]  # FastAPI Depends pattern
+"competitive_monitor/*" = ["B008", "B904"]  # FastAPI patterns
+"competitive_intel/api.py" = ["B904"]  # FastAPI exception handling
+"archive/*" = ["B007"]  # Deprecated code - unused loop vars OK
+"packages/seo_health_sdk/*" = ["E501"]  # SDK has longer signatures
 
 [tool.mypy]
 python_version = "3.9"

@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=sqlite:///./seo_health.db
+      - JWT_SECRET_KEY=dev-secret-key-minimum-32-characters-long
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+    depends_on:
+      - db
+    networks:
+      - seo-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/worker.Dockerfile
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=sqlite:///./seo_health.db
+      - WORKER_LEASE_SECONDS=300
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+    depends_on:
+      - db
+    networks:
+      - seo-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=seo
+      - POSTGRES_PASSWORD=seopassword
+      - POSTGRES_DB=seo_health
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - seo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seo -d seo_health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  seo-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

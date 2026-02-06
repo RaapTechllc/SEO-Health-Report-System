@@ -7,12 +7,11 @@ Tests the complete report generation flow including:
 - PDF report generation (with reportlab if available)
 """
 
-import pytest
 import os
 import sys
-import tempfile
 from datetime import datetime
-from typing import Dict, Any
+
+import pytest
 
 # Add project root to path
 project_root = os.path.dirname(
@@ -282,10 +281,9 @@ class TestMarkdownReportGeneration:
         """Test that markdown report generates without errors."""
         from seo_health_report.scripts.build_report import (
             build_report_document,
-            generate_markdown,
         )
 
-        output_path = str(tmp_path / "test-report.md")
+        str(tmp_path / "test-report.md")
 
         result = build_report_document(
             audit_results=sample_audit_data,
@@ -321,7 +319,7 @@ class TestMarkdownReportGeneration:
         assert result["success"] is True
 
         # Read generated file
-        with open(result["output_path"], "r", encoding="utf-8") as f:
+        with open(result["output_path"], encoding="utf-8") as f:
             content = f.read()
 
         # Check for required sections
@@ -349,7 +347,7 @@ class TestMarkdownReportGeneration:
             output_dir=str(tmp_path),
         )
 
-        with open(result["output_path"], "r", encoding="utf-8") as f:
+        with open(result["output_path"], encoding="utf-8") as f:
             content = f.read()
 
         # Check for scores
@@ -451,7 +449,7 @@ class TestPdfReportGeneration:
     ):
         """Test that actual PDF is created when reportlab is available."""
         try:
-            import reportlab
+            import reportlab  # noqa: F401
 
             has_reportlab = True
         except ImportError:

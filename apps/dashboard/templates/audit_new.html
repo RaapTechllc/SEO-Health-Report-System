@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}New Audit{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-white">New SEO Audit</h1>
+            <p class="text-gray-400 mt-1">Enter website details to start a comprehensive SEO health analysis</p>
+        </div>
+        <a href="/dashboard/audits" class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-raap-primary rounded-lg p-1" aria-label="Close and return to audits">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </a>
+    </div>
+
+    {% if quota_error %}
+    <div class="bg-amber-500/20 border border-amber-500/30 rounded-lg p-4 text-amber-400">
+        <div class="flex items-start">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+                <p class="font-medium">Quota Exceeded</p>
+                <p class="text-sm mt-1">{{ quota_error }}</p>
+                {% if quota_details %}
+                <p class="text-xs mt-2 text-amber-500">Used: {{ quota_details.used }} / {{ quota_details.limit }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-400">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>{{ error }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="error-display" class="hidden bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-400">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="error-message"></span>
+        </div>
+    </div>
+
+    <form id="audit-form" action="/dashboard/audits/new" method="POST" class="max-w-4xl">
+        <div class="bg-raap-card rounded-xl border border-raap-border p-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label for="url" class="block text-sm font-medium text-gray-300">
+                        Website URL <span class="text-red-400">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">https://</span>
+                        <input type="text" id="url" name="url" required
+                            placeholder="example.com"
+                            value="{{ form_data.url if form_data else '' }}"
+                            class="w-full pl-16 pr-4 py-3 bg-raap-dark border {% if errors and errors.url %}border-red-500{% else %}border-raap-border{% endif %} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-raap-primary focus:ring-1 focus:ring-raap-primary transition-colors">
+                    </div>
+                    {% if errors and errors.url %}
+                    <p class="text-xs text-red-400">{{ errors.url }}</p>
+                    {% else %}
+                    <p class="text-xs text-gray-500">Enter the website domain to audit</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2">
+                    <label for="company_name" class="block text-sm font-medium text-gray-300">
+                        Company Name <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text" id="company_name" name="company_name" required
+                        placeholder="Acme Plumbing Services"
+                        value="{{ form_data.company_name if form_data else '' }}"
+                        class="w-full px-4 py-3 bg-raap-dark border {% if errors and errors.company_name %}border-red-500{% else %}border-raap-border{% endif %} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-raap-primary focus:ring-1 focus:ring-raap-primary transition-colors">
+                    {% if errors and errors.company_name %}
+                    <p class="text-xs text-red-400">{{ errors.company_name }}</p>
+                    {% else %}
+                    <p class="text-xs text-gray-500">Business name for the report</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2">
+                    <label for="trade_type" class="block text-sm font-medium text-gray-300">
+                        Trade Type <span class="text-red-400">*</span>
+                    </label>
+                    <select id="trade_type" name="trade_type" required
+                        class="w-full px-4 py-3 bg-raap-dark border {% if errors and errors.trade_type %}border-red-500{% else %}border-raap-border{% endif %} rounded-lg text-white focus:outline-none focus:border-raap-primary focus:ring-1 focus:ring-raap-primary transition-colors">
+                        <option value="" class="text-gray-500">Select trade type...</option>
+                        <option value="Plumber" {% if form_data and form_data.trade_type == 'Plumber' %}selected{% endif %}>Plumber</option>
+                        <option value="Electrician" {% if form_data and form_data.trade_type == 'Electrician' %}selected{% endif %}>Electrician</option>
+                        <option value="HVAC" {% if form_data and form_data.trade_type == 'HVAC' %}selected{% endif %}>HVAC</option>
+                        <option value="Roofer" {% if form_data and form_data.trade_type == 'Roofer' %}selected{% endif %}>Roofer</option>
+                        <option value="General Contractor" {% if form_data and form_data.trade_type == 'General Contractor' %}selected{% endif %}>General Contractor</option>
+                        <option value="Landscaper" {% if form_data and form_data.trade_type == 'Landscaper' %}selected{% endif %}>Landscaper</option>
+                        <option value="Painter" {% if form_data and form_data.trade_type == 'Painter' %}selected{% endif %}>Painter</option>
+                        <option value="Other" {% if form_data and form_data.trade_type == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                    {% if errors and errors.trade_type %}
+                    <p class="text-xs text-red-400">{{ errors.trade_type }}</p>
+                    {% else %}
+                    <p class="text-xs text-gray-500">Industry for tailored recommendations</p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2">
+                    <label for="service_areas" class="block text-sm font-medium text-gray-300">
+                        Service Areas
+                    </label>
+                    <input type="text" id="service_areas" name="service_areas"
+                        placeholder="Austin, TX; Round Rock, TX; Cedar Park, TX"
+                        value="{{ form_data.service_areas if form_data else '' }}"
+                        class="w-full px-4 py-3 bg-raap-dark border border-raap-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-raap-primary focus:ring-1 focus:ring-raap-primary transition-colors">
+                    <p class="text-xs text-gray-500">Comma or semicolon separated locations</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-white mb-4">Select Audit Tier</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="tier-card relative cursor-pointer">
+                    <input type="radio" name="tier" value="basic" class="sr-only peer" {% if not form_data or form_data.tier == 'basic' %}checked{% endif %}>
+                    <div class="bg-raap-card border-2 border-raap-border rounded-xl p-6 transition-all peer-checked:border-raap-primary peer-checked:bg-raap-primary/5 hover:border-gray-600">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white">Basic</h3>
+                            <span class="text-2xl font-bold gradient-text">$49</span>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Core SEO metrics
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Technical audit
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Basic recommendations
+                            </li>
+                            <li class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                Competitor analysis
+                            </li>
+                            <li class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                AI visibility audit
+                            </li>
+                        </ul>
+                        <div class="absolute top-4 right-4 w-5 h-5 border-2 border-raap-border rounded-full peer-checked:border-raap-primary peer-checked:bg-raap-primary flex items-center justify-center">
+                            <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="tier-card relative cursor-pointer">
+                    <input type="radio" name="tier" value="pro" class="sr-only peer" {% if form_data and form_data.tier == 'pro' %}checked{% endif %}>
+                    <div class="bg-raap-card border-2 border-raap-border rounded-xl p-6 transition-all peer-checked:border-raap-primary peer-checked:bg-raap-primary/5 hover:border-gray-600 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-gradient-to-r from-raap-primary to-raap-secondary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                            POPULAR
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white">Pro</h3>
+                            <span class="text-2xl font-bold gradient-text">$149</span>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Everything in Basic
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Content authority analysis
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Competitor benchmarking
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Priority action items
+                            </li>
+                            <li class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                AI visibility audit
+                            </li>
+                        </ul>
+                        <div class="absolute top-4 right-4 w-5 h-5 border-2 border-raap-border rounded-full peer-checked:border-raap-primary peer-checked:bg-raap-primary flex items-center justify-center">
+                            <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="tier-card relative cursor-pointer">
+                    <input type="radio" name="tier" value="enterprise" class="sr-only peer" {% if form_data and form_data.tier == 'enterprise' %}checked{% endif %}>
+                    <div class="bg-raap-card border-2 border-raap-border rounded-xl p-6 transition-all peer-checked:border-raap-primary peer-checked:bg-raap-primary/5 hover:border-gray-600">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white">Enterprise</h3>
+                            <span class="text-2xl font-bold gradient-text">$499</span>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-400">
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Everything in Pro
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Full AI visibility audit
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Deep competitor intel
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Quarterly re-audits
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Dedicated support
+                            </li>
+                        </ul>
+                        <div class="absolute top-4 right-4 w-5 h-5 border-2 border-raap-border rounded-full peer-checked:border-raap-primary peer-checked:bg-raap-primary flex items-center justify-center">
+                            <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="mt-8 flex items-center justify-between">
+            <a href="/dashboard/audits" class="px-6 py-3 text-gray-400 hover:text-white transition-colors">
+                Cancel
+            </a>
+            <button type="submit" id="submit-btn"
+                class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-raap-primary to-raap-secondary text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                <span id="submit-text">Start Audit</span>
+                <svg id="submit-spinner" class="hidden w-5 h-5 ml-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg id="submit-arrow" class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('audit-form');
+    const urlInput = document.getElementById('url');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitSpinner = document.getElementById('submit-spinner');
+    const submitArrow = document.getElementById('submit-arrow');
+    const errorDisplay = document.getElementById('error-display');
+    const errorMessage = document.getElementById('error-message');
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorDisplay.classList.remove('hidden');
+        errorDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function hideError() {
+        errorDisplay.classList.add('hidden');
+    }
+
+    function setLoading(loading) {
+        submitBtn.disabled = loading;
+        submitSpinner.classList.toggle('hidden', !loading);
+        submitArrow.classList.toggle('hidden', loading);
+        submitText.textContent = loading ? 'Starting Audit...' : 'Start Audit';
+    }
+
+    function normalizeUrl(url) {
+        url = url.trim().toLowerCase();
+        url = url.replace(/^(https?:\/\/)?(www\.)?/, '');
+        url = url.replace(/\/+$/, '');
+        return url;
+    }
+
+    function isValidDomain(domain) {
+        const domainRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
+        return domainRegex.test(domain);
+    }
+
+    urlInput.addEventListener('blur', function() {
+        this.value = normalizeUrl(this.value);
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideError();
+
+        const url = normalizeUrl(urlInput.value);
+        const companyName = document.getElementById('company_name').value.trim();
+        const tradeType = document.getElementById('trade_type').value;
+        const tier = document.querySelector('input[name="tier"]:checked')?.value;
+
+        if (!url) {
+            showError('Please enter a website URL');
+            urlInput.focus();
+            return;
+        }
+
+        if (!isValidDomain(url)) {
+            showError('Please enter a valid domain (e.g., example.com)');
+            urlInput.focus();
+            return;
+        }
+
+        if (!companyName) {
+            showError('Please enter a company name');
+            document.getElementById('company_name').focus();
+            return;
+        }
+
+        if (!tradeType) {
+            showError('Please select a trade type');
+            document.getElementById('trade_type').focus();
+            return;
+        }
+
+        if (!tier) {
+            showError('Please select an audit tier');
+            return;
+        }
+
+        urlInput.value = url;
+
+        setLoading(true);
+        form.submit();
+    });
+
+    const tierCards = document.querySelectorAll('.tier-card');
+    tierCards.forEach(card => {
+        const radioInput = card.querySelector('input[type="radio"]');
+        const checkIcon = card.querySelector('.peer-checked\\:block');
+        
+        radioInput.addEventListener('change', function() {
+            tierCards.forEach(c => {
+                const icon = c.querySelector('svg.hidden, svg:not(.hidden)');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -2,14 +2,13 @@
 Tests for orchestrate module.
 """
 
-import pytest
 from seo_health_report.scripts.orchestrate import (
-    handle_audit_failure,
-    extract_domain,
     collect_all_issues,
     collect_all_recommendations,
-    identify_quick_wins,
+    extract_domain,
+    handle_audit_failure,
     identify_critical_issues,
+    identify_quick_wins,
 )
 
 

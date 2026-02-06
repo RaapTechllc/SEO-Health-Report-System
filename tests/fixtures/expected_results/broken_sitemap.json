@@ -1,0 +1,56 @@
+{
+  "fixture_name": "broken_sitemap",
+  "url": "https://broken-sitemap.test",
+  "expected_score_range": [50, 70],
+  "expected_grade": ["C", "D"],
+  "expected_issues": [
+    "sitemap_not_found",
+    "no_sitemap_in_robots"
+  ],
+  "expected_issue_details": {
+    "sitemap_not_found": {
+      "severity": "medium",
+      "category": "indexing",
+      "description_contains": "sitemap"
+    },
+    "no_sitemap_in_robots": {
+      "severity": "low",
+      "category": "robots",
+      "description_contains": "sitemap"
+    }
+  },
+  "expected_components": {
+    "crawlability": {
+      "min_score": 14,
+      "max_score": 18
+    },
+    "indexing": {
+      "min_score": 2,
+      "max_score": 8,
+      "expected_issues": [
+        "No sitemap found"
+      ]
+    },
+    "speed": {
+      "min_score": 18,
+      "max_score": 25
+    },
+    "mobile": {
+      "min_score": 10,
+      "max_score": 15
+    },
+    "security": {
+      "min_score": 8,
+      "max_score": 10
+    },
+    "structured_data": {
+      "min_score": 6,
+      "max_score": 15
+    }
+  },
+  "validation_rules": {
+    "should_detect_sitemap_issue": true,
+    "should_not_have_critical_issues": true,
+    "should_be_indexable": true
+  }
+}

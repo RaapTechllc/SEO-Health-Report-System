@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+
 from dotenv import load_dotenv
 
 # Add parent dir
@@ -9,6 +10,7 @@ sys.path.insert(0, project_root)
 
 # Handle dashed module name import
 import importlib.util
+
 ai_vis_path = os.path.join(project_root, "ai-visibility-audit")
 if ai_vis_path not in sys.path:
     sys.path.insert(0, ai_vis_path)
@@ -41,16 +43,17 @@ spec.loader.exec_module(ai_visibility_audit)
 # Load env
 load_dotenv(os.path.join(project_root, '.env'))
 
-from ai_visibility_audit.scripts.query_ai_systems import query_claude, query_openai, query_perplexity, query_gemini
+from ai_visibility_audit.scripts.query_ai_systems import query_claude, query_gemini, query_openai
+
 
 async def test_ai_presence():
     brand = "Stripe"
     query = "What is Stripe?"
-    
+
 
     output = []
     output.append(f"--- Testing AI Presence for {brand} ---")
-    
+
     # Check Keys
     output.append(f"Anthropic Key Present: {bool(os.environ.get('ANTHROPIC_API_KEY'))}")
     output.append(f"OpenAI Key Present: {bool(os.environ.get('OPENAI_API_KEY'))}")
@@ -79,7 +82,7 @@ async def test_ai_presence():
         output.append(f"OpenAI Response Preview: {res.response[:100]}...")
     except Exception as e:
         output.append(f"OpenAI Exception: {e}")
-        
+
     # Test Gemini
     try:
         output.append("\nQuerying Gemini...")
@@ -93,7 +96,7 @@ async def test_ai_presence():
 
     with open('debug_log.txt', 'w') as f:
         f.write('\n'.join(output))
-    
+
     print("Debug log written to debug_log.txt")
 
 if __name__ == "__main__":

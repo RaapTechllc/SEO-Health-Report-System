@@ -1,0 +1,59 @@
+{
+  "fixture_name": "healthy_plumber",
+  "url": "https://example-plumber.test",
+  "expected_score_range": [80, 100],
+  "expected_grade": ["A", "B"],
+  "expected_issues": [],
+  "expected_components": {
+    "crawlability": {
+      "min_score": 16,
+      "max_score": 20,
+      "expected_findings": [
+        "robots.txt found and accessible",
+        "Sitemap found"
+      ]
+    },
+    "indexing": {
+      "min_score": 12,
+      "max_score": 15,
+      "expected_findings": [
+        "Pages are indexable"
+      ]
+    },
+    "speed": {
+      "min_score": 20,
+      "max_score": 25,
+      "expected_cwv": {
+        "lcp_max_ms": 2500,
+        "fid_max_ms": 100,
+        "cls_max": 0.1
+      }
+    },
+    "mobile": {
+      "min_score": 12,
+      "max_score": 15,
+      "expected_findings": [
+        "Viewport meta tag present"
+      ]
+    },
+    "security": {
+      "min_score": 8,
+      "max_score": 10,
+      "expected_findings": [
+        "HTTPS enabled"
+      ]
+    },
+    "structured_data": {
+      "min_score": 10,
+      "max_score": 15,
+      "expected_schema_types": ["LocalBusiness"],
+      "expected_rich_results": ["Local Business"]
+    }
+  },
+  "validation_rules": {
+    "should_have_no_critical_issues": true,
+    "should_have_no_high_issues": true,
+    "should_have_schema": true,
+    "should_be_indexable": true
+  }
+}

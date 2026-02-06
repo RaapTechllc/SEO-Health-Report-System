@@ -1,0 +1,52 @@
+{
+  "fixture_name": "crawl_blocked",
+  "url": "https://crawl-blocked.test",
+  "expected_score_range": [10, 30],
+  "expected_grade": ["F"],
+  "expected_issues": [
+    "robots_disallow_all",
+    "site_not_indexable"
+  ],
+  "expected_issue_details": {
+    "robots_disallow_all": {
+      "severity": "critical",
+      "category": "robots",
+      "description_contains": ["Disallow: /", "blocked"]
+    }
+  },
+  "expected_components": {
+    "crawlability": {
+      "min_score": 0,
+      "max_score": 5,
+      "expected_issues": [
+        "Entire site blocked from crawling"
+      ]
+    },
+    "indexing": {
+      "min_score": 0,
+      "max_score": 5
+    },
+    "speed": {
+      "min_score": 0,
+      "max_score": 10
+    },
+    "mobile": {
+      "min_score": 0,
+      "max_score": 10
+    },
+    "security": {
+      "min_score": 6,
+      "max_score": 10
+    },
+    "structured_data": {
+      "min_score": 0,
+      "max_score": 5
+    }
+  },
+  "validation_rules": {
+    "should_have_critical_issues": true,
+    "critical_issue_contains": "blocked",
+    "should_not_be_indexable": true,
+    "should_flag_robots_issue": true
+  }
+}

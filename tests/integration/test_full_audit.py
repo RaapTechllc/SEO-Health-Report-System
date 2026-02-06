@@ -5,11 +5,11 @@ These tests verify the complete audit flow from URL input to final report
 with mocked external dependencies (HTTP, LLM APIs).
 """
 
-import pytest
 import os
 import sys
-from unittest.mock import patch, MagicMock, AsyncMock
-from typing import Dict, Any
+from unittest.mock import MagicMock
+
+import pytest
 
 # Add project root to path
 project_root = os.path.dirname(
@@ -139,9 +139,7 @@ class TestFullAuditPipeline:
     def test_audit_returns_required_structure(self, mock_http_responses):
         """Test that full audit returns all required fields."""
         # Import here to use mocks
-        from tests.conftest import seo_health_report_module
         from seo_health_report.scripts.orchestrate import (
-            handle_audit_failure,
             collect_all_issues,
             collect_all_recommendations,
         )
@@ -201,7 +199,6 @@ class TestFullAuditPipeline:
         """Test score calculation with audit results."""
         from seo_health_report.scripts.calculate_scores import (
             calculate_composite_score,
-            determine_grade,
         )
 
         audit_results = {
@@ -224,9 +221,9 @@ class TestFullAuditPipeline:
     def test_executive_summary_generation(self):
         """Test executive summary generation."""
         from seo_health_report.scripts.generate_summary import (
+            format_component_name,
             generate_executive_summary,
             generate_headline,
-            format_component_name,
         )
 
         scores = {
@@ -273,8 +270,8 @@ class TestAuditComponentIntegration:
     @pytest.mark.integration
     def test_placeholder_results_work_in_pipeline(self):
         """Test that placeholder results don't break the pipeline."""
-        from seo_health_report.scripts.orchestrate import handle_audit_failure
         from seo_health_report.scripts.calculate_scores import calculate_composite_score
+        from seo_health_report.scripts.orchestrate import handle_audit_failure
 
         # Simulate one audit failing with placeholder
         audit_results = {
@@ -387,10 +384,8 @@ class TestDataFlow:
     def test_audit_data_flows_to_report(self):
         """Test that audit data properly flows to report building."""
         from seo_health_report.scripts.build_report import (
-            build_technical_section,
-            build_content_section,
-            build_ai_visibility_section,
             build_action_plan,
+            build_technical_section,
         )
 
         # Mock audit data
@@ -433,9 +428,9 @@ class TestDataFlow:
     def test_empty_audit_data_handled_gracefully(self):
         """Test that empty audit data doesn't break report building."""
         from seo_health_report.scripts.build_report import (
-            build_technical_section,
-            build_content_section,
             build_ai_visibility_section,
+            build_content_section,
+            build_technical_section,
         )
 
         # Empty data

@@ -1,0 +1,660 @@
+{
+  "url": "https://www.sheetmetalwerks.com",
+  "company_name": "Sheet Metal Werks",
+  "timestamp": "2026-01-19T19:20:09.694196",
+  "audits": {
+    "technical": {
+      "url": "https://www.sheetmetalwerks.com",
+      "timestamp": "2026-01-19T19:20:13.263986",
+      "score": 44,
+      "grade": "F",
+      "components": {
+        "crawlability": {
+          "score": 12,
+          "max": 20,
+          "issues": [
+            "CrawlIssue(severity='medium', category='robots', description='robots.txt not found or not accessible', url='https://www.sheetmetalwerks.com/robots.txt', recommendation='Create a robots.txt file at the root of your domain')",
+            {
+              "severity": "high",
+              "category": "sitemap",
+              "description": "No sitemap found",
+              "recommendation": "Create and submit an XML sitemap"
+            },
+            {
+              "severity": "low",
+              "category": "redirects",
+              "description": "requests package not installed - redirect check skipped"
+            }
+          ],
+          "findings": [
+            "robots.txt not found",
+            "No sitemap found",
+            "Homepage accessible without redirect chain"
+          ]
+        },
+        "indexing": {
+          "score": 11,
+          "max": 15,
+          "issues": [
+            {
+              "severity": "high",
+              "category": "sitemap",
+              "description": "No sitemap found",
+              "recommendation": "Create and submit an XML sitemap"
+            }
+          ],
+          "findings": [
+            "Sitemap URLs: 0"
+          ]
+        },
+        "speed": {
+          "score": 9,
+          "max": 25,
+          "psi_score": 60,
+          "core_web_vitals": {
+            "lcp": {
+              "value": 25870.436893224076,
+              "display": "25.9\u00a0s",
+              "status": "poor",
+              "thresholds": {
+                "good": 2500,
+                "needs_improvement": 4000,
+                "unit": "ms"
+              }
+            },
+            "fid": {
+              "value": 61,
+              "display": "60\u00a0ms",
+              "status": "good",
+              "thresholds": {
+                "good": 100,
+                "needs_improvement": 300,
+                "unit": "ms"
+              }
+            },
+            "cls": {
+              "value": 0.03891208015573794,
+              "display": "0.039",
+              "status": "good",
+              "thresholds": {
+                "good": 0.1,
+                "needs_improvement": 0.25,
+                "unit": "score"
+              }
+            },
+            "fcp": {
+              "value": 3357.105021320476,
+              "display": "3.4\u00a0s",
+              "status": "poor",
+              "thresholds": {
+                "good": 1800,
+                "needs_improvement": 3000,
+                "unit": "ms"
+              }
+            },
+            "ttfb": {
+              "value": 3,
+              "display": "Root document took 0\u00a0ms",
+              "status": "good",
+              "thresholds": {
+                "good": 800,
+                "needs_improvement": 1800,
+                "unit": "ms"
+              }
+            }
+          },
+          "issues": [
+            {
+              "severity": "high",
+              "category": "speed",
+              "metric": "lcp",
+              "description": "Largest Contentful Paint is poor: 25.9\u00a0s",
+              "value": 25870.436893224076,
+              "threshold": 2500,
+              "recommendation": "Optimize images, use CDN, preload critical resources, reduce server response time"
+            },
+            {
+              "severity": "high",
+              "category": "speed",
+              "metric": "fcp",
+              "description": "First Contentful Paint is poor: 3.4\u00a0s",
+              "value": 3357.105021320476,
+              "threshold": 1800,
+              "recommendation": "Eliminate render-blocking resources, optimize critical rendering path, use preconnect for key origins"
+            }
+          ],
+          "findings": [
+            "Largest Contentful Paint: 25.9\u00a0s (Poor)",
+            "First Input Delay: 60\u00a0ms (Good)",
+            "Cumulative Layout Shift: 0.039 (Good)",
+            "First Contentful Paint: 3.4\u00a0s (Poor)",
+            "Time to First Byte: Root document took 0\u00a0ms (Good)",
+            "PageSpeed Insights Score: 60/100",
+            "Found 2 optimization opportunities",
+            "Potential savings: 150ms, 67.1 KB"
+          ],
+          "opportunities": [
+            {
+              "title": "Reduce unused JavaScript",
+              "description": "Reduce unused JavaScript and defer loading scripts until they are required to decrease bytes consumed by network activity. [Learn how to reduce unused JavaScript](https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/).",
+              "savings_ms": 150,
+              "savings_bytes": 56964,
+              "savings_display": "150ms, 55.6 KB"
+            },
+            {
+              "title": "Reduce unused CSS",
+              "description": "Reduce unused rules from stylesheets and defer CSS not used for above-the-fold content to decrease bytes consumed by network activity. [Learn how to reduce unused CSS](https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/).",
+              "savings_ms": 0,
+              "savings_bytes": 11713,
+              "savings_display": "11.4 KB"
+            }
+          ]
+        },
+        "mobile": {
+          "score": 6,
+          "max": 15,
+          "psi_score": 65,
+          "config_valid": false,
+          "issues": [
+            {
+              "severity": "high",
+              "description": "Could not fetch page for mobile analysis",
+              "recommendation": "Verify URL accessibility"
+            },
+            {
+              "severity": "high",
+              "category": "speed",
+              "metric": "lcp",
+              "description": "Largest Contentful Paint is poor: 25.4\u00a0s",
+              "value": 25438.619128911425,
+              "threshold": 2500,
+              "recommendation": "Optimize images, use CDN, preload critical resources, reduce server response time"
+            },
+            {
+              "severity": "medium",
+              "category": "speed",
+              "metric": "fcp",
+              "description": "First Contentful Paint needs improvement: 2.0\u00a0s",
+              "value": 1969.328502634649,
+              "threshold": 1800,
+              "recommendation": "Eliminate render-blocking resources, optimize critical rendering path, use preconnect for key origins"
+            }
+          ],
+          "findings": [
+            "Mobile PageSpeed Score: 65"
+          ]
+        },
+        "security": {
+          "score": 6,
+          "max": 10,
+          "https": {
+            "uses_https": true,
+            "redirects_to_https": false,
+            "ssl_valid": true,
+            "ssl_expiry": "2026-02-01T05:32:58",
+            "ssl_issuer": "Let's Encrypt",
+            "issues": [
+              {
+                "severity": "high",
+                "category": "ssl",
+                "description": "SSL certificate expires in 12 days",
+                "recommendation": "Renew SSL certificate before expiry"
+              }
+            ],
+            "findings": [
+              "Site uses HTTPS",
+              "SSL certificate valid until 2026-02-01",
+              "SSL issued by: Let's Encrypt"
+            ]
+          },
+          "headers": {
+            "headers_found": {},
+            "headers_missing": [],
+            "issues": [
+              {
+                "severity": "low",
+                "category": "headers",
+                "description": "requests package not installed - header check skipped"
+              }
+            ],
+            "findings": [],
+            "score": 0
+          },
+          "issues": [
+            {
+              "severity": "high",
+              "category": "ssl",
+              "description": "SSL certificate expires in 12 days",
+              "recommendation": "Renew SSL certificate before expiry"
+            },
+            {
+              "severity": "low",
+              "category": "headers",
+              "description": "requests package not installed - header check skipped"
+            },
+            {
+              "severity": "low",
+              "category": "mixed_content",
+              "description": "requests package not installed - mixed content check skipped"
+            }
+          ],
+          "findings": [
+            "Site uses HTTPS",
+            "SSL certificate valid until 2026-02-01",
+            "SSL issued by: Let's Encrypt"
+          ]
+        },
+        "structured_data": {
+          "score": 0,
+          "max": 15,
+          "schema_types": [],
+          "rich_results": {},
+          "issues": [
+            {
+              "severity": "high",
+              "category": "fetch",
+              "description": "Could not fetch https://www.sheetmetalwerks.com",
+              "recommendation": "Verify URL is accessible"
+            }
+          ],
+          "findings": []
+        }
+      },
+      "critical_issues": [],
+      "recommendations": [
+        {
+          "priority": "high",
+          "category": "security",
+          "action": "SSL certificate expires in 12 days",
+          "details": "Renew SSL certificate before expiry",
+          "impact": "high",
+          "effort": "medium"
+        },
+        {
+          "priority": "high",
+          "category": "crawlability",
+          "action": "No sitemap found",
+          "details": "Create and submit an XML sitemap",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "priority": "medium",
+          "category": "speed",
+          "action": "Reduce unused JavaScript",
+          "details": "Potential savings: 150ms, 55.6 KB",
+          "impact": "high",
+          "effort": "medium"
+        },
+        {
+          "priority": "medium",
+          "category": "speed",
+          "action": "Reduce unused CSS",
+          "details": "Potential savings: 11.4 KB",
+          "impact": "high",
+          "effort": "medium"
+        },
+        {
+          "priority": "medium",
+          "category": "structured_data",
+          "action": "Add structured data",
+          "details": "Implement JSON-LD for Organization and relevant content types",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ]
+    },
+    "content": {
+      "url": "https://www.sheetmetalwerks.com",
+      "timestamp": "2026-01-19T19:20:13.409171",
+      "score": 14,
+      "grade": "F",
+      "components": {
+        "content_quality": {
+          "score": 0,
+          "max": 25,
+          "avg_word_count": 0,
+          "thin_content_pages": 0,
+          "issues": [],
+          "findings": [
+            "Could not fetch any pages"
+          ]
+        },
+        "eeat": {
+          "score": 0,
+          "max": 20,
+          "has_authors": false,
+          "has_about_page": false,
+          "issues": [
+            {
+              "severity": "high",
+              "category": "fetch",
+              "description": "Could not fetch homepage"
+            }
+          ],
+          "findings": []
+        },
+        "keyword_position": {
+          "score": 7,
+          "max": 15,
+          "note": "Requires ranking API for full analysis",
+          "issues": [],
+          "findings": [
+            "Keyword ranking data requires external API"
+          ]
+        },
+        "topical_authority": {
+          "score": 0,
+          "max": 15,
+          "topics_covered": 0,
+          "clusters": [],
+          "issues": [
+            {
+              "severity": "high",
+              "description": "Could not fetch homepage"
+            }
+          ],
+          "findings": []
+        },
+        "backlinks": {
+          "score": 7,
+          "max": 15,
+          "estimated": false,
+          "issues": [
+            {
+              "severity": "low",
+              "category": "backlinks",
+              "description": "Backlink analysis requires API key",
+              "recommendation": "Add AHREFS_API_KEY for full backlink analysis"
+            }
+          ],
+          "findings": [
+            "No ahrefs API key - using limited analysis"
+          ]
+        },
+        "internal_links": {
+          "score": 0,
+          "max": 10,
+          "orphan_pages": 0,
+          "total_links": 0,
+          "issues": [
+            {
+              "severity": "high",
+              "description": "No internal links found",
+              "recommendation": "Add internal links to connect your content"
+            }
+          ],
+          "findings": [
+            "Crawled 0 pages, found 0 internal links"
+          ]
+        }
+      },
+      "content_gaps": [],
+      "topic_opportunities": [],
+      "recommendations": [
+        {
+          "priority": "high",
+          "category": "content_quality",
+          "action": "Improve content quality",
+          "details": "Add more comprehensive, media-rich content",
+          "impact": "high",
+          "effort": "high"
+        },
+        {
+          "priority": "high",
+          "category": "eeat",
+          "action": "Add author attribution",
+          "details": "Add author names and link to author bio pages with credentials",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "priority": "high",
+          "category": "eeat",
+          "action": "Create comprehensive About page",
+          "details": "Add company history, team info, and credentials",
+          "impact": "high",
+          "effort": "low"
+        },
+        {
+          "priority": "medium",
+          "category": "eeat",
+          "action": "Strengthen trust signals",
+          "details": "Add testimonials, certifications, and social proof",
+          "impact": "medium",
+          "effort": "medium"
+        }
+      ]
+    },
+    "ai_visibility": {
+      "brand_name": "Sheet Metal Werks",
+      "target_url": "https://www.sheetmetalwerks.com",
+      "score": 15,
+      "grade": "F",
+      "components": {
+        "ai_presence": {
+          "score": 0,
+          "max": 25,
+          "findings": [],
+          "details": {
+            "total_responses": 0,
+            "brand_mentions": 0,
+            "position_distribution": {
+              "first": 0,
+              "middle": 0,
+              "last": 0
+            },
+            "competitor_mentions": {}
+          }
+        },
+        "accuracy": {
+          "score": 10,
+          "max": 20,
+          "findings": [
+            "No ground truth provided - accuracy partially assessed"
+          ],
+          "issues": []
+        },
+        "parseability": {
+          "score": 0,
+          "max": 15,
+          "findings": [
+            "Could not fetch https://www.sheetmetalwerks.com"
+          ],
+          "issues": [],
+          "error": "Failed to fetch page"
+        },
+        "knowledge_graph": {
+          "score": 0,
+          "max": 15,
+          "findings": [
+            "Error checking google_kg: requests package not installed",
+            "Error checking wikipedia: requests package not installed",
+            "Error checking wikidata: requests package not installed",
+            "Skipped crunchbase: API key not configured",
+            "Error checking linkedin: requests package not installed",
+            "Recommendation: Create Wikipedia article to improve AI awareness",
+            "Recommendation: Improve structured data to appear in Google KG",
+            "Recommendation: Create or optimize LinkedIn company page for B2B visibility"
+          ],
+          "sources": {
+            "google_kg": {
+              "found": false,
+              "url": null,
+              "error": "requests package not installed",
+              "data": null
+            },
+            "wikipedia": {
+              "found": false,
+              "url": null,
+              "error": "requests package not installed",
+              "data": null
+            },
+            "wikidata": {
+              "found": false,
+              "url": null,
+              "error": "requests package not installed",
+              "data": null
+            },
+            "crunchbase": {
+              "found": false,
+              "url": null,
+              "error": "CRUNCHBASE_API_KEY not set - skipping Crunchbase check",
+              "data": null
+            },
+            "linkedin": {
+              "found": false,
+              "url": null,
+              "error": "requests package not installed",
+              "data": null
+            }
+          },
+          "details": {
+            "sources_checked": 4,
+            "sources_found": 0,
+            "presence_rate": 0.0
+          }
+        },
+        "citation_likelihood": {
+          "score": 0,
+          "max": 15,
+          "findings": [
+            "Could not fetch https://www.sheetmetalwerks.com"
+          ],
+          "citable_content": [],
+          "error": "Failed to fetch page"
+        },
+        "sentiment": {
+          "score": 5,
+          "max": 10,
+          "findings": [],
+          "details": {
+            "sentiment_counts": {
+              "positive": 0,
+              "neutral": 0,
+              "negative": 0
+            },
+            "total_analyzed": 0,
+            "results": []
+          }
+        }
+      },
+      "ai_responses": [],
+      "accuracy_issues": [],
+      "recommendations": [
+        {
+          "priority": "high",
+          "category": "ai_presence",
+          "action": "Increase brand mentions in AI responses",
+          "details": "Create more authoritative content that AI systems will reference. Focus on comprehensive guides and original research.",
+          "impact": "high",
+          "effort": "high"
+        },
+        {
+          "priority": "high",
+          "category": "knowledge_graph",
+          "action": "Work toward Wikipedia presence",
+          "details": "Build notability through press coverage, awards, and industry recognition. Do not create your own Wikipedia article.",
+          "impact": "high",
+          "effort": "high"
+        },
+        {
+          "priority": "high",
+          "category": "parseability",
+          "action": "Improve website semantic structure",
+          "details": "Add semantic HTML elements (main, article, section), proper heading hierarchy, and structured data.",
+          "impact": "medium",
+          "effort": "medium"
+        },
+        {
+          "priority": "medium",
+          "category": "knowledge_graph",
+          "action": "Create Wikidata item",
+          "details": "Add your organization to Wikidata with proper structured properties.",
+          "impact": "medium",
+          "effort": "low"
+        },
+        {
+          "priority": "medium",
+          "category": "citation_likelihood",
+          "action": "Create citation-worthy content",
+          "details": "Publish original research, comprehensive guides, or free tools that AI systems would reference.",
+          "impact": "high",
+          "effort": "high"
+        },
+        {
+          "priority": "quick_win",
+          "category": "parseability",
+          "action": "Add Organization schema to homepage",
+          "details": "Implement JSON-LD Organization schema with accurate company information.",
+          "impact": "medium",
+          "effort": "low"
+        },
+        {
+          "priority": "quick_win",
+          "category": "accuracy",
+          "action": "Create a facts/media page",
+          "details": "Publish official company facts (founding date, founders, HQ, etc.) that AI can reference.",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ]
+    }
+  },
+  "browser_data": {
+    "title": "Sheet Metal Werks",
+    "meta_description": "Sheet Metal Werks offers the most revolutionary duct delivery systems available in the Chicago area. Our commercial HVAC products help construction projects cut energy fees, improve air quality and decrease labor costs.",
+    "meta_robots": "",
+    "canonical_url": "",
+    "h1_tags": [
+      "#BuildingPartnerships\nLet's collaborate together!"
+    ],
+    "h2_tags": [
+      "Welcome to Sheet Metal Werks, Inc.",
+      "We conduct all business with the highest standards",
+      "SPECIALTY WORK SURMOUNTS CREATIVE CHALLENGES",
+      "Featured Projects",
+      "What our clients say",
+      "It\u2019s an exciting time in the construction industry"
+    ],
+    "og_title": "Sheet Metal Werks",
+    "og_description": "Sheet Metal Werks offers the most revolutionary duct delivery systems available in the Chicago area. Our commercial HVAC products help construction projects cut energy fees, improve air quality and decrease labor costs.",
+    "og_image": "",
+    "schema_json": [],
+    "internal_links": 11,
+    "external_links": 4,
+    "images_total": 55,
+    "images_without_alt": 52,
+    "page_load_time_ms": 1485.6197089829948,
+    "html_size_bytes": 49010
+  },
+  "warnings": [],
+  "errors": [],
+  "overall_score": 23,
+  "grade": "F",
+  "component_scores": {
+    "technical": {
+      "score": 44,
+      "max": 100,
+      "weight": 0.3,
+      "weighted_score": 13.2
+    },
+    "content": {
+      "score": 14,
+      "max": 100,
+      "weight": 0.35,
+      "weighted_score": 4.9
+    },
+    "ai_visibility": {
+      "score": 15,
+      "max": 100,
+      "weight": 0.35,
+      "weighted_score": 5.2
+    }
+  },
+  "weights_used": {
+    "technical": 0.3,
+    "content": 0.35,
+    "ai_visibility": 0.35
+  }
+}

@@ -23,7 +23,7 @@ graph TB
 
 ## Core Components
 
-### 1. Monitor Engine (`competitive-monitor/`)
+### 1. Monitor Engine (`competitive_monitor/`)
 - **Purpose:** Continuous competitor SEO health tracking
 - **Key Files:**
   - `monitor.py` - Main monitoring loop

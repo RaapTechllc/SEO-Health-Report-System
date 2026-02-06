@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(project_root, 'seo-health-report', 'scripts'))
 
 def test_premium_report():
     """Test premium report generation with sample data."""
-    
+
     # Sample data
     sample_overall = {
         "overall_score": 78,
@@ -26,7 +26,7 @@ def test_premium_report():
             "ai_visibility": {"score": 82, "weight": 0.35}
         }
     }
-    
+
     sample_technical = {
         "score": 72,
         "grade": "C",
@@ -38,10 +38,10 @@ def test_premium_report():
             "structured_data": {"score": 10, "max": 15, "findings": ["Basic schema present"]}
         }
     }
-    
+
     sample_content = {
         "score": 81,
-        "grade": "B", 
+        "grade": "B",
         "components": {
             "content_quality": {"score": 20, "max": 25, "findings": ["Good content length", "Readable text"]},
             "eeat": {"score": 16, "max": 20, "findings": ["Author pages present", "Contact info visible"]},
@@ -50,7 +50,7 @@ def test_premium_report():
             "internal_links": {"score": 8, "max": 10, "findings": ["Good internal structure"]}
         }
     }
-    
+
     sample_ai = {
         "score": 82,
         "grade": "B",
@@ -63,16 +63,16 @@ def test_premium_report():
             "sentiment": {"score": 8, "max": 10, "findings": ["Positive brand sentiment"]}
         }
     }
-    
+
     sample_results = {
         "company": "Test Company",
         "url": "https://testcompany.com",
         "timestamp": "2026-01-12T11:51:09.769-06:00"
     }
-    
+
     try:
         from premium_report_template import generate_premium_docx_report
-        
+
         output_path = generate_premium_docx_report(
             results=sample_results,
             overall=sample_overall,
@@ -85,7 +85,7 @@ def test_premium_report():
             client_logo_path=None,  # No logo for test
             agency_logo_path=None   # No logo for test
         )
-        
+
         if output_path:
             print(f"✅ SUCCESS: Premium report generated at {output_path}")
             print("🎯 Template is working correctly!")
@@ -93,7 +93,7 @@ def test_premium_report():
         else:
             print("❌ FAILED: No output path returned")
             return False
-            
+
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
@@ -103,9 +103,9 @@ def test_premium_report():
 if __name__ == "__main__":
     print("🧪 Testing Premium Report Template...")
     print("=" * 50)
-    
+
     success = test_premium_report()
-    
+
     print("=" * 50)
     if success:
         print("🎉 Premium report template is ready!")

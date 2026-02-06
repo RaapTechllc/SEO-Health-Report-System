@@ -2,16 +2,17 @@
 Tests for cache module.
 """
 
-import pytest
 import time
+
+import pytest
 from seo_health_report.scripts.cache import (
-    get_cache,
+    TTL_AI_RESPONSE,
+    TTL_HTTP_FETCH,
+    TTL_PAGESPEED,
     cache_key,
     cached,
     clear_cache,
-    TTL_PAGESPEED,
-    TTL_AI_RESPONSE,
-    TTL_HTTP_FETCH,
+    get_cache,
 )
 
 
@@ -53,6 +54,7 @@ class TestCacheDecorator:
 
         # Reload cache module
         import importlib
+
         import seo_health_report.scripts.cache as cache_module
 
         importlib.reload(cache_module)
@@ -138,6 +140,7 @@ class TestCacheManagement:
 
         # Import and reload
         import importlib
+
         import seo_health_report.scripts.cache as cache_module
 
         importlib.reload(cache_module)

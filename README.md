@@ -150,6 +150,156 @@ export PERPLEXITY_API_KEY="your-key-here"    # Perplexity queries
 export GOOGLE_API_KEY="your-key-here"        # PageSpeed Insights
 ```
 
+## Webhooks
+
+The system supports webhooks for real-time notifications when audits complete or fail.
+
+### Registering a Webhook
+
+```bash
+curl -X POST https://api.example.com/webhooks \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhook",
+    "events": ["audit.completed", "audit.failed"]
+  }'
+```
+
+### Webhook Events
+
+| Event | Description |
+|-------|-------------|
+| `audit.completed` | Fired when an audit finishes successfully |
+| `audit.failed` | Fired when an audit fails |
+
+### Payload Format
+
+```json
+{
+  "event": "audit.completed",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "audit_id": "audit_abc123",
+    "url": "https://example.com",
+    "company_name": "Example Corp",
+    "tier": "pro",
+    "score": 85,
+    "grade": "B"
+  }
+}
+```
+
+### Security
+
+Webhooks are signed using HMAC-SHA256. Verify the `X-Webhook-Signature` header:
+
+```python
+import hmac
+import hashlib
+
+def verify_webhook(payload: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+```
+
+## Tenant Branding
+
+Customize reports with your brand identity.
+
+### API Endpoints
+
+- `GET /tenant/branding` - Get current branding
+- `PATCH /tenant/branding` - Update branding
+- `DELETE /tenant/branding` - Reset to defaults
+
+### Configuration Options
+
+| Field | Description | Format |
+|-------|-------------|--------|
+| `logo_url` | URL to your logo image | HTTPS URL |
+| `primary_color` | Primary brand color | Hex (#RRGGBB) |
+| `secondary_color` | Secondary brand color | Hex (#RRGGBB) |
+| `footer_text` | Custom footer text | String |
+
+### Example
+
+```bash
+curl -X PATCH https://api.example.com/tenant/branding \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "logo_url": "https://example.com/logo.png",
+    "primary_color": "#1E3A8A",
+    "footer_text": "Powered by Your Company"
+  }'
+```
+
+## Observability
+
+### Metrics
+
+The system exposes Prometheus-compatible metrics at `/metrics`:
+
+```
+# Audit metrics
+audit_total{tier="pro",status="completed"} 150
+audit_duration_seconds_bucket{tier="pro",le="60"} 120
+active_audits 3
+
+# HTTP metrics
+http_requests_total{method="GET",status="200"} 5000
+http_request_duration_seconds_bucket{le="0.1"} 4500
+```
+
+### Structured Logging
+
+All logs are output in JSON format with request correlation:
+
+```json
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "level": "INFO",
+  "message": "Audit completed",
+  "request_id": "req-abc123",
+  "user_id": "user-xyz",
+  "audit_id": "audit-456"
+}
+```
+
+### Admin Dashboard
+
+Administrators can access `/admin/health` for a real-time system health dashboard showing:
+- Active audits
+- Error rate
+- Average completion time
+
+## Python SDK
+
+Use the official SDK for programmatic access:
+
+```python
+from packages.seo_health_sdk import SEOHealthClient
+
+client = SEOHealthClient(
+    base_url="https://api.example.com",
+    api_key="YOUR_API_KEY"
+)
+
+# Start an audit
+audit = client.create_audit(
+    url="https://example.com",
+    company_name="Example Corp",
+    tier="pro"
+)
+
+# Check status
+status = client.get_audit(audit.audit_id)
+
+# List webhooks
+webhooks = client.list_webhooks()
+```
+
 ## Usage
 
 ### Python API

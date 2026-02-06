@@ -3,7 +3,7 @@
 ## CYCLE 1: OBSERVE - Real-Time Monitoring MVP (Days 1-3)
 
 ### Day 1: Foundation & Data Models
-- [ ] **Task 1.1:** Create `competitive-monitor/` package structure (15 min)
+- [ ] **Task 1.1:** Create `competitive_monitor/` package structure (15 min)
   - Create directory, `__init__.py`, `requirements.txt`
   - Define data models: `CompetitorProfile`, `ScoreSnapshot`, `AlertEvent`
   

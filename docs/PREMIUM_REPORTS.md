@@ -173,14 +173,14 @@ This premium report system justifies high-value engagements because it provides:
 ## Files
 
 - `run_premium_audit.py` - Main entry point for premium audits
-- `competitive-intel/market_intelligence.py` - Market analysis engine
-- `competitive-intel/premium_report_integration.py` - Integration utilities
+- `competitive_intel/market_intelligence.py` - Market analysis engine
+- `competitive_intel/premium_report_integration.py` - Integration utilities
 - `generate_premium_report.py` - PDF generation with market intel sections
 
 
 ## ROI Calculator
 
-The new ROI calculator (`competitive-intel/roi_calculator.py`) provides:
+The new ROI calculator (`competitive_intel/roi_calculator.py`) provides:
 
 ### Industry Benchmarks
 - Average deal sizes by industry/vertical

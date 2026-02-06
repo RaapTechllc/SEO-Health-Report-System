@@ -1,11 +1,11 @@
 """Pytest configuration and shared fixtures for SEO Health Report tests."""
 
+import importlib.util
 import os
 import sys
-import pytest
-import importlib.util
-from typing import Dict, Any
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 # Add project root to sys.path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,7 +14,7 @@ if project_root not in sys.path:
 
 # Import seo-health-report package dynamically (has hyphen in name)
 spec = importlib.util.spec_from_file_location(
-    "seo_health_report", os.path.join(project_root, "seo-health-report", "__init__.py")
+    "seo_health_report", os.path.join(project_root, "packages", "seo_health_report", "__init__.py")
 )
 seo_health_report_module = importlib.util.module_from_spec(spec)
 sys.modules["seo_health_report"] = seo_health_report_module

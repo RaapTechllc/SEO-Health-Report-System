@@ -2,12 +2,12 @@
 Tests for async utility functions.
 """
 
-import pytest
 import asyncio
 import inspect
-from unittest.mock import AsyncMock, patch
-import sys
 import os
+import sys
+
+import pytest
 
 # Add scripts to path for imports
 sys.path.insert(
@@ -15,8 +15,8 @@ sys.path.insert(
     os.path.join(os.path.dirname(__file__), "..", "..", "seo-health-report", "scripts"),
 )
 from async_utils import (
-    fetch_url_async,
     batch_fetch_urls,
+    fetch_url_async,
     run_parallel,
     to_async,
     to_sync,

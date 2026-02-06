@@ -2,26 +2,23 @@
 Integration tests for data contracts (schemas).
 """
 
-import pytest
-import sys
 import os
+import sys
 
 # Setup module path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
 from seo_health_report.scripts.schemas import (
-    Severity,
-    Priority,
-    Grade,
-    AuditStatus,
-    Issue,
-    Recommendation,
-    ComponentScore,
     AuditResult,
-    FullAuditResult,
-    calculate_grade,
+    AuditStatus,
+    Grade,
+    Issue,
+    Priority,
+    Recommendation,
+    Severity,
     calculate_composite_score,
+    calculate_grade,
 )
 
 

@@ -56,8 +56,8 @@ seo-health-report/
 │   ├── hooks/                     # Custom React hooks
 │   ├── styles/                    # CSS styling
 │   └── App.jsx                    # Main application
-├── 🔧 competitive-monitor/         # Backend monitoring
-├── 🧠 competitive-intel/           # AI analysis
+├── 🔧 competitive_monitor/         # Backend monitoring
+├── 🧠 competitive_intel/           # AI analysis
 ├── 📊 multi-tier-reports/          # Tiered reporting
 └── 🚀 start_complete_system.py     # System launcher
 ```
@@ -72,8 +72,8 @@ seo-health-report/
 ### Setup
 ```bash
 # 1. Install Python dependencies
-pip install -r competitive-monitor/requirements.txt
-pip install -r competitive-intel/requirements.txt
+pip install -r competitive_monitor/requirements.txt
+pip install -r competitive_intel/requirements.txt
 pip install -r multi-tier-reports/requirements.txt
 
 # 2. Install frontend dependencies
@@ -148,7 +148,7 @@ npm run build  # Production build
 ### Backend Development
 ```bash
 # Start backend only
-cd competitive-monitor
+cd competitive_monitor
 python3 -m uvicorn api:app --reload --port 8000
 
 # Run tests
@@ -158,8 +158,8 @@ pytest tests/
 ### Adding New Features
 
 1. **Frontend Components:** Add to `frontend/components/`
-2. **Backend Endpoints:** Add to `competitive-monitor/api.py`
-3. **OODA Logic:** Extend `competitive-intel/analyzer.py`
+2. **Backend Endpoints:** Add to `competitive_monitor/api.py`
+3. **OODA Logic:** Extend `competitive_intel/analyzer.py`
 4. **Styling:** Update `frontend/styles/`
 
 ## 🚨 Troubleshooting
@@ -180,7 +180,7 @@ npm start
 echo $ANTHROPIC_API_KEY
 
 # Verify dependencies
-pip install -r competitive-monitor/requirements.txt
+pip install -r competitive_monitor/requirements.txt
 ```
 
 **CORS issues:**
@@ -203,7 +203,7 @@ pip install -r competitive-monitor/requirements.txt
 ## 📈 Monitoring & Analytics
 
 ### System Health
-- Backend logs: `competitive-monitor.log`
+- Backend logs: `competitive_monitor.log`
 - Frontend logs: Browser console
 - Complete system: `complete-system.log`
 

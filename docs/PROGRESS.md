@@ -11,8 +11,8 @@
 - **Completed:** 2026-01-12 22:30:00
 - **Description:** Comprehensive security and code quality review of OODA Loop competitive intelligence system
 - **Focus Areas:** 
-  - competitive-monitor/ package (API, storage, monitoring)
-  - competitive-intel/ package (analyzer, battlecards)
+  - competitive_monitor/ package (API, storage, monitoring)
+  - competitive_intel/ package (analyzer, battlecards)
   - multi-tier-reports/ package (tier classifier, pricing)
   - ooda_orchestrator.py main system
   - API security, data validation, potential vulnerabilities
@@ -48,11 +48,140 @@
 - [ ] Production deployment verification
 - [ ] Performance benchmarking
 
-## Progress Overview
+## Sprint 1: Platform Skeleton + Multi-Tenant Core
+**Status:** DONE
+**Start Date:** 2026-01-18
+**Completed:** 2026-01-18
 
-| Phase | Tasks Complete | Total Tasks | Status |
-|-------|---------------|-------------|---------|
-| Foundation | 2 | 2 | DONE |
+### Task 1.1: Monorepo Structure + Conventions
+- **Agent:** arch-lead
+- **Status:** DONE
+- **Deliverables:**
+  - `apps/` and `packages/` directory structure
+  - Shared config setup
+  - CI workflow updates for monorepo
+- **Acceptance Criteria:**
+  - [x] Standardized structure (apps/api, apps/web, apps/worker)
+  - [x] Shared schemas/libs in packages/
+  - [x] Environment variable strategy defined (via shared config package)
+
+### Task 1.2: Env Config + Secrets
+- **Agent:** devops-automator
+- **Status:** DONE
+- **Deliverables:**
+  - `packages/config/` with Settings, SecretsManager, validators
+  - `.env.example` with all env vars documented
+  - Pydantic Settings for type-safe configuration
+- **Acceptance Criteria:**
+  - [x] API and worker boot with `ENV=local` using `.env`
+  - [x] CI runs without real API keys
+  - [x] Staging/prod inject secrets without code changes
+
+### Task 1.3: Shared Schemas Package
+- **Agent:** code-surgeon
+- **Status:** DONE
+- **Deliverables:**
+  - `packages/schemas/models.py` with canonical dataclasses
+  - Enums: AuditStatus, AuditTier, Severity, Priority, Grade
+  - Models: Issue, Recommendation, ComponentScore, AuditRequest, AuditResult, ProgressEvent
+- **Acceptance Criteria:**
+  - [x] API and worker import same schema package
+  - [x] Schema changes enforced by mypy
+  - [x] No duplicated enums/DTOs
+
+### Task 2.1: DB Schema v1 + Migrations
+- **Agent:** db-wizard
+- **Status:** DONE
+- **Deliverables:**
+  - `alembic.ini` configuration
+  - `infrastructure/migrations/env.py` for Alembic
+  - `infrastructure/migrations/versions/v001_initial_schema.py`
+- **Acceptance Criteria:**
+  - [x] `alembic upgrade head` works from empty DB
+  - [x] DB constraints prevent impossible states
+  - [x] Supports SQLite (dev) and PostgreSQL (prod)
+
+### Task 2.2: Tenant + RBAC
+- **Agent:** code-surgeon
+- **Status:** DONE
+- **Deliverables:**
+  - `Tenant` table in database.py
+  - `tenant_id` foreign key on User, Audit, Payment, Competitor
+  - `packages/config/rbac.py` with Role/Permission enums
+  - `require_permission()` FastAPI dependency
+- **Acceptance Criteria:**
+  - [x] Tenant scoping enforced at model layer
+  - [x] RBAC permissions checked via dependency injection
+  - [x] JWT includes tenant_id
+
+### Task 2.3: Storage Buckets + Signed URLs
+- **Agent:** devops-automator
+- **Status:** DONE
+- **Deliverables:**
+  - `packages/storage/client.py` with StorageBackend ABC
+  - `LocalStorageBackend` for development
+  - `S3StorageBackend` for production (presigned URLs)
+  - `get_storage_backend()` factory
+- **Acceptance Criteria:**
+  - [x] Local storage works in dev
+  - [x] S3 integration ready (boto3 optional)
+  - [x] Signed URL generation supported
+
+### Task 3.1: Audit Lifecycle Endpoints
+- **Agent:** code-surgeon
+- **Status:** DONE
+- **Deliverables:**
+  - `POST /audit` creates audit record
+  - `GET /audit/{id}` returns status
+  - `GET /audits` lists audits
+  - Background task execution
+- **Acceptance Criteria:**
+  - [x] Audit record created and visible via API
+  - [x] Status transitions: pending → running → completed/failed
+
+---
+
+## Sprint 2: Job Framework + Worker Wiring + Safe Fetching
+**Status:** PLANNED
+**Start Date:** TBD (after Sprint 1 carryover)
+**Spec:** `.kiro/specs/sprint-2/`
+
+### Goal
+Audits run async with progress tracking; safe fetch client exists.
+
+### Exit Criteria
+- [ ] "Hello audit" job completes end-to-end without manual intervention
+- [ ] Progress changes show in DB (queued → running → done)
+- [ ] SSRF unit tests pass (private IPs blocked)
+
+### Tasks Overview
+| Task | Agent | Status | Description |
+|------|-------|--------|-------------|
+| 2.0.1 | devops-automator | PENDING | Env Config + Secrets |
+| 2.0.2 | code-surgeon | PENDING | Shared Schemas Package |
+| 2.0.3 | db-wizard | PENDING | DB Schema v1 + Migrations |
+| 2.1.1 | db-wizard | PENDING | Job Table + State Machine |
+| 2.1.2 | code-surgeon | PENDING | Worker Runner (lease + execute) |
+| 2.1.3 | code-surgeon | PENDING | API Enqueue Wiring |
+| 2.2.1 | db-wizard | PENDING | Progress/Event Schema |
+| 2.2.2 | code-surgeon | PENDING | Hello Audit Handler |
+| 2.3.1 | code-surgeon | PENDING | Idempotency Hashing |
+| 2.4.1 | code-surgeon | PENDING | SSRF-Protected HTTP Client |
+| 2.4.2 | test-architect | PENDING | SSRF Test Suite |
+| 2.5.1 | code-surgeon | PENDING | Redaction Utility |
+| 2.5.2 | test-architect | PENDING | Redaction Tests |
+| 2.6.1 | devops-automator | PENDING | Worker Docker/K8s Manifest |
+| 2.6.2 | frontend-designer | PENDING | Status UI Indicator |
+| 2.6.3 | doc-smith | PENDING | Job System Documentation |
+
+### Critical Path
+```
+Env Config → DB Migrations → Job Table → Worker Runner → Safe Fetch → Hello Audit → EXIT
+```
+
+---
+## Previous Phase: MVP (Completed)
+
 | Backend | 3 | 3 | DONE |
 | Frontend | 3 | 3 | DONE |
 | Testing | 2 | 3 | 90% |

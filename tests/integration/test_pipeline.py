@@ -2,10 +2,9 @@
 Integration tests for the full audit pipeline.
 """
 
-import pytest
-import sys
 import os
-from unittest.mock import patch, MagicMock, AsyncMock
+import sys
+from unittest.mock import patch
 
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
@@ -17,10 +16,8 @@ class TestAuditPipeline:
     def test_orchestrate_imports(self):
         """Test orchestrate module imports correctly."""
         from seo_health_report.scripts.orchestrate import (
-            run_full_audit,
             handle_audit_failure,
-            extract_domain,
-            collect_all_issues,
+            run_full_audit,
         )
         assert callable(run_full_audit)
         assert callable(handle_audit_failure)
@@ -29,8 +26,6 @@ class TestAuditPipeline:
         """Test schemas module imports correctly."""
         from seo_health_report.scripts.schemas import (
             Issue,
-            Recommendation,
-            AuditResult,
             calculate_grade,
         )
         assert Issue is not None
@@ -39,10 +34,9 @@ class TestAuditPipeline:
     def test_failure_handling_integration(self):
         """Test failure handling produces valid schema."""
         from seo_health_report.scripts.orchestrate import handle_audit_failure
-        from seo_health_report.scripts.schemas import AuditStatus
-        
+
         result = handle_audit_failure("technical", "Test error")
-        
+
         assert result["score"] is None
         assert result["grade"] == "N/A"
         assert result["status"] == "unavailable"
@@ -52,20 +46,20 @@ class TestAuditPipeline:
     def test_domain_extraction_integration(self):
         """Test domain extraction with various URLs."""
         from seo_health_report.scripts.orchestrate import extract_domain
-        
+
         test_cases = [
             ("https://www.example.com/page", "example.com"),
             ("http://blog.test.org/article", "blog.test.org"),
             ("https://example.com:8080/path", "example.com"),
         ]
-        
+
         for url, expected in test_cases:
             assert extract_domain(url) == expected
 
     def test_issue_collection_integration(self):
         """Test issue collection from audit results."""
         from seo_health_report.scripts.orchestrate import collect_all_issues
-        
+
         audit_results = {
             "audits": {
                 "technical": {
@@ -83,9 +77,9 @@ class TestAuditPipeline:
                 },
             }
         }
-        
+
         issues = collect_all_issues(audit_results)
-        
+
         assert len(issues) == 3
         # Should be sorted by severity
         assert issues[0]["severity"] == "high"
@@ -101,7 +95,6 @@ class TestGeminiIntegration:
         from seo_health_report.scripts.gemini_integration import (
             GeminiClient,
             GeminiConfig,
-            get_gemini_config,
         )
         assert GeminiClient is not None
         assert GeminiConfig is not None
@@ -109,21 +102,21 @@ class TestGeminiIntegration:
     def test_gemini_config_without_key(self):
         """Test Gemini config returns None without API key."""
         from seo_health_report.scripts.gemini_integration import get_gemini_config
-        
+
         with patch.dict(os.environ, {}, clear=True):
             # Remove any existing keys
             os.environ.pop("GOOGLE_GEMINI_API_KEY", None)
             os.environ.pop("GOOGLE_API_KEY", None)
-            config = get_gemini_config()
+            get_gemini_config()
             # May or may not be None depending on env
             # Just verify it doesn't crash
 
     def test_gemini_client_availability(self):
         """Test GeminiClient reports availability correctly."""
         from seo_health_report.scripts.gemini_integration import GeminiClient
-        
+
         client = GeminiClient(config=None)
-        assert client.available == False
+        assert not client.available
 
 
 class TestCacheIntegration:
@@ -132,9 +125,9 @@ class TestCacheIntegration:
     def test_cache_imports(self):
         """Test cache module imports correctly."""
         from seo_health_report.scripts.cache import (
-            get_cache,
-            clear_cache,
             cached,
+            clear_cache,
+            get_cache,
         )
         assert callable(get_cache)
         assert callable(clear_cache)
