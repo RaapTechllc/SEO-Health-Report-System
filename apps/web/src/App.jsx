@@ -10,15 +10,9 @@ import { ExecutiveBrief } from './components/dashboard/ExecutiveBrief';
 import { Features } from './components/pages/Features';
 import { Pricing } from './components/pages/Pricing';
 import { Docs } from './components/pages/Docs';
-import { mockReport } from './mockData';
-
 function HomePage({ report, setReport, isLoading, setIsLoading }) {
   const handleAnalyze = (data) => {
-    if (typeof data === 'string') {
-      setReport({ ...mockReport, url: data });
-    } else {
-      setReport(data);
-    }
+    setReport(data);
     setIsLoading(false);
   };
 

@@ -24,11 +24,15 @@ from executor import (
     mark_job_queued_async,
 )
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
+try:
+    from packages.core.logging import setup_logging
+    setup_logging(service_name="seo-health-worker")
+except ImportError:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
 logger = logging.getLogger(__name__)
 
 POLL_INTERVAL = int(os.getenv("WORKER_POLL_INTERVAL", "5"))
@@ -60,6 +64,36 @@ def handle_shutdown(signum, frame):
     sig_name = signal.Signals(signum).name
     logger.info(f"Received {sig_name}, initiating graceful shutdown...")
     shutdown_requested = True
+
+
+async def webhook_retry_loop() -> None:
+    """Background loop that processes pending webhook retries."""
+    retry_interval = int(os.getenv("WEBHOOK_RETRY_INTERVAL", "60"))
+    logger.info(f"Webhook retry loop started (interval: {retry_interval}s)")
+
+    while not shutdown_requested:
+        try:
+            from database import SessionLocal
+            db = SessionLocal()
+            try:
+                from packages.seo_health_report.webhooks.service import WebhookService
+                service = WebhookService(db)
+                count = await service.process_pending_retries()
+                if count > 0:
+                    logger.info(f"Processed {count} webhook retries")
+                await service.close()
+            except ImportError:
+                pass  # Webhook service not available
+            except Exception as e:
+                logger.error(f"Error in webhook retry loop: {e}")
+            finally:
+                db.close()
+        except Exception as e:
+            logger.error(f"Failed to create DB session for webhook retries: {e}")
+
+        await asyncio.sleep(retry_interval)
+
+    logger.info("Webhook retry loop exiting")
 
 
 async def worker_loop(worker_id: str) -> None:
@@ -126,7 +160,10 @@ async def main() -> None:
     signal.signal(signal.SIGINT, handle_shutdown)
 
     try:
-        await worker_loop(WORKER_ID)
+        await asyncio.gather(
+            worker_loop(WORKER_ID),
+            webhook_retry_loop(),
+        )
     except Exception as e:
         logger.exception(f"Fatal error in worker: {e}")
         sys.exit(1)

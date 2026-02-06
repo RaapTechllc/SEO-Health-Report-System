@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export default function AuditForm({ onAnalyze, isLoading, setIsLoading }) {
   const [url, setUrl] = useState('');
@@ -30,6 +31,18 @@ export default function AuditForm({ onAnalyze, isLoading, setIsLoading }) {
 
     setError('');
     if (setIsLoading) setIsLoading(true);
+
+    if (DEMO_MODE) {
+      try {
+        const { mockReport } = await import('../mockData');
+        onAnalyze(mockReport);
+      } catch (err) {
+        setError('Failed to load demo data');
+      } finally {
+        if (setIsLoading) setIsLoading(false);
+      }
+      return;
+    }
 
     try {
       console.log('Sending request to:', `${API_URL}/audit`);

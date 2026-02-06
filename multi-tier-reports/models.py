@@ -35,3 +35,5 @@ class SiteComplexity:
     content_volume: str  # "low", "medium", "high"
     competitive_landscape: str  # "low", "medium", "high"
     complexity_score: int  # 0-100
+    domain_authority_source: str = "fallback"  # "moz_api", "audit_data", "fallback"
+    technical_issues_source: str = "fallback"  # "audit_data", "fallback"

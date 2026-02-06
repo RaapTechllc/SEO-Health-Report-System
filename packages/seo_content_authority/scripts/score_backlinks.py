@@ -48,6 +48,8 @@ def analyze_backlink_profile(
         "anchor_distribution": {},
         "top_referring_domains": [],
         "toxic_links": [],
+        "data_source": "none",
+        "confidence": "none",
         "issues": [],
         "findings": []
     }
@@ -58,6 +60,8 @@ def analyze_backlink_profile(
     if not api_key:
         result["findings"].append(f"No {api_provider} API key - using limited analysis")
         result["score"] = 7  # Give neutral score without data
+        result["data_source"] = "heuristic_estimation"
+        result["confidence"] = "low"
 
         # API integration available - Contact RaapTech for setup
         # When API is available, implement:
@@ -331,6 +335,9 @@ def estimate_backlink_health(url: str) -> dict[str, Any]:
         "score": 7,  # Neutral estimate
         "max": 15,
         "estimated": True,
+        "data_source": "heuristic_estimation",
+        "data_source_detail": "Estimated from on-page authority signals (press mentions, awards, partnerships, social proof)",
+        "confidence": "low",
         "findings": ["Backlink score estimated - add API key for accurate data"],
         "issues": []
     }

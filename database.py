@@ -24,7 +24,38 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./seo_health.db")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
+
+def _create_engine(url: str):
+    """Create SQLAlchemy engine with appropriate configuration."""
+    app_env = os.getenv("APP_ENV", "development").lower()
+    is_production = app_env in ("production", "prod")
+
+    if "sqlite" in url:
+        if is_production:
+            raise RuntimeError(
+                "FATAL: SQLite is not supported in production. "
+                "Set DATABASE_URL to a PostgreSQL connection string."
+            )
+        return create_engine(url, connect_args={"check_same_thread": False})
+
+    # PostgreSQL connection pooling
+    pool_size = int(os.getenv("DB_POOL_SIZE", "5"))
+    max_overflow = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+    pool_timeout = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+    pool_recycle = int(os.getenv("DB_POOL_RECYCLE", "1800"))
+    pool_pre_ping = os.getenv("DB_POOL_PRE_PING", "true").lower() == "true"
+
+    return create_engine(
+        url,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_timeout=pool_timeout,
+        pool_recycle=pool_recycle,
+        pool_pre_ping=pool_pre_ping,
+    )
+
+
+engine = _create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

@@ -21,7 +21,8 @@ from apps.api.openapi import (
     AUDIT_STATUS_EXAMPLE,
     ERROR_RESPONSES,
 )
-from database import Audit, get_db
+from auth import get_current_user, require_auth
+from database import Audit, User, get_db
 from packages.seo_health_report.metrics import metrics
 from packages.seo_health_report.progress import get_audit_progress
 from packages.seo_health_report.scripts.calculate_scores import calculate_composite_score
@@ -213,7 +214,8 @@ async def run_audit_task(
     keywords: list[str],
     competitors: list[str],
     tier: str,
-    tenant_id: Optional[str] = None
+    tenant_id: Optional[str] = None,
+    user_id: Optional[str] = None
 ):
     """Background task to run the audit. LEGACY: kept for tests, prefer job queue."""
     import time
@@ -322,7 +324,8 @@ async def start_audit(
     request: AuditRequest,
     http_request: Request,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: User = Depends(require_auth)
 ):
     """Start a new SEO audit (async via background task)."""
     check_rate_limit(http_request)
@@ -334,7 +337,9 @@ async def start_audit(
         url=request.url,
         company_name=request.company_name,
         tier=request.tier,
-        status="queued"
+        status="queued",
+        user_id=user.id,
+        tenant_id=user.tenant_id
     )
     db.add(audit)
     db.commit()
@@ -348,7 +353,8 @@ async def start_audit(
         keywords=request.keywords,
         competitors=request.competitors,
         tier=request.tier,
-        tenant_id=None
+        tenant_id=user.tenant_id,
+        user_id=user.id
     )
 
     # Legacy job queue code commented out for now
@@ -357,6 +363,72 @@ async def start_audit(
     #     # ...
     # }
     # result_audit_id = enqueue_audit_job(...)
+
+    return AuditResponse(
+        audit_id=audit_id,
+        status="queued",
+        url=request.url,
+        company_name=request.company_name
+    )
+
+
+@router.post(
+    "/audit/hello",
+    response_model=AuditResponse,
+    summary="Start public SEO audit (free tier)",
+    description="Start a new SEO audit without authentication. Limited to low tier with max 3 keywords and no competitors.",
+    responses={
+        200: {
+            "description": "Audit queued successfully",
+            "content": {
+                "application/json": {
+                    "example": AUDIT_RESPONSE_EXAMPLE
+                }
+            }
+        },
+        400: ERROR_RESPONSES[400],
+        422: ERROR_RESPONSES[422],
+        429: ERROR_RESPONSES[429],
+    }
+)
+async def start_public_audit(
+    request: AuditRequest,
+    http_request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """Start a new SEO audit (public endpoint, no auth required)."""
+    check_rate_limit(http_request)
+
+    # Force free-tier limitations
+    tier = "low"
+    keywords = request.keywords[:3] if request.keywords else []
+    competitors = []
+
+    audit_id = f"audit_{uuid.uuid4().hex[:12]}"
+
+    audit = Audit(
+        id=audit_id,
+        url=request.url,
+        company_name=request.company_name,
+        tier=tier,
+        status="queued"
+    )
+    db.add(audit)
+    db.commit()
+
+    # Run audit in background task (same process) for dev simplicity
+    background_tasks.add_task(
+        run_audit_task,
+        audit_id=audit_id,
+        url=request.url,
+        company_name=request.company_name,
+        keywords=keywords,
+        competitors=competitors,
+        tier=tier,
+        tenant_id=None,
+        user_id=None
+    )
 
     return AuditResponse(
         audit_id=audit_id,
@@ -382,9 +454,19 @@ async def start_audit(
         404: ERROR_RESPONSES[404],
     }
 )
-async def get_audit(audit_id: str, db: Session = Depends(get_db)):
+async def get_audit(
+    audit_id: str,
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user)
+):
     """Get audit status and results."""
-    audit = db.query(Audit).filter(Audit.id == audit_id).first()
+    query = db.query(Audit).filter(Audit.id == audit_id)
+
+    # If user is authenticated and has tenant_id, scope to their tenant
+    if user and user.tenant_id:
+        query = query.filter(Audit.tenant_id == user.tenant_id)
+
+    audit = query.first()
     if not audit:
         raise HTTPException(status_code=404, detail="Audit not found")
 
@@ -615,9 +697,18 @@ async def get_audit_pdf(audit_id: str, db: Session = Depends(get_db)):
         }
     }
 )
-async def list_audits(db: Session = Depends(get_db)):
+async def list_audits(
+    db: Session = Depends(get_db),
+    user: User = Depends(require_auth)
+):
     """List all audits."""
-    audits = db.query(Audit).order_by(Audit.created_at.desc()).limit(100).all()
+    query = db.query(Audit)
+
+    # Filter by tenant_id if user has one
+    if user.tenant_id:
+        query = query.filter(Audit.tenant_id == user.tenant_id)
+
+    audits = query.order_by(Audit.created_at.desc()).limit(100).all()
     return {
         "audits": [{
             "audit_id": a.id, "status": a.status, "url": a.url,

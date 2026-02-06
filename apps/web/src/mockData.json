@@ -45,7 +45,7 @@
             {
               "severity": "high",
               "category": "speed",
-              "description": "Could not analyze page speed: Client error '400 Bad Request' for url 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fsheetmetalwerks.com&strategy=mobile&category=performance&key=your_pagespeed_api_key_here'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+              "description": "Could not analyze page speed: Client error '400 Bad Request' for url 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fsheetmetalwerks.com&strategy=mobile&category=performance&key=REDACTED'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
               "recommendation": "Verify URL is accessible"
             }
           ],
@@ -63,7 +63,7 @@
             {
               "severity": "high",
               "category": "speed",
-              "description": "Could not analyze page speed: Client error '400 Bad Request' for url 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fsheetmetalwerks.com&strategy=mobile&category=performance&key=your_pagespeed_api_key_here'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+              "description": "Could not analyze page speed: Client error '400 Bad Request' for url 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fsheetmetalwerks.com&strategy=mobile&category=performance&key=REDACTED'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
               "recommendation": "Verify URL is accessible"
             }
           ],
@@ -584,7 +584,7 @@
           "score": 0,
           "max": 15,
           "findings": [
-            "Error checking google_kg: 400 Client Error: Bad Request for url: https://kgsearch.googleapis.com/v1/entities:search?query=Sheet+Metal+Werks&key=your_knowledge_graph_api_key_here&limit=5&types=Organization%2CCorporation%2CLocalBusiness",
+            "Error checking google_kg: 400 Client Error: Bad Request for url: https://kgsearch.googleapis.com/v1/entities:search?query=Sheet+Metal+Werks&key=REDACTED&limit=5&types=Organization%2CCorporation%2CLocalBusiness",
             "NOT FOUND in wikipedia",
             "NOT FOUND in wikidata",
             "Skipped crunchbase: API key not configured",
@@ -598,7 +598,7 @@
             "google_kg": {
               "found": false,
               "url": null,
-              "error": "400 Client Error: Bad Request for url: https://kgsearch.googleapis.com/v1/entities:search?query=Sheet+Metal+Werks&key=your_knowledge_graph_api_key_here&limit=5&types=Organization%2CCorporation%2CLocalBusiness",
+              "error": "400 Client Error: Bad Request for url: https://kgsearch.googleapis.com/v1/entities:search?query=Sheet+Metal+Werks&key=REDACTED&limit=5&types=Organization%2CCorporation%2CLocalBusiness",
               "data": null
             },
             "wikipedia": {

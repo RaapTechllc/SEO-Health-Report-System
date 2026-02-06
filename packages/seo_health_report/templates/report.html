@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Health Report - {{ company_name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.6; background: #f8fafc; }
+
+        .header { background: linear-gradient(135deg, {{ primary_color | default('#1E3A8A') }}, {{ secondary_color | default('#3B82F6') }}); color: white; padding: 40px; }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header .meta { opacity: 0.9; font-size: 14px; }
+        .header .logo { max-height: 40px; margin-bottom: 12px; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+        .executive-summary { background: white; border-radius: 12px; padding: 32px; margin: 24px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .executive-summary h2 { font-size: 20px; margin-bottom: 16px; color: #1a1a2e; }
+
+        .score-hero { display: flex; align-items: center; gap: 24px; margin: 24px 0; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; font-weight: bold; color: white; flex-shrink: 0; }
+        .score-circle .number { font-size: 36px; line-height: 1; }
+        .score-circle .label { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+
+        .grade-badge { display: inline-block; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 18px; color: white; }
+        .grade-A { background: #22c55e; }
+        .grade-B { background: #84cc16; }
+        .grade-C { background: #eab308; }
+        .grade-D { background: #f97316; }
+        .grade-F { background: #ef4444; }
+
+        .score-good { background: #22c55e; }
+        .score-fair { background: #eab308; }
+        .score-poor { background: #ef4444; }
+
+        .components { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+        .component-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+        .component-card .name { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .component-card .score { font-size: 28px; font-weight: 700; }
+        .component-card .bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .component-card .bar-fill { height: 100%; border-radius: 3px; }
+
+        .section { background: white; border-radius: 12px; padding: 24px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .section h3 { font-size: 18px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+
+        .issues-list { list-style: none; }
+        .issues-list li { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; gap: 12px; align-items: flex-start; }
+        .issues-list li:last-child { border-bottom: none; }
+
+        .severity { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; flex-shrink: 0; }
+        .severity-high { background: #fef2f2; color: #dc2626; }
+        .severity-medium { background: #fffbeb; color: #d97706; }
+        .severity-low { background: #f0fdf4; color: #16a34a; }
+
+        .recommendations { margin-top: 24px; }
+        .rec-item { padding: 16px; margin: 8px 0; border-radius: 8px; border-left: 4px solid; }
+        .rec-high { border-color: #ef4444; background: #fef2f2; }
+        .rec-medium { border-color: #f59e0b; background: #fffbeb; }
+        .rec-quick_win { border-color: #22c55e; background: #f0fdf4; }
+        .rec-low { border-color: #94a3b8; background: #f8fafc; }
+        .rec-item .action { font-weight: 600; margin-bottom: 4px; }
+        .rec-item .details { font-size: 14px; color: #64748b; }
+
+        .footer { text-align: center; padding: 32px; color: #94a3b8; font-size: 13px; margin-top: 32px; }
+
+        @media print {
+            body { background: white; }
+            .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .score-circle { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .grade-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .section { box-shadow: none; border: 1px solid #e2e8f0; break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            {% if logo_url %}<img src="{{ logo_url }}" alt="Logo" class="logo">{% endif %}
+            <h1>SEO Health Report</h1>
+            <div class="meta">
+                <strong>{{ company_name }}</strong> &bull; {{ url }} &bull; {{ timestamp }}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Executive Summary -->
+        <div class="executive-summary">
+            <h2>Executive Summary</h2>
+            <div class="score-hero">
+                <div class="score-circle {{ score_class }}">
+                    <span class="number">{{ overall_score }}</span>
+                    <span class="label">/ 100</span>
+                </div>
+                <div>
+                    <span class="grade-badge grade-{{ grade }}">Grade {{ grade }}</span>
+                    <p style="margin-top: 8px; color: #64748b;">{{ grade_description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component Scores -->
+        <div class="components">
+            {% for name, comp in component_scores.items() %}
+            <div class="component-card">
+                <div class="name">{{ name | replace('_', ' ') | title }}</div>
+                <div class="score" style="color: {{ comp.color }}">{{ comp.score }}</div>
+                <div class="bar">
+                    <div class="bar-fill" style="width: {{ comp.pct }}%; background: {{ comp.color }};"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Issues by Component -->
+        {% for comp_name, comp_data in components.items() %}
+        {% if comp_data.issues %}
+        <div class="section">
+            <h3>{{ comp_name | replace('_', ' ') | title }} Issues</h3>
+            <ul class="issues-list">
+                {% for issue in comp_data.issues[:10] %}
+                <li>
+                    {% if issue is mapping %}
+                    <span class="severity severity-{{ issue.severity | default('medium') }}">{{ issue.severity | default('info') }}</span>
+                    <div>
+                        <div>{{ issue.description | default(issue | string) }}</div>
+                        {% if issue.recommendation %}<div style="font-size: 13px; color: #64748b; margin-top: 4px;">{{ issue.recommendation }}</div>{% endif %}
+                    </div>
+                    {% else %}
+                    <span class="severity severity-medium">info</span>
+                    <div>{{ issue }}</div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <!-- Recommendations -->
+        {% if recommendations %}
+        <div class="section recommendations">
+            <h3>Recommendations</h3>
+            {% for rec in recommendations[:10] %}
+            <div class="rec-item rec-{{ rec.priority | default('medium') }}">
+                <div class="action">{{ rec.action }}</div>
+                <div class="details">{{ rec.details | default('') }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Competitor Benchmarks -->
+        {% if competitor_benchmarks %}
+        <div class="section">
+            <h3>Competitor Benchmarks</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #e2e8f0;">
+                        <th style="text-align: left; padding: 8px;">Competitor</th>
+                        <th style="text-align: center; padding: 8px;">Overall Diff</th>
+                        <th style="text-align: center; padding: 8px;">Technical</th>
+                        <th style="text-align: center; padding: 8px;">Content</th>
+                        <th style="text-align: center; padding: 8px;">AI Visibility</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comp in competitor_benchmarks[:5] %}
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 8px;">{{ comp.competitor_name }}</td>
+                        <td style="text-align: center; padding: 8px; color: {{ '#22c55e' if comp.overall_score_diff > 0 else '#ef4444' }}">
+                            {{ '+' if comp.overall_score_diff > 0 }}{{ comp.overall_score_diff }}
+                        </td>
+                        <td style="text-align: center; padding: 8px;">{{ comp.technical_score_diff | default('N/A') }}</td>
+                        <td style="text-align: center; padding: 8px;">{{ comp.content_score_diff | default('N/A') }}</td>
+                        <td style="text-align: center; padding: 8px;">{{ comp.ai_visibility_score_diff | default('N/A') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- ROI Projections -->
+        {% if roi_projection %}
+        <div class="section">
+            <h3>ROI Projections</h3>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">{{ roi_projection.disclosure | default('') }}</p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <div style="padding: 16px; background: #f8fafc; border-radius: 8px;">
+                    <div style="font-size: 13px; color: #64748b;">Monthly Revenue Gain</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #22c55e;">{{ roi_projection.projected_improvement.monthly_revenue_gain | default('N/A') }}</div>
+                </div>
+                <div style="padding: 16px; background: #f8fafc; border-radius: 8px;">
+                    <div style="font-size: 13px; color: #64748b;">Estimated ROI</div>
+                    <div style="font-size: 20px; font-weight: 700; color: {{ primary_color | default('#1E3A8A') }};">{{ roi_projection.roi_analysis.estimated_roi | default('N/A') }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            {{ footer_text | default('Generated by SEO Health Report System') }}
+        </div>
+    </div>
+</body>
+</html>

@@ -11,8 +11,9 @@ from models import ReportTier, SiteComplexity, TierRecommendation
 
 
 class TierClassifier:
-    def __init__(self):
+    def __init__(self, audit_data: Optional[dict] = None):
         self.logger = logging.getLogger(__name__)
+        self.audit_data = audit_data
 
         # Tier classification thresholds
         self.tier_thresholds = {
@@ -39,14 +40,16 @@ class TierClassifier:
             }
         }
 
-    def classify_site_tier(self, target_url: str, budget_range: Optional[str] = None) -> TierRecommendation:
+    def classify_site_tier(self, target_url: str, budget_range: Optional[str] = None, audit_data: Optional[dict] = None) -> TierRecommendation:
         """Classify site and recommend appropriate tier."""
 
         try:
             self.logger.info(f"Classifying tier for {target_url}")
 
+            effective_audit_data = audit_data or self.audit_data
+
             # Analyze site complexity
-            complexity = self._analyze_site_complexity(target_url)
+            complexity = self._analyze_site_complexity(target_url, effective_audit_data)
 
             # Determine recommended tier
             recommended_tier = self._determine_tier(complexity, budget_range)
@@ -81,7 +84,7 @@ class TierClassifier:
                 pricing_suggestion={"min": 1500, "max": 4000, "recommended": 2500}
             )
 
-    def _analyze_site_complexity(self, target_url: str) -> SiteComplexity:
+    def _analyze_site_complexity(self, target_url: str, audit_data: Optional[dict] = None) -> SiteComplexity:
         """Analyze site complexity factors."""
 
         try:
@@ -92,10 +95,10 @@ class TierClassifier:
             estimated_pages = self._estimate_page_count(target_url)
 
             # Estimate domain authority (mock implementation)
-            domain_authority = self._estimate_domain_authority(domain)
+            domain_authority, da_source = self._estimate_domain_authority(domain, audit_data)
 
             # Run basic SEO health check to count issues
-            technical_issues = self._count_technical_issues(target_url)
+            technical_issues, ti_source = self._count_technical_issues(target_url, audit_data)
 
             # Determine content volume
             content_volume = self._assess_content_volume(estimated_pages)
@@ -115,7 +118,9 @@ class TierClassifier:
                 technical_issues_count=technical_issues,
                 content_volume=content_volume,
                 competitive_landscape=competitive_landscape,
-                complexity_score=complexity_score
+                complexity_score=complexity_score,
+                domain_authority_source=da_source,
+                technical_issues_source=ti_source,
             )
 
         except Exception as e:
@@ -146,28 +151,39 @@ class TierClassifier:
         except Exception:
             return 500  # Default
 
-    def _estimate_domain_authority(self, domain: str) -> int:
+    def _estimate_domain_authority(self, domain: str, audit_data: Optional[dict] = None) -> tuple[int, str]:
         """
-        Estimate domain authority.
+        Estimate domain authority. Returns (score, source) tuple.
 
-        NOTE: This returns a baseline estimate. For accurate DA,
-        integrate with Moz, Ahrefs, or SEMrush API.
+        Priority: Moz API -> audit data -> fallback 40
         """
-        # TODO: Integrate real DA API (Moz, Ahrefs, SEMrush)
-        # For now, return a conservative baseline with disclosure
+        # Try audit data first
+        if audit_data:
+            backlinks = audit_data.get("audits", {}).get("content", {}).get("components", {}).get("backlinks", {})
+            if backlinks.get("domain_rating") is not None:
+                return (backlinks["domain_rating"], "audit_data")
+
         self.logger.warning(f"Using baseline DA estimate for {domain} - integrate DA API for accuracy")
-        return 40  # Conservative baseline - actual DA requires API integration
+        return (40, "fallback")
 
-    def _count_technical_issues(self, url: str) -> int:
+    def _count_technical_issues(self, url: str, audit_data: Optional[dict] = None) -> tuple[int, str]:
         """
-        Count technical SEO issues.
+        Count technical SEO issues. Returns (count, source) tuple.
 
-        NOTE: This returns a baseline estimate. For accurate counts,
-        run the actual technical audit module.
+        Priority: audit data -> fallback 10
         """
-        # TODO: Run actual technical audit for real issue count
+        if audit_data:
+            technical = audit_data.get("audits", {}).get("technical", {})
+            components = technical.get("components", {})
+            total_issues = 0
+            for comp_data in components.values():
+                issues = comp_data.get("issues", [])
+                total_issues += len(issues)
+            if total_issues > 0:
+                return (total_issues, "audit_data")
+
         self.logger.warning(f"Using baseline issue estimate for {url} - run full audit for accuracy")
-        return 10  # Conservative baseline - actual count requires full audit
+        return (10, "fallback")
 
     def _assess_content_volume(self, page_count: int) -> str:
         """Assess content volume level."""
@@ -311,5 +327,5 @@ class TierClassifier:
             "recommended": recommended_price
         }
 
-# Global tier classifier
+# Global tier classifier (without audit data - pass audit_data when calling classify_site_tier)
 tier_classifier = TierClassifier()

@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: pip install ruff
       - name: Lint
-        run: ruff check . --select=E,F || true
+        run: ruff check . --select=E,F
 
   test:
     runs-on: ubuntu-latest
@@ -39,9 +39,9 @@ jobs:
           pip install pytest pytest-asyncio pytest-cov
           pip install -e .
           pip install -r packages/core/requirements.txt
-          pip install -r packages/technical-audit/requirements.txt || true
-          pip install -r packages/content-audit/requirements.txt || true
-          pip install -r packages/ai-audit/requirements.txt || true
+          if [ -f packages/technical-audit/requirements.txt ]; then pip install -r packages/technical-audit/requirements.txt; fi
+          if [ -f packages/content-audit/requirements.txt ]; then pip install -r packages/content-audit/requirements.txt; fi
+          if [ -f packages/ai-audit/requirements.txt ]; then pip install -r packages/ai-audit/requirements.txt; fi
       - name: Unit tests
         run: pytest tests/unit -q --tb=short
       - name: Integration tests
@@ -68,9 +68,9 @@ jobs:
           pip install pytest pytest-asyncio
           pip install -e .
           pip install -r packages/core/requirements.txt
-          pip install -r packages/technical-audit/requirements.txt || true
-          pip install -r packages/content-audit/requirements.txt || true
-          pip install -r packages/ai-audit/requirements.txt || true
+          if [ -f packages/technical-audit/requirements.txt ]; then pip install -r packages/technical-audit/requirements.txt; fi
+          if [ -f packages/content-audit/requirements.txt ]; then pip install -r packages/content-audit/requirements.txt; fi
+          if [ -f packages/ai-audit/requirements.txt ]; then pip install -r packages/ai-audit/requirements.txt; fi
       - name: E2E tests
         run: pytest tests/e2e -q --tb=short
         env:
@@ -99,9 +99,9 @@ jobs:
           pip install pytest pytest-asyncio
           pip install -e .
           pip install -r packages/core/requirements.txt
-          pip install -r packages/technical-audit/requirements.txt || true
-          pip install -r packages/content-audit/requirements.txt || true
-          pip install -r packages/ai-audit/requirements.txt || true
+          if [ -f packages/technical-audit/requirements.txt ]; then pip install -r packages/technical-audit/requirements.txt; fi
+          if [ -f packages/content-audit/requirements.txt ]; then pip install -r packages/content-audit/requirements.txt; fi
+          if [ -f packages/ai-audit/requirements.txt ]; then pip install -r packages/ai-audit/requirements.txt; fi
       - name: Chaos tests
         run: pytest tests/chaos -v --tb=short
         env:
@@ -157,9 +157,9 @@ jobs:
           pip install ruff pytest pytest-asyncio
           pip install -e .
           pip install -r packages/core/requirements.txt
-          pip install -r packages/technical-audit/requirements.txt || true
-          pip install -r packages/content-audit/requirements.txt || true
-          pip install -r packages/ai-audit/requirements.txt || true
+          if [ -f packages/technical-audit/requirements.txt ]; then pip install -r packages/technical-audit/requirements.txt; fi
+          if [ -f packages/content-audit/requirements.txt ]; then pip install -r packages/content-audit/requirements.txt; fi
+          if [ -f packages/ai-audit/requirements.txt ]; then pip install -r packages/ai-audit/requirements.txt; fi
       - name: Verify release
         run: bash scripts/verify_release.sh
 

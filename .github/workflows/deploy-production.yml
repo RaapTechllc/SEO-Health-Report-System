@@ -135,28 +135,55 @@ jobs:
 
       - name: Deploy to production
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
-          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_PRODUCTION }}
-          APP_ENV: production
+          IMAGE_TAG: ${{ needs.validate.outputs.image_tag }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          IMAGE_TAG="${{ needs.validate.outputs.image_tag }}"
           echo "Deploying to production with tag: $IMAGE_TAG"
-          
+
           # Save deployment info
           echo "IMAGE_TAG=$IMAGE_TAG" >> deployment.env
           echo "API_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG" >> deployment.env
           echo "WORKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG" >> deployment.env
           echo "DEPLOYED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> deployment.env
-          
-          # Replace with actual deployment commands
-          # Example: Kubernetes
-          # kubectl set image deployment/api api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG --record
-          # kubectl set image deployment/worker worker=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG --record
-          # kubectl rollout status deployment/api
-          # kubectl rollout status deployment/worker
+
+          # Setup SSH
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # Deploy via Docker Compose over SSH
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" << REMOTE_EOF
+            cd /opt/seo-health-report
+
+            # Pull tagged images
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG
+
+            # Tag as latest for docker-compose
+            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
+            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:latest
+
+            # Deploy with docker compose
+            docker compose -f docker-compose.production.yml up -d --no-build
+
+            # Health check loop (max 60 seconds)
+            for i in $(seq 1 12); do
+              if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+                echo "Health check passed on attempt $i"
+                exit 0
+              fi
+              echo "Waiting for health check (attempt $i/12)..."
+              sleep 5
+            done
+            echo "Health check failed after 60 seconds"
+            exit 1
+          REMOTE_EOF
+
+          # Cleanup SSH key
+          rm -f ~/.ssh/deploy_key
 
       - name: Wait for deployment to stabilize
         run: |
@@ -187,7 +214,7 @@ jobs:
           PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://api.seohealthreport.com' }}
         run: |
           echo "Running production smoke tests..."
-          python -m pytest tests/smoke/ -v --tb=short || true
+          python -m pytest tests/smoke/ -v --tb=short
 
       - name: Post-deploy monitoring (2 min)
         env:

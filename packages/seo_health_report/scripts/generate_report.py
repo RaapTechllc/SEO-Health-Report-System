@@ -5,6 +5,7 @@ Provides HTML and PDF report generation with graceful fallback.
 """
 
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -19,7 +20,11 @@ try:
     WEASYPRINT_AVAILABLE = True
 except ImportError:
     WeasyprintHTML = None
-    logger.info("weasyprint not available - PDF generation disabled")
+    _app_env = os.getenv("APP_ENV", "development").lower()
+    if _app_env in ("production", "prod"):
+        logger.error("weasyprint not available in production - PDF generation disabled. Install with: pip install weasyprint")
+    else:
+        logger.info("weasyprint not available - PDF generation disabled")
 
 
 async def generate_pdf_report(

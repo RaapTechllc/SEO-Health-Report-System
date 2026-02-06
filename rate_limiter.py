@@ -16,6 +16,108 @@ from typing import Optional
 
 from fastapi import HTTPException, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from abc import ABC, abstractmethod
+
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+class RateLimitBackend(ABC):
+    """Abstract backend for rate limit storage."""
+
+    @abstractmethod
+    def increment(self, key: str, window_seconds: int) -> int:
+        """Increment counter for key, return current count."""
+        ...
+
+    @abstractmethod
+    def get_count(self, key: str, window_seconds: int) -> int:
+        """Get current count for key within window."""
+        ...
+
+    @abstractmethod
+    def get_ttl(self, key: str) -> int:
+        """Get seconds until key expires."""
+        ...
+
+
+class InMemoryBackend(RateLimitBackend):
+    """In-memory rate limit storage (existing behavior)."""
+
+    def __init__(self):
+        self._counts: dict[str, list] = defaultdict(list)
+
+    def _cleanup(self, key: str, window: int) -> None:
+        cutoff = time.time() - window
+        self._counts[key] = [t for t in self._counts[key] if t > cutoff]
+
+    def increment(self, key: str, window_seconds: int) -> int:
+        self._cleanup(key, window_seconds)
+        self._counts[key].append(time.time())
+        return len(self._counts[key])
+
+    def get_count(self, key: str, window_seconds: int) -> int:
+        self._cleanup(key, window_seconds)
+        return len(self._counts[key])
+
+    def get_ttl(self, key: str) -> int:
+        if self._counts[key]:
+            oldest = min(self._counts[key])
+            return max(0, int(oldest + 60 - time.time()))
+        return 60
+
+
+class RedisBackend(RateLimitBackend):
+    """Redis-backed rate limit storage using sliding window sorted sets."""
+
+    def __init__(self, redis_url: str):
+        try:
+            import redis as redis_lib
+            self._redis = redis_lib.from_url(redis_url, decode_responses=True)
+            self._redis.ping()
+            _logger.info("Redis rate limit backend connected")
+        except Exception as e:
+            raise ConnectionError(f"Failed to connect to Redis: {e}")
+
+    def increment(self, key: str, window_seconds: int) -> int:
+        import uuid
+        now = time.time()
+        pipe = self._redis.pipeline()
+        rkey = f"rl:{key}"
+        pipe.zremrangebyscore(rkey, 0, now - window_seconds)
+        pipe.zadd(rkey, {f"{now}:{uuid.uuid4().hex[:8]}": now})
+        pipe.zcard(rkey)
+        pipe.expire(rkey, window_seconds + 1)
+        results = pipe.execute()
+        return results[2]
+
+    def get_count(self, key: str, window_seconds: int) -> int:
+        now = time.time()
+        rkey = f"rl:{key}"
+        self._redis.zremrangebyscore(rkey, 0, now - window_seconds)
+        return self._redis.zcard(rkey)
+
+    def get_ttl(self, key: str) -> int:
+        ttl = self._redis.ttl(f"rl:{key}")
+        return max(0, ttl) if ttl > 0 else 60
+
+
+def _create_backend() -> RateLimitBackend:
+    """Auto-detect and create rate limit backend."""
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:
+            return RedisBackend(redis_url)
+        except Exception as e:
+            _logger.warning(f"Failed to connect to Redis for rate limiting, falling back to in-memory: {e}")
+    else:
+        _logger.info("REDIS_URL not set, using in-memory rate limiting (not suitable for multi-process production)")
+    return InMemoryBackend()
+
+
+# Global backend instance
+_backend = _create_backend()
 
 # Configuration defaults
 DEFAULT_REQUESTS_PER_MINUTE = int(os.getenv("RATE_LIMIT_REQUESTS_PER_MINUTE", "100"))

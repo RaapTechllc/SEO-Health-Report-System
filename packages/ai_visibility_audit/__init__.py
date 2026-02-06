@@ -37,7 +37,9 @@ async def run_audit(
     competitor_names: Optional[list[str]] = None,
     test_queries: Optional[list[str]] = None,
     ground_truth: Optional[dict[str, Any]] = None,
-    ai_systems: Optional[list[str]] = None
+    ai_systems: Optional[list[str]] = None,
+    tier: str = "basic",
+    max_queries: Optional[int] = None,
 ) -> dict[str, Any]:
     """
     Run a complete AI visibility audit.
@@ -87,8 +89,14 @@ async def run_audit(
         custom_queries=test_queries
     )
 
-    # Limit queries to avoid rate limits and long wait times
-    max_queries = 5  # Reduced for faster audits
+    # Look up query limit from tier config if not explicitly provided
+    if max_queries is None:
+        try:
+            from packages.config.tiers import get_tier
+            tier_def = get_tier(tier)
+            max_queries = tier_def.max_ai_queries
+        except ImportError:
+            max_queries = 5  # Fallback
     queries = queries[:max_queries]
 
     # Step 2: Query AI systems
@@ -184,6 +192,10 @@ async def run_audit(
 
     # Generate recommendations
     results["recommendations"] = generate_recommendations(results)
+
+    results["tier"] = tier
+    results["max_queries_used"] = len(queries)
+    results["total_queries_available"] = max_queries
 
     return results
 

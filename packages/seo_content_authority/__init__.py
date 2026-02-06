@@ -125,14 +125,14 @@ def run_audit(
     }
 
     # Component 3: Keyword Position (15 points)
-    # Without ranking API, score based on keyword optimization
-    keyword_score = 7  # Neutral without ranking data
+    from .scripts.check_keyword_ranking import analyze_keyword_ranking
+    keyword_result = analyze_keyword_ranking(target_url, primary_keywords)
     results["components"]["keyword_position"] = {
-        "score": keyword_score,
-        "max": 15,
-        "note": "Requires ranking API for full analysis",
-        "issues": [],
-        "findings": ["Keyword ranking data requires external API"]
+        "score": keyword_result["score"],
+        "max": keyword_result["max"],
+        "data_source": keyword_result.get("data_source", "estimated"),
+        "issues": keyword_result.get("issues", []),
+        "findings": keyword_result.get("findings", [])
     }
 
     # Component 4: Topical Authority (15 points)
@@ -160,6 +160,8 @@ def run_audit(
         "score": backlink_result["score"],
         "max": backlink_result["max"],
         "estimated": backlink_result.get("estimated", False),
+        "data_source": backlink_result.get("data_source", "none"),
+        "confidence": backlink_result.get("confidence", "none"),
         "issues": backlink_result.get("issues", []),
         "findings": backlink_result.get("findings", [])
     }

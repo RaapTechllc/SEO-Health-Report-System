@@ -91,7 +91,7 @@ def calculate_composite_score(
 
     # Calculate overall
     if total_weight > 0:
-        result["overall_score"] = round(total_weighted / total_weight * total_weight, 0)
+        result["overall_score"] = round(total_weighted / total_weight, 0)
     else:
         result["overall_score"] = 0
 

@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
+import bcrypt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -31,20 +32,36 @@ if SECRET_KEY == "dev-secret-key-change-in-production":
 security = HTTPBearer(auto_error=False)
 
 
-def hash_password(password: str) -> str:
-    """Hash a password using SHA256 with salt."""
-    salt = os.urandom(16).hex()
-    hashed = hashlib.sha256((salt + password).encode()).hexdigest()
-    return f"{salt}:{hashed}"
+def _is_legacy_hash(hashed_password: str) -> bool:
+    """Check if password hash is legacy SHA256 format (salt:hex)."""
+    if ":" not in hashed_password:
+        return False
+    parts = hashed_password.split(":")
+    return len(parts) == 2 and len(parts[0]) == 32 and len(parts[1]) == 64
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash."""
+def _verify_legacy_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against legacy SHA256 hash."""
     try:
         salt, stored_hash = hashed_password.split(":")
         computed_hash = hashlib.sha256((salt + plain_password).encode()).hexdigest()
         return computed_hash == stored_hash
     except ValueError:
+        return False
+
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt."""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash (supports both bcrypt and legacy SHA256)."""
+    if _is_legacy_hash(hashed_password):
+        return _verify_legacy_password(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
+    except (ValueError, TypeError):
         return False
 
 
@@ -82,10 +99,14 @@ def create_user(db: Session, email: str, password: str, role: str = "user") -> U
 
 
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
-    """Authenticate a user by email and password."""
+    """Authenticate a user by email and password. Auto-migrates legacy SHA256 hashes to bcrypt."""
     user = db.query(User).filter(User.email == email.lower()).first()
     if not user or not verify_password(password, user.password_hash):
         return None
+    # Auto-migrate legacy SHA256 hash to bcrypt on successful login
+    if _is_legacy_hash(user.password_hash):
+        user.password_hash = hash_password(password)
+        db.commit()
     return user
 
 

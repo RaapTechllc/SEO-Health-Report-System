@@ -17,7 +17,11 @@ sys.path.insert(0, str(project_root.parent.parent))  # Add root for packages
 from packages.config import get_settings, validate_startup
 
 # Configure logging early
-logging.basicConfig(level=logging.INFO)
+try:
+    from packages.core.logging import setup_logging
+    setup_logging()
+except ImportError:
+    logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Validate configuration at startup
@@ -141,6 +145,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(SecurityHeadersMiddleware)
+
+# --- Request ID Middleware ---
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        from packages.core.logging import set_request_id
+        request_id = request.headers.get("X-Request-ID") or None
+        request_id = set_request_id(request_id)
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+
+
+app.add_middleware(RequestIDMiddleware)
 app.add_middleware(RateLimitHeadersMiddleware, default_tier="default", enabled=True)
 app.add_middleware(
     CORSMiddleware,
@@ -244,11 +261,21 @@ async def root():
     }
 )
 async def health(db: Session = Depends(get_db)):
+    from packages.seo_health_report.scripts.generate_report import is_pdf_available
     try:
         db.execute("SELECT 1")
-        return {"status": "healthy", "database": "connected"}
+        db_status = "connected"
     except Exception:
-        return {"status": "degraded", "database": "disconnected"}
+        db_status = "disconnected"
+
+    pdf_status = "available" if is_pdf_available() else "unavailable"
+    overall = "healthy" if db_status == "connected" else "degraded"
+
+    return {
+        "status": overall,
+        "database": db_status,
+        "pdf_generation": pdf_status,
+    }
 
 
 @app.get(
