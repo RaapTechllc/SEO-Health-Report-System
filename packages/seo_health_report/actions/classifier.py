@@ -212,23 +212,29 @@ def classify_actions(audit_results: dict[str, Any]) -> list[dict[str, Any]]:
 
         # Process issues from main audit
         for issue in audit_data.get("issues", []):
-            action = _classify_issue(issue, audit_name, seen_categories)
-            if action:
-                actions.append(action)
+            issue_dict = _to_dict(issue)
+            if issue_dict:
+                action = _classify_issue(issue_dict, audit_name, seen_categories)
+                if action:
+                    actions.append(action)
 
         # Process issues from components
         for _comp_name, comp_data in audit_data.get("components", {}).items():
             if isinstance(comp_data, dict):
                 for issue in comp_data.get("issues", []):
-                    action = _classify_issue(issue, audit_name, seen_categories)
-                    if action:
-                        actions.append(action)
+                    issue_dict = _to_dict(issue)
+                    if issue_dict:
+                        action = _classify_issue(issue_dict, audit_name, seen_categories)
+                        if action:
+                            actions.append(action)
 
         # Process recommendations
         for rec in audit_data.get("recommendations", []):
-            action = _classify_recommendation(rec, audit_name, seen_categories)
-            if action:
-                actions.append(action)
+            rec_dict = _to_dict(rec)
+            if rec_dict:
+                action = _classify_recommendation(rec_dict, audit_name, seen_categories)
+                if action:
+                    actions.append(action)
 
     # Sort by ROI: impact / effort_minutes (highest first)
     impact_values = {"high": 3, "medium": 2, "low": 1}
@@ -244,6 +250,19 @@ def classify_actions(audit_results: dict[str, Any]) -> list[dict[str, Any]]:
         action["id"] = f"action-{i:03d}"
 
     return actions
+
+
+def _to_dict(obj: Any) -> dict[str, Any] | None:
+    """Convert dataclass or dict to dict. Returns None for strings/other types."""
+    if isinstance(obj, dict):
+        return obj
+    if hasattr(obj, "__dataclass_fields__"):
+        from dataclasses import asdict
+        return asdict(obj)
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+    # Skip strings and other non-dict types
+    return None
 
 
 def _classify_issue(

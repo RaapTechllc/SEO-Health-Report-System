@@ -709,23 +709,102 @@ def analyze_crawlability(
     result["redirects"] = redirects_result
     result["issues"].extend(redirects_result.get("issues", []))
 
-    # Check main page
+    # Multi-page crawl — actually use the depth parameter
     if check_pages:
-        html = fetch_url(url)
-        if html:
-            result["pages_analyzed"] = 1
+        max_pages = min(depth, 100)
+        visited = set()
+        to_visit = [url]
+        parsed_base = urlparse(url)
+        base_domain = parsed_base.netloc
+        titles_seen = {}
+        broken_links = []
 
-            # Check meta robots
-            meta_robots = analyze_meta_robots(html, url)
+        skip_extensions = {
+            '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
+            '.webp', '.woff', '.woff2', '.ttf', '.eot', '.pdf', '.zip',
+            '.xml', '.json', '.mp3', '.mp4',
+        }
+
+        while to_visit and len(visited) < max_pages:
+            current_url = to_visit.pop(0)
+
+            # Normalize URL
+            parsed_current = urlparse(current_url)
+            normalized = parsed_current._replace(fragment="").geturl()
+            if normalized in visited:
+                continue
+            visited.add(normalized)
+
+            # Skip non-content URLs
+            path_lower = parsed_current.path.lower()
+            if '.' in path_lower.split('/')[-1]:
+                ext = '.' + path_lower.rsplit('.', 1)[-1]
+                if ext in skip_extensions:
+                    continue
+
+            html = fetch_url(normalized, timeout=10)
+            if html is None:
+                if normalized != url:
+                    broken_links.append(normalized)
+                continue
+
+            result["pages_analyzed"] += 1
+
+            # Analyze page
+            meta_robots = analyze_meta_robots(html, normalized)
             result["issues"].extend(meta_robots.get("issues", []))
 
-            # Check canonical
-            canonical = analyze_canonical(html, url)
+            canonical = analyze_canonical(html, normalized)
             result["issues"].extend(canonical.get("issues", []))
 
-            # Check internal links
-            links = analyze_internal_links(html, url, url)
+            links = analyze_internal_links(html, normalized, url)
             result["issues"].extend(links.get("issues", []))
+
+            # Track titles for duplicate detection
+            title_match = re.search(
+                r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL
+            )
+            if title_match:
+                title = title_match.group(1).strip()
+                if title:
+                    titles_seen.setdefault(title, []).append(normalized)
+
+            # Extract internal links to crawl next
+            href_pattern = r'href=["\']([^"\']+)["\']'
+            for href in re.findall(href_pattern, html, re.IGNORECASE):
+                if href.startswith(("javascript:", "mailto:", "tel:", "#")):
+                    continue
+                full_url = urljoin(normalized, href)
+                parsed_link = urlparse(full_url)
+                if parsed_link.netloc == base_domain:
+                    clean = parsed_link._replace(fragment="").geturl()
+                    if clean not in visited and clean not in to_visit:
+                        to_visit.append(clean)
+
+        # Report duplicate titles
+        for title, urls_list in titles_seen.items():
+            if len(urls_list) > 1:
+                result["issues"].append({
+                    "severity": "medium",
+                    "category": "crawlability",
+                    "description": (
+                        f"Duplicate title on {len(urls_list)} pages: "
+                        f"'{title[:50]}'"
+                    ),
+                    "recommendation": "Each page should have a unique title tag",
+                })
+
+        # Report broken links
+        if broken_links:
+            result["issues"].append({
+                "severity": "high",
+                "category": "crawlability",
+                "description": (
+                    f"Found {len(broken_links)} broken internal links"
+                ),
+                "recommendation": "Fix or redirect broken URLs",
+            })
+            result["broken_links"] = broken_links
 
     # Generate findings
     if robots_result.get("exists"):
@@ -746,6 +825,12 @@ def analyze_crawlability(
         )
     else:
         result["findings"].append("Homepage accessible without redirect chain")
+
+    result["findings"].append(f"Crawled {result['pages_analyzed']} pages")
+    if result.get("broken_links"):
+        result["findings"].append(
+            f"Found {len(result['broken_links'])} broken internal links"
+        )
 
     # Calculate score
     score = 20
