@@ -70,6 +70,13 @@ class ProgressStage(str, Enum):
     FAILED = "failed"
 
 
+class ActionTier(str, Enum):
+    """Action delivery tiers for recommendations."""
+    DFY = "dfy"    # Done-For-You: automated fixes, ready-to-deploy artifacts
+    DWY = "dwy"    # Done-With-You: step-by-step instructions with code snippets
+    DIY = "diy"    # Do-It-Yourself: strategic guidance requiring human judgment
+
+
 @dataclass
 class Issue:
     """Represents a single audit issue."""
@@ -248,6 +255,49 @@ class ProgressEvent:
         }
 
 
+@dataclass
+class ActionItem:
+    """
+    A classified action item from audit findings.
+
+    Each issue/recommendation is classified into DFY/DWY/DIY tiers with
+    concrete deliverables: artifacts for DFY, instructions for DWY,
+    strategic guidance for DIY.
+    """
+    id: str
+    title: str
+    tier: ActionTier
+    pillar: str  # "technical", "content", "ai_visibility"
+    severity: Severity = Severity.MEDIUM
+    effort_minutes: Optional[int] = None
+    impact: str = "medium"
+    description: str = ""
+    artifact: Optional[str] = None       # DFY: the generated fix (code, config, etc.)
+    artifact_type: Optional[str] = None  # DFY: "robots_txt", "meta_tags", "schema_json", etc.
+    instructions: list[str] = field(default_factory=list)  # DWY: step-by-step
+    strategy: Optional[str] = None       # DIY: strategic guidance
+    validation: Optional[str] = None     # How to verify the fix worked
+    source_issue: Optional[str] = None   # Original issue description
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "tier": self.tier.value if isinstance(self.tier, ActionTier) else self.tier,
+            "pillar": self.pillar,
+            "severity": self.severity.value if isinstance(self.severity, Severity) else self.severity,
+            "effort_minutes": self.effort_minutes,
+            "impact": self.impact,
+            "description": self.description,
+            "artifact": self.artifact,
+            "artifact_type": self.artifact_type,
+            "instructions": self.instructions,
+            "strategy": self.strategy,
+            "validation": self.validation,
+            "source_issue": self.source_issue,
+        }
+
+
 def calculate_grade(score: Optional[int]) -> Grade:
     """Calculate grade from numeric score."""
     if score is None:
@@ -305,9 +355,11 @@ __all__ = [
     "Effort",
     "Grade",
     "ProgressStage",
+    "ActionTier",
     "Issue",
     "Recommendation",
     "ComponentScore",
+    "ActionItem",
     "AuditRequest",
     "AuditResponse",
     "AuditResult",
