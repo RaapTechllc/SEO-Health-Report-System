@@ -314,7 +314,6 @@ class AEOEngine:
             ))
 
         # Accuracy insights
-        component_scores["response_accuracy"]["score"]
         accuracy_issues = component_scores["response_accuracy"].get("issues", [])
         if accuracy_issues:
             critical_issues = [i for i in accuracy_issues if i["severity"] == "critical"]
@@ -355,6 +354,8 @@ class AEOEngine:
         # Query performance insights
         failed_systems = []
         for system, system_responses in responses.items():
+            if not system_responses:
+                continue
             error_rate = sum(1 for r in system_responses if r.error) / len(system_responses)
             if error_rate > 0.5:
                 failed_systems.append(system)
@@ -412,7 +413,7 @@ class AEOEngine:
 
         performance["successful_queries"] = successful_count
         performance["failed_queries"] = sum(
-            len([r for r in responses if r.error]) for responses in responses.values()
+            sum(1 for r in sys_resps if r.error) for sys_resps in responses.values()
         )
         performance["avg_response_time_ms"] = int(total_time / successful_count) if successful_count > 0 else 0
 

@@ -20,7 +20,6 @@ Usage:
 import os
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 
 from dotenv import dotenv_values
@@ -69,9 +68,6 @@ def generate_report_for_tier(json_path: str, tier: str) -> str:
 
     # Create tier-specific output filename
     json_file = Path(json_path)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_name = f"{json_file.stem}_PREMIUM_{tier.upper()}_{timestamp}.pdf"
-    json_file.parent / output_name
 
     print(f"\n{'='*60}")
     print(f"🏷️  TIER: {tier.upper()} — {tier_info['name']}")

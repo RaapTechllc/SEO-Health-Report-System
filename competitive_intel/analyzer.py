@@ -1,21 +1,9 @@
 import logging
-import os
-import sys
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlparse
 
-# Ensure we import from the correct models.py (same directory)
-_current_dir = os.path.dirname(os.path.abspath(__file__))
-_parent_dir = os.path.dirname(_current_dir)
-
-# Remove any conflicting paths, then add ours first
-sys.path = [p for p in sys.path if 'multi-tier-reports' not in p]
-if _current_dir not in sys.path:
-    sys.path.insert(0, _current_dir)
-if _parent_dir not in sys.path:
-    sys.path.append(_parent_dir)
-
-from models import ComparisonMatrix, CompetitiveAnalysis
+from .models import ComparisonMatrix, CompetitiveAnalysis
 
 
 class CompetitiveAnalyzer:
@@ -72,36 +60,27 @@ class CompetitiveAnalyzer:
                 self.logger.warning(f"Unsafe URL rejected: {url}")
                 return self._generate_mock_report(url)
 
-            # Try to import and run the SEO health report system
-            import importlib.util
+            # Try to import the SEO health report package directly
+            try:
+                from seo_health_report import generate_report
 
-            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            seo_path = os.path.join(project_root, "seo-health-report", "__init__.py")
-
-            if os.path.exists(seo_path):
-                spec = importlib.util.spec_from_file_location("seo_health_report", seo_path)
-                seo_module = importlib.util.module_from_spec(spec)
-                sys.modules["seo_health_report"] = seo_module
-                spec.loader.exec_module(seo_module)
-
-                result = seo_module.generate_report(
+                result = generate_report(
                     target_url=url,
                     company_name="Competitive Analysis",
                     output_format="json"
                 )
                 return result
-            else:
+            except ImportError:
+                self.logger.info("seo_health_report package not available")
                 return self._generate_mock_report(url)
 
-        except Exception as e:
+        except (ValueError, TypeError, OSError) as e:
             self.logger.warning(f"Using mock data for {url}: {e}")
             return self._generate_mock_report(url)
 
     def _is_safe_url(self, url: str) -> bool:
         """Validate URL is safe for processing."""
         try:
-            from urllib.parse import urlparse
-
             parsed = urlparse(url)
 
             # Must be HTTP/HTTPS

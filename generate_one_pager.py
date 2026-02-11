@@ -26,7 +26,7 @@ from reportlab.platypus import (
 )
 
 
-def create_one_pager(json_path, output_pdf):
+def create_one_pager(json_path, output_pdf, logo_path=None):
     # 1. Load Data
     with open(json_path) as f:
         data = json.load(f)
@@ -87,7 +87,6 @@ def create_one_pager(json_path, output_pdf):
     item_style = ParagraphStyle('Item', fontSize=10, leading=14, spaceAfter=6)
 
     # Header Section
-    logo_path = "charts/logo_Sheet_Metal_Werks.png"
     header_data = []
     if os.path.exists(logo_path):
         img = Image(logo_path, width=1.5*inch, height=1.5*inch)
@@ -168,6 +167,7 @@ def create_one_pager(json_path, output_pdf):
     # Save chart to buffer
     buf = BytesIO()
     plt.savefig(buf, format='png', dpi=300)
+    plt.close()
     buf.seek(0)
     story.append(Image(buf, width=7*inch, height=3*inch))
     story.append(Spacer(1, 10))

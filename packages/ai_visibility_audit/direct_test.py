@@ -5,11 +5,6 @@ Direct AEO Engine Test
 Test core components by importing them directly.
 """
 
-import os
-import sys
-
-# Add current directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def test_core_components():
     """Test core AEO components directly."""
@@ -18,42 +13,19 @@ def test_core_components():
     # Test enum and data classes from aeo_engine
     print("Testing AEO engine data structures...")
 
-    # Import directly from the file
-    import importlib.util
-
-    # Load aeo_engine module
-    aeo_spec = importlib.util.spec_from_file_location(
-        "aeo_engine",
-        os.path.join("scripts", "aeo_engine.py")
+    from ai_visibility_audit.scripts.aeo_engine import (
+        AEOEngine,
+        AEOInsight,
+        AEOScore,
+        ShareOfVoice,
     )
-    aeo_module = importlib.util.module_from_spec(aeo_spec)
-
-    # Mock the dependencies
-    sys.modules['scripts.query_ai_systems'] = type('MockModule', (), {
-        'generate_test_queries': lambda *args, **kwargs: [],
-        'query_all_systems': lambda *args, **kwargs: {},
-        'AIResponse': type('AIResponse', (), {}),
-        'TestQuery': type('TestQuery', (), {}),
-        'QueryCategory': type('QueryCategory', (), {})
-    })()
-
-    sys.modules['scripts.analyze_responses'] = type('MockModule', (), {
-        'analyze_brand_presence': lambda *args, **kwargs: {"score": 20, "max": 25, "findings": []},
-        'check_accuracy': lambda *args, **kwargs: {"score": 18, "max": 20, "findings": []},
-        'analyze_sentiment': lambda *args, **kwargs: {"score": 8, "max": 10, "findings": []},
-        'analyze_competitor_comparison': lambda *args, **kwargs: {"findings": [], "details": {"brand_rank": 1, "mention_counts": {}}}
-    })()
-
-    aeo_spec.loader.exec_module(aeo_module)
 
     # Test AEO Score enum
-    AEOScore = aeo_module.AEOScore
     assert AEOScore.EXCELLENT.value == "A"
     assert AEOScore.CRITICAL.value == "F"
-    print("✅ AEO scoring system working")
+    print("AEO scoring system working")
 
     # Test ShareOfVoice
-    ShareOfVoice = aeo_module.ShareOfVoice
     sov = ShareOfVoice(
         brand_mentions=10,
         total_mentions=50,
@@ -62,10 +34,9 @@ def test_core_components():
         competitors={"BMW": 15, "Mercedes": 12}
     )
     assert sov.share_percentage == 20.0
-    print("✅ Share of voice calculations working")
+    print("Share of voice calculations working")
 
     # Test AEOInsight
-    AEOInsight = aeo_module.AEOInsight
     insight = AEOInsight(
         category="visibility",
         priority="high",
@@ -75,13 +46,12 @@ def test_core_components():
         impact="Increase brand visibility"
     )
     assert insight.priority == "high"
-    print("✅ Insight generation working")
+    print("Insight generation working")
 
     # Test AEOEngine class
-    AEOEngine = aeo_module.AEOEngine
     engine = AEOEngine(rate_limit_ms=1000)
     assert engine.rate_limit_ms == 1000
-    print("✅ AEO engine initialization working")
+    print("AEO engine initialization working")
 
     print("\n[SUCCESS] All core components working correctly!")
 
@@ -96,6 +66,7 @@ if __name__ == "__main__":
         print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()
+        import sys
         sys.exit(1)
 
     print("\n" + "=" * 40)
