@@ -49,7 +49,6 @@ def analyze_brand_presence(
         Dict with presence analysis including score, findings, and details
     """
     competitors = competitors or []
-    brand_name.lower()
 
     total_responses = 0
     brand_mentions = 0

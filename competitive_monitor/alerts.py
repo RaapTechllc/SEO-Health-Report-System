@@ -1,12 +1,17 @@
+import html
 import logging
+import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Any
 
 from models import AlertEvent
-
 from storage import CompetitorStorage
+
+# SMTP configuration from environment variables
+SMTP_FROM = os.environ.get("ALERT_SMTP_FROM", "competitive_monitor@company.com")
+SMTP_DEFAULT_RECIPIENTS = os.environ.get("ALERT_DEFAULT_RECIPIENTS", "").split(",")
 
 
 class AlertSystem:
@@ -19,7 +24,10 @@ class AlertSystem:
     def send_score_change_alert(self, alert: AlertEvent, recipients: list[str] = None):
         """Send alert for score changes."""
         if recipients is None:
-            recipients = ["admin@company.com"]  # Default recipient
+            recipients = [r.strip() for r in SMTP_DEFAULT_RECIPIENTS if r.strip()]
+        if not recipients:
+            self.logger.warning("No alert recipients configured. Set ALERT_DEFAULT_RECIPIENTS.")
+            return
 
         try:
             # Create email content
@@ -32,16 +40,20 @@ class AlertSystem:
                 emoji = "📉"
                 direction = "decreased"
 
-            body = f"""
+            # Sanitize user-controlled fields for safe inclusion in email
+            safe_url = html.escape(str(alert.competitor_url))
+            safe_reason = html.escape(str(alert.trigger_reason))
+
+            body = f"""\
 {emoji} Competitor Score Alert
 
-URL: {alert.competitor_url}
+URL: {safe_url}
 Score Change: {alert.score_change} points
 Previous Score: {alert.previous_score}/100
 Current Score: {alert.current_score}/100
 Direction: Score {direction}
 
-Trigger Reason: {alert.trigger_reason}
+Trigger Reason: {safe_reason}
 Timestamp: {alert.created_at.strftime('%Y-%m-%d %H:%M:%S')}
 
 This alert was triggered because the score change exceeded the configured threshold.
@@ -65,7 +77,7 @@ Please review the competitor's recent changes and consider adjusting your strate
         """Send email alert (may fail in development environments)."""
         try:
             msg = MIMEMultipart()
-            msg['From'] = "competitive_monitor@company.com"
+            msg['From'] = SMTP_FROM
             msg['Subject'] = subject
 
             msg.attach(MIMEText(body, 'plain'))

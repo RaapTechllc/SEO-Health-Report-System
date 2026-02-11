@@ -144,19 +144,35 @@ async def run_audit(
     results["accuracy_issues"] = accuracy_result.get("issues", [])
 
     # Step 5: Check LLM parseability (15 points)
-    parseability_result = analyze_site_structure(target_url)
+    try:
+        parseability_result = analyze_site_structure(target_url)
+    except Exception as e:
+        logger.warning(f"Parseability analysis failed: {e}")
+        parseability_result = {"score": 0, "max": 15, "findings": [f"Analysis failed: {e}"]}
     results["components"]["parseability"] = parseability_result
 
     # Step 6: Check knowledge graph presence (15 points)
-    knowledge_result = check_all_sources(brand_name, target_url)
+    try:
+        knowledge_result = check_all_sources(brand_name, target_url)
+    except Exception as e:
+        logger.warning(f"Knowledge graph check failed: {e}")
+        knowledge_result = {"score": 0, "max": 15, "findings": [f"Analysis failed: {e}"]}
     results["components"]["knowledge_graph"] = knowledge_result
 
     # Step 7: Score citation likelihood (15 points)
-    citation_result = analyze_content_citability(target_url)
+    try:
+        citation_result = analyze_content_citability(target_url)
+    except Exception as e:
+        logger.warning(f"Citation analysis failed: {e}")
+        citation_result = {"score": 0, "max": 15, "findings": [f"Analysis failed: {e}"]}
     results["components"]["citation_likelihood"] = citation_result
 
     # Step 8: Analyze sentiment (10 points)
-    sentiment_result = analyze_sentiment(responses, brand_name)
+    try:
+        sentiment_result = analyze_sentiment(responses, brand_name)
+    except Exception as e:
+        logger.warning(f"Sentiment analysis failed: {e}")
+        sentiment_result = {"score": 0, "max": 10, "findings": [f"Analysis failed: {e}"]}
     results["components"]["sentiment"] = sentiment_result
 
     # Calculate total score

@@ -6,13 +6,9 @@ Quick validation of the AEO analysis engine implementation.
 """
 
 import os
-import sys
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from scripts.aeo_engine import run_aeo_analysis_sync
-from scripts.query_ai_systems import generate_test_queries
+from ai_visibility_audit.scripts.aeo_engine import run_aeo_analysis_sync
+from ai_visibility_audit.scripts.query_ai_systems import generate_test_queries
 
 
 def test_query_generation():

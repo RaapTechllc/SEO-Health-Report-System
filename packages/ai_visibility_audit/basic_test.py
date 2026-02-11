@@ -14,7 +14,7 @@ def test_basic_functionality():
     print("Testing basic AEO engine components...")
 
     # Test query generation logic
-    from scripts.query_ai_systems import QueryCategory, TestQuery
+    from ai_visibility_audit.scripts.query_ai_systems import QueryCategory, TestQuery
 
     # Create sample queries
     queries = [
@@ -23,15 +23,15 @@ def test_basic_functionality():
         TestQuery("Tesla vs BMW", QueryCategory.COMPARISON)
     ]
 
-    print(f"✅ Created {len(queries)} test queries")
+    print(f"Created {len(queries)} test queries")
 
     # Test data structures
-    from scripts.aeo_engine import AEOInsight, AEOScore, ShareOfVoice
+    from ai_visibility_audit.scripts.aeo_engine import AEOInsight, AEOScore, ShareOfVoice
 
     # Test scoring enum
     assert AEOScore.EXCELLENT.value == "A"
     assert AEOScore.CRITICAL.value == "F"
-    print("✅ AEO scoring system working")
+    print("AEO scoring system working")
 
     # Test share of voice calculation
     sov = ShareOfVoice(
@@ -42,7 +42,7 @@ def test_basic_functionality():
         competitors={"BMW": 15, "Mercedes": 12}
     )
     assert sov.share_percentage == 20.0
-    print("✅ Share of voice calculations working")
+    print("Share of voice calculations working")
 
     # Test insight generation
     insight = AEOInsight(
@@ -54,7 +54,7 @@ def test_basic_functionality():
         impact="Increase brand visibility"
     )
     assert insight.priority == "high"
-    print("✅ Insight generation working")
+    print("Insight generation working")
 
     print("\n[SUCCESS] All basic components working correctly!")
 

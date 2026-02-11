@@ -8,6 +8,7 @@ technical, content, and AI visibility audits.
 import os
 from datetime import datetime
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from .scripts.apply_branding import apply_branding
 from .scripts.build_report import build_report_document
@@ -42,7 +43,7 @@ def clear_all_caches():
         logger.info("All caches cleared successfully")
     except ImportError:
         logger.warning("Cache module not available")
-    except Exception as e:
+    except OSError as e:
         logger.error(f"Error clearing caches: {e}")
 
 
@@ -54,7 +55,7 @@ def get_cache_stats():
         return get_cache_stats()
     except ImportError:
         return {"error": "Cache module not available"}
-    except Exception as e:
+    except OSError as e:
         return {"error": str(e)}
 
 
@@ -97,6 +98,15 @@ def generate_report(
         - report: Output file information
         - audit_data: Full audit results
     """
+    # Validate inputs
+    parsed = urlparse(target_url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Invalid URL scheme: {parsed.scheme!r}. Must be http or https.")
+    if not parsed.hostname:
+        raise ValueError(f"Invalid URL: missing hostname in {target_url!r}")
+    if not company_name or not company_name.strip():
+        raise ValueError("company_name must be a non-empty string")
+
     result = {
         "overall_score": 0,
         "grade": "F",
