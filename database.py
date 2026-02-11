@@ -4,7 +4,7 @@ Uses SQLAlchemy with SQLite (dev) or PostgreSQL (prod).
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     JSON,
@@ -19,12 +19,19 @@ from sqlalchemy import (
     Text,
     create_engine,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./seo_health.db")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
+# pool_pre_ping: detect stale connections before use (prevents "server closed the connection" errors)
+# pool_recycle: recycle idle connections after 30min (prevents PostgreSQL idle-in-transaction timeouts)
+_connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine = create_engine(
+    DATABASE_URL,
+    connect_args=_connect_args,
+    pool_pre_ping=True,
+    pool_recycle=1800,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -34,7 +41,7 @@ class Tenant(Base):
 
     id = Column(String(36), primary_key=True)
     name = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     settings_json = Column(JSON, nullable=True)
 
     users = relationship("User", back_populates="tenant")
@@ -54,8 +61,8 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), default="user")
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     tenant = relationship("Tenant", back_populates="users")
     audits = relationship("Audit", back_populates="user")
@@ -78,7 +85,7 @@ class Audit(Base):
     report_path = Column(String(500), nullable=True)
     trade_type = Column(String(50), nullable=True)
     service_areas = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     completed_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="audits")
@@ -116,7 +123,7 @@ class Competitor(Base):
     alert_threshold = Column(Integer, default=10)
     last_score = Column(Integer, nullable=True)
     last_audit_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     tenant = relationship("Tenant", back_populates="competitors")
 
@@ -172,8 +179,8 @@ class Webhook(Base):
     secret = Column(String(255), nullable=False)
     events = Column(JSON, nullable=False)  # ["audit.completed", "audit.failed"]
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     tenant = relationship("Tenant", back_populates="webhooks")
     deliveries = relationship("WebhookDelivery", back_populates="webhook", cascade="all, delete-orphan")
@@ -210,7 +217,7 @@ class AuditJob(Base):
     status = Column(String(50), default="queued", index=True)  # queued, processing, completed, failed
     idempotency_key = Column(String(64), unique=True, nullable=True, index=True)
     payload_json = Column(JSON, nullable=False)
-    queued_at = Column(DateTime, default=datetime.utcnow)
+    queued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     error_message = Column(Text, nullable=True)
@@ -255,7 +262,7 @@ class CostEvent(Base):
     # Debuggable metadata (no raw prompts/responses)
     metadata_json = Column(JSON, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     audit = relationship("Audit", backref="cost_events")
 

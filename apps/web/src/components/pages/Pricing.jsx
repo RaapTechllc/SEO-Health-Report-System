@@ -77,13 +77,13 @@ export function Pricing() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         className={`relative p-8 rounded-2xl border ${tier.popular
-                                ? 'bg-white border-brand-200 shadow-xl ring-1 ring-brand-100 z-10 scale-105'
-                                : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
+                            ? 'bg-white border-brand-200 shadow-xl ring-1 ring-brand-100 z-10 scale-105'
+                            : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
                             }`}
                     >
                         {tier.popular && (
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-600 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                                <Star className="w-3 h-3fill-current" /> {tier.highlight}
+                                <Star className="w-3 h-3 fill-current" /> {tier.highlight}
                             </div>
                         )}
 
@@ -101,8 +101,8 @@ export function Pricing() {
                         </div>
 
                         <button className={`w-full py-3 rounded-xl font-medium transition-all ${tier.popular
-                                ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200'
-                                : 'bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-200'
+                            ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-200'
+                            : 'bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-200'
                             }`}>
                             {tier.cta}
                         </button>

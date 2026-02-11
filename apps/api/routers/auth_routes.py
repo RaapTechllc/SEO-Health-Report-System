@@ -1,7 +1,9 @@
 """Authentication routes."""
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 
 from apps.api.openapi import ERROR_RESPONSES, TOKEN_RESPONSE_EXAMPLE
@@ -11,10 +13,29 @@ from database import User, get_db
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
+# Basic email pattern — catches obvious typos without requiring email-validator dep
+_EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
+
+
 class RegisterRequest(BaseModel):
     """Request model for user registration."""
     email: str
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v):
+        v = v.strip().lower()
+        if not _EMAIL_RE.match(v):
+            raise ValueError("Invalid email address format")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
 
     class Config:
         json_schema_extra = {
@@ -29,6 +50,14 @@ class LoginRequest(BaseModel):
     """Request model for user login."""
     email: str
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v):
+        v = v.strip().lower()
+        if not _EMAIL_RE.match(v):
+            raise ValueError("Invalid email address format")
+        return v
 
     class Config:
         json_schema_extra = {

@@ -84,3 +84,11 @@ node_modules/
 
 .kiro_backup*
 debug_log.txt
+
+# Stale root-level debug/test scripts
+debug_import.py
+test_grok_integration.py
+test_tier_system.py
+verify_sheetmetal_high.py
+sheetmetal_audit_*.json
+activity.log

@@ -6,6 +6,7 @@ Production-ready API with database persistence, authentication, and payments.
 """
 
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -39,6 +40,7 @@ settings = get_settings()
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -142,16 +144,21 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitHeadersMiddleware, default_tier="default", enabled=True)
+# CORS origins: configurable via env var, fallback to localhost for dev
+_default_origins = [
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "http://localhost:3000",
+    "http://127.0.0.1:5173", 
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:3000"
+]
+_cors_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+CORS_ORIGINS = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", 
-        "http://localhost:5174", 
-        "http://localhost:3000",
-        "http://127.0.0.1:5173", 
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:3000"
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -245,7 +252,7 @@ async def root():
 )
 async def health(db: Session = Depends(get_db)):
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception:
         return {"status": "degraded", "database": "disconnected"}

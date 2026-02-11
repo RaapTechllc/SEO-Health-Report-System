@@ -51,7 +51,7 @@ _tenant_overrides: dict[str, dict] = {}
 # Per-endpoint limits (requests per minute)
 ENDPOINT_LIMITS = {
     "/audit": 60,  # 60 audit requests per minute (poller friendly)
-    "/checkout/create": 10,  # 5 checkout requests per minute
+    "/checkout/create": 10,  # 10 checkout requests per minute
     "/auth/register": 20,  # 20 registrations per minute
     "/auth/login": 30,  # 30 login attempts per minute
 }
