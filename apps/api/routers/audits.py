@@ -619,15 +619,19 @@ async def get_audit_pdf(audit_id: str, db: Session = Depends(get_db)):
     }
 )
 async def list_audits(
+    skip: int = 0,
+    limit: int = 20,
     user: User = Depends(require_auth),
     db: Session = Depends(get_db),
 ):
-    """List audits for the authenticated user."""
+    """List audits for the authenticated user with pagination."""
+    limit = min(limit, 100)
     audits = (
         db.query(Audit)
         .filter(Audit.user_id == user.id)
         .order_by(Audit.created_at.desc())
-        .limit(100)
+        .offset(skip)
+        .limit(limit)
         .all()
     )
     return {
@@ -636,5 +640,7 @@ async def list_audits(
             "company_name": a.company_name, "overall_score": a.overall_score,
             "grade": a.grade, "tier": a.tier,
             "created_at": a.created_at.isoformat() if a.created_at else None
-        } for a in audits]
+        } for a in audits],
+        "skip": skip,
+        "limit": limit,
     }
