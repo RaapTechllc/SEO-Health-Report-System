@@ -112,7 +112,8 @@ def get_users_by_tenant(db: Session, tenant_id: str) -> list[User]:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)  # noqa: B008
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),  # noqa: B008
 ) -> Optional[User]:
     """Get current user from JWT token. Returns None if no token."""
     if not credentials:
@@ -130,7 +131,8 @@ async def get_current_user(
 
 
 async def require_auth(
-    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)  # noqa: B008
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),  # noqa: B008
 ) -> User:
     """Require authentication. Raises 401 if not authenticated."""
     if not credentials:
