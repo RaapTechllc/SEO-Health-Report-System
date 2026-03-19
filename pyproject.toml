@@ -105,6 +105,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"packages/auth/*" = ["B008"]  # FastAPI Depends pattern
 "tests/*" = ["B011", "B017", "B007"]  # Test patterns: assert False, assert raises Exception, unused loop vars
 "apps/cli/*" = ["E402"]  # CLI scripts need path setup before imports
 "apps/api/*" = ["E402", "B008", "B904"]  # FastAPI patterns
