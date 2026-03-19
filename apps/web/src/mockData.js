@@ -1,0 +1,1150 @@
+export const mockReport = {
+  "url": "https://sheetmetalwerks.com",
+  "company_name": "Sheet Metal Werks",
+  "timestamp": "2026-01-19T10:08:41.957837",
+  "audits": {
+    "technical": {
+      "url": "https://sheetmetalwerks.com",
+      "timestamp": "2026-01-19T10:08:41.969497",
+      "score": 53,
+      "grade": "F",
+      "components": {
+        "crawlability": {
+          "score": 16,
+          "max": 20,
+          "issues": [
+            "CrawlIssue(severity='medium', category='robots', description='robots.txt not found or not accessible', url='https://sheetmetalwerks.com/robots.txt', recommendation='Create a robots.txt file at the root of your domain')",
+            {
+              "severity": "medium",
+              "category": "canonical",
+              "description": "No canonical tag found",
+              "url": "https://sheetmetalwerks.com",
+              "recommendation": "Add self-referencing canonical tag"
+            }
+          ],
+          "findings": [
+            "robots.txt not found",
+            "Found 1 sitemap(s) with 14 URLs",
+            "Homepage has 2-hop redirect chain"
+          ]
+        },
+        "indexing": {
+          "score": 15,
+          "max": 15,
+          "issues": [],
+          "findings": [
+            "Sitemap URLs: 14"
+          ]
+        },
+        "speed": {
+          "score": 5,
+          "max": 25,
+          "psi_score": null,
+          "core_web_vitals": {},
+          "issues": [
+            {
+              "severity": "high",
+              "category": "speed",
+              "description": "Could not analyze page speed: Client error '400 Bad Request' for url 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fsheetmetalwerks.com&strategy=mobile&category=performance&key=your_pagespeed_api_key_here'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+              "recommendation": "Verify URL is accessible"
+            }
+          ],
+          "findings": [
+            "Page speed analysis failed"
+          ],
+          "opportunities": []
+        },
+        "mobile": {
+          "score": 7,
+          "max": 15,
+          "psi_score": 0,
+          "config_valid": true,
+          "issues": [
+            {
+              "severity": "high",
+              "category": "speed",
+              "description": "Could not analyze page speed: Client error '400 Bad Request' for url 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https%3A%2F%2Fsheetmetalwerks.com&strategy=mobile&category=performance&key=your_pagespeed_api_key_here'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+              "recommendation": "Verify URL is accessible"
+            }
+          ],
+          "findings": [
+            "Viewport meta tag configured correctly",
+            "Mobile PageSpeed Score: 0"
+          ]
+        },
+        "security": {
+          "score": 8,
+          "max": 10,
+          "https": {
+            "uses_https": true,
+            "redirects_to_https": true,
+            "ssl_valid": true,
+            "ssl_expiry": "2026-02-01T05:34:27",
+            "ssl_issuer": "Let's Encrypt",
+            "issues": [
+              {
+                "severity": "high",
+                "category": "ssl",
+                "description": "SSL certificate expires in 12 days",
+                "recommendation": "Renew SSL certificate before expiry"
+              }
+            ],
+            "findings": [
+              "Site uses HTTPS",
+              "HTTP redirects to HTTPS",
+              "SSL certificate valid until 2026-02-01",
+              "SSL issued by: Let's Encrypt"
+            ]
+          },
+          "headers": {
+            "headers_found": {
+              "HSTS": "max-age=31536000",
+              "CSP": "frame-ancestors 'self'",
+              "X-Frame-Options": "SAMEORIGIN"
+            },
+            "headers_missing": [
+              "X-Content-Type-Options",
+              "Referrer-Policy",
+              "Permissions-Policy"
+            ],
+            "issues": [
+              {
+                "severity": "low",
+                "category": "headers",
+                "description": "Missing X-Content-Type-Options header - Prevents MIME type sniffing",
+                "recommendation": "Add x-content-type-options header to server configuration"
+              },
+              {
+                "severity": "low",
+                "category": "headers",
+                "description": "Missing Referrer-Policy header - Controls referrer information",
+                "recommendation": "Add referrer-policy header to server configuration"
+              },
+              {
+                "severity": "low",
+                "category": "headers",
+                "description": "Missing Permissions-Policy header - Controls browser features",
+                "recommendation": "Add permissions-policy header to server configuration"
+              }
+            ],
+            "findings": [
+              "HSTS header present",
+              "CSP header present",
+              "X-Frame-Options header present"
+            ],
+            "score": 5
+          },
+          "issues": [
+            {
+              "severity": "high",
+              "category": "ssl",
+              "description": "SSL certificate expires in 12 days",
+              "recommendation": "Renew SSL certificate before expiry"
+            },
+            {
+              "severity": "low",
+              "category": "headers",
+              "description": "Missing X-Content-Type-Options header - Prevents MIME type sniffing",
+              "recommendation": "Add x-content-type-options header to server configuration"
+            },
+            {
+              "severity": "low",
+              "category": "headers",
+              "description": "Missing Referrer-Policy header - Controls referrer information",
+              "recommendation": "Add referrer-policy header to server configuration"
+            },
+            {
+              "severity": "low",
+              "category": "headers",
+              "description": "Missing Permissions-Policy header - Controls browser features",
+              "recommendation": "Add permissions-policy header to server configuration"
+            }
+          ],
+          "findings": [
+            "Site uses HTTPS",
+            "HTTP redirects to HTTPS",
+            "SSL certificate valid until 2026-02-01",
+            "SSL issued by: Let's Encrypt",
+            "HSTS header present",
+            "CSP header present",
+            "X-Frame-Options header present",
+            "No mixed content detected"
+          ]
+        },
+        "structured_data": {
+          "score": 2,
+          "max": 15,
+          "schema_types": [],
+          "rich_results": {},
+          "issues": [
+            {
+              "severity": "medium",
+              "category": "structured_data",
+              "description": "No structured data found on page",
+              "recommendation": "Add JSON-LD structured data for Organization, Product, or other relevant types"
+            }
+          ],
+          "findings": [
+            "No structured data found"
+          ]
+        }
+      },
+      "critical_issues": [],
+      "recommendations": [
+        {
+          "priority": "medium",
+          "category": "structured_data",
+          "action": "Add structured data",
+          "details": "Implement JSON-LD for Organization and relevant content types",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ]
+    },
+    "content": {
+      "url": "https://sheetmetalwerks.com",
+      "timestamp": "2026-01-19T10:09:14.536283",
+      "score": 57,
+      "grade": "F",
+      "components": {
+        "content_quality": {
+          "score": 7,
+          "max": 25,
+          "avg_word_count": 543.25,
+          "thin_content_pages": 7,
+          "issues": [
+            {
+              "severity": "medium",
+              "category": "thin_content",
+              "description": "Below average content length: 423 words",
+              "url": "https://sheetmetalwerks.com/services",
+              "recommendation": "Consider expanding to 1000+ words for competitive topics"
+            },
+            {
+              "severity": "high",
+              "category": "thin_content",
+              "description": "Thin content: only 100 words",
+              "url": "https://sheetmetalwerks.com/projects",
+              "recommendation": "Expand content to at least 500-1000 words"
+            },
+            {
+              "severity": "medium",
+              "category": "readability",
+              "description": "Content is very difficult to read",
+              "url": "https://sheetmetalwerks.com/projects",
+              "recommendation": "Simplify language, use shorter sentences"
+            },
+            {
+              "severity": "high",
+              "category": "thin_content",
+              "description": "Thin content: only 137 words",
+              "url": "https://sheetmetalwerks.com/contact",
+              "recommendation": "Expand content to at least 500-1000 words"
+            },
+            {
+              "severity": "medium",
+              "category": "thin_content",
+              "description": "Below average content length: 429 words",
+              "url": "https://sheetmetalwerks.com/project/how-government-facility-found-iaq-benefits-with-thermaduct-outdoor-ductwork-illinois",
+              "recommendation": "Consider expanding to 1000+ words for competitive topics"
+            },
+            {
+              "severity": "medium",
+              "category": "readability",
+              "description": "Content is very difficult to read",
+              "url": "https://sheetmetalwerks.com/project/how-government-facility-found-iaq-benefits-with-thermaduct-outdoor-ductwork-illinois",
+              "recommendation": "Simplify language, use shorter sentences"
+            },
+            {
+              "severity": "medium",
+              "category": "thin_content",
+              "description": "Below average content length: 465 words",
+              "url": "https://sheetmetalwerks.com/post/let-the-team-at-sheet-metal-werks-inc-assist-you-in-design-and-fabrication-from-start-to-finish-",
+              "recommendation": "Consider expanding to 1000+ words for competitive topics"
+            },
+            {
+              "severity": "medium",
+              "category": "thin_content",
+              "description": "Below average content length: 445 words",
+              "url": "https://sheetmetalwerks.com/post/great-example-of-how-upfront-coordination-communication",
+              "recommendation": "Consider expanding to 1000+ words for competitive topics"
+            },
+            {
+              "severity": "medium",
+              "category": "readability",
+              "description": "Content is very difficult to read",
+              "url": "https://sheetmetalwerks.com/post/great-example-of-how-upfront-coordination-communication",
+              "recommendation": "Simplify language, use shorter sentences"
+            },
+            {
+              "severity": "medium",
+              "category": "thin_content",
+              "description": "Below average content length: 443 words",
+              "url": "https://sheetmetalwerks.com/post/construction-begins-on-new-office-building",
+              "recommendation": "Consider expanding to 1000+ words for competitive topics"
+            },
+            {
+              "severity": "medium",
+              "category": "readability",
+              "description": "Content is very difficult to read",
+              "url": "https://sheetmetalwerks.com/post/construction-begins-on-new-office-building",
+              "recommendation": "Simplify language, use shorter sentences"
+            }
+          ],
+          "findings": [
+            "Below average content depth (avg 543 words)",
+            "Over half of pages are thin content (7/12)",
+            "Content readability needs improvement"
+          ]
+        },
+        "eeat": {
+          "score": 15,
+          "max": 20,
+          "has_authors": true,
+          "has_about_page": true,
+          "issues": [
+            {
+              "severity": "medium",
+              "category": "trust",
+              "description": "No privacy policy link found",
+              "recommendation": "Add visible link to privacy policy"
+            }
+          ],
+          "findings": [
+            "Found 2 author(s)",
+            "Author credentials visible",
+            "About page mentions team/leadership",
+            "About page includes company history",
+            "Physical address found",
+            "Phone number found",
+            "Email address found",
+            "Contact form available",
+            "Testimonials/reviews present",
+            "Certifications or badges present",
+            "Social profiles: LinkedIn, Twitter/X, Facebook, Instagram",
+            "Shows experience through examples"
+          ]
+        },
+        "keyword_position": {
+          "score": 7,
+          "max": 15,
+          "note": "Requires ranking API for full analysis",
+          "issues": [],
+          "findings": [
+            "Keyword ranking data requires external API"
+          ]
+        },
+        "topical_authority": {
+          "score": 11,
+          "max": 15,
+          "topics_covered": 3,
+          "clusters": [
+            {
+              "topic": "Commercial HVAC Ductwork",
+              "pillar_url": "https://sheetmetalwerks.com",
+              "supporting_count": 6,
+              "depth_score": 4
+            },
+            {
+              "topic": "Data Center Cooling",
+              "pillar_url": "https://sheetmetalwerks.com/post/construction-begins-on-new-office-building",
+              "supporting_count": 0,
+              "depth_score": 1
+            },
+            {
+              "topic": "Industrial Sheet Metal Fabrication",
+              "pillar_url": "https://sheetmetalwerks.com",
+              "supporting_count": 10,
+              "depth_score": 4
+            }
+          ],
+          "issues": [],
+          "findings": [
+            "Analyzed 12 pages",
+            "Covering 3/3 target topics",
+            "Found 2 content gaps"
+          ]
+        },
+        "backlinks": {
+          "score": 7,
+          "max": 15,
+          "estimated": false,
+          "issues": [
+            {
+              "severity": "low",
+              "category": "backlinks",
+              "description": "Backlink analysis requires API key",
+              "recommendation": "Add AHREFS_API_KEY for full backlink analysis"
+            }
+          ],
+          "findings": [
+            "No ahrefs API key - using limited analysis"
+          ]
+        },
+        "internal_links": {
+          "score": 10,
+          "max": 10,
+          "orphan_pages": 0,
+          "total_links": 171,
+          "issues": [
+            {
+              "severity": "medium",
+              "description": "21 links have empty anchor text",
+              "recommendation": "Add descriptive anchor text to image links"
+            },
+            {
+              "severity": "medium",
+              "description": "5 pages have very few internal links",
+              "recommendation": "Add more internal links to important pages"
+            }
+          ],
+          "findings": [
+            "Crawled 13 pages, found 171 internal links"
+          ]
+        }
+      },
+      "content_gaps": [
+        {
+          "type": "thin_coverage",
+          "topic": "Data Center Cooling",
+          "priority": "medium",
+          "recommendation": "Expand coverage of 'Data Center Cooling'",
+          "suggested_content": {
+            "type": "supporting",
+            "count": 3,
+            "format": "supporting articles"
+          }
+        },
+        {
+          "type": "needs_support",
+          "topic": "Data Center Cooling",
+          "priority": "medium",
+          "pillar_url": "https://sheetmetalwerks.com/post/construction-begins-on-new-office-building",
+          "recommendation": "Add supporting content for 'Data Center Cooling' pillar",
+          "suggested_count": 3
+        }
+      ],
+      "topic_opportunities": [],
+      "recommendations": [
+        {
+          "priority": "high",
+          "category": "content_quality",
+          "action": "Expand thin content (7 pages)",
+          "details": "Pages with <500 words should be expanded to 1000+ words",
+          "impact": "high",
+          "effort": "medium"
+        },
+        {
+          "priority": "high",
+          "category": "content_quality",
+          "action": "Improve content quality",
+          "details": "Add more comprehensive, media-rich content",
+          "impact": "high",
+          "effort": "high"
+        }
+      ]
+    },
+    "ai_visibility": {
+      "brand_name": "Sheet Metal Werks",
+      "target_url": "https://sheetmetalwerks.com",
+      "score": 52,
+      "grade": "F",
+      "components": {
+        "ai_presence": {
+          "score": 25,
+          "max": 25,
+          "findings": [
+            "Brand mentioned in 5/5 responses (100%)",
+            "Mentioned first in 5 responses (100% of mentions)"
+          ],
+          "details": {
+            "total_responses": 5,
+            "brand_mentions": 5,
+            "position_distribution": {
+              "first": 5,
+              "middle": 0,
+              "last": 0
+            },
+            "competitor_mentions": {}
+          }
+        },
+        "accuracy": {
+          "score": 10,
+          "max": 20,
+          "findings": [
+            "No ground truth provided - accuracy partially assessed"
+          ],
+          "issues": []
+        },
+        "parseability": {
+          "score": 10,
+          "max": 15,
+          "findings": [
+            "Poor: Limited semantic HTML (only: nav)",
+            "Good: Single H1 tag (proper hierarchy)",
+            "Good: Proper heading hierarchy (H2: 6, H3: 1)",
+            "Warning: Heavy div usage (232 divs) - consider more semantic markup",
+            "No structured data found - this limits AI understanding",
+            "Recommendation: Add JSON-LD schema for Organization, Product, FAQ, etc.",
+            "Missing key schemas (Organization, Product, FAQ, etc.)",
+            "Fair: Meta description present but suboptimal length (219 chars)",
+            "Fair: Title present but length could be optimized (17 chars)",
+            "Poor: Low text-to-HTML ratio (13.4%) - heavy markup or JS-dependent content",
+            "Good: 55/55 images have alt text",
+            "No SPA framework detected - content likely server-rendered"
+          ],
+          "issues": [
+            {
+              "category": "semantic_html",
+              "description": "Missing semantic HTML elements",
+              "severity": "medium",
+              "recommendation": "Add <main>, <article>, <section>, <nav>, <header>, <footer> elements"
+            },
+            {
+              "category": "div_soup",
+              "description": "Excessive div elements (232)",
+              "severity": "low",
+              "recommendation": "Replace generic divs with semantic elements where appropriate"
+            },
+            "Increase visible text content, reduce markup bloat"
+          ],
+          "details": {
+            "semantic_html": {
+              "score": 9,
+              "max": 15,
+              "findings": [
+                "Poor: Limited semantic HTML (only: nav)",
+                "Good: Single H1 tag (proper hierarchy)",
+                "Good: Proper heading hierarchy (H2: 6, H3: 1)",
+                "Warning: Heavy div usage (232 divs) - consider more semantic markup"
+              ],
+              "issues": [
+                {
+                  "category": "semantic_html",
+                  "description": "Missing semantic HTML elements",
+                  "severity": "medium",
+                  "recommendation": "Add <main>, <article>, <section>, <nav>, <header>, <footer> elements"
+                },
+                {
+                  "category": "div_soup",
+                  "description": "Excessive div elements (232)",
+                  "severity": "low",
+                  "recommendation": "Replace generic divs with semantic elements where appropriate"
+                }
+              ]
+            },
+            "structured_data": {
+              "score_bonus": 0,
+              "findings": [
+                "No structured data found - this limits AI understanding",
+                "Recommendation: Add JSON-LD schema for Organization, Product, FAQ, etc.",
+                "Missing key schemas (Organization, Product, FAQ, etc.)"
+              ],
+              "structured_data": [],
+              "has_json_ld": false,
+              "has_microdata": false,
+              "has_rdfa": false
+            },
+            "content_extraction": {
+              "score": 3,
+              "max": 7,
+              "findings": [
+                "Fair: Meta description present but suboptimal length (219 chars)",
+                "Fair: Title present but length could be optimized (17 chars)",
+                "Poor: Low text-to-HTML ratio (13.4%) - heavy markup or JS-dependent content",
+                "Good: 55/55 images have alt text"
+              ],
+              "issues": [
+                "Increase visible text content, reduce markup bloat"
+              ],
+              "details": {
+                "has_meta_description": true,
+                "has_title": true,
+                "text_length": 6585,
+                "text_ratio": 0.1343603346255866,
+                "image_count": 55,
+                "images_with_alt": 55
+              }
+            },
+            "js_dependency": {
+              "score": 3,
+              "max": 3,
+              "findings": [
+                "No SPA framework detected - content likely server-rendered"
+              ],
+              "issues": [],
+              "details": {
+                "detected_frameworks": [],
+                "has_noscript": false
+              }
+            }
+          }
+        },
+        "knowledge_graph": {
+          "score": 0,
+          "max": 15,
+          "findings": [
+            "Error checking google_kg: 400 Client Error: Bad Request for url: https://kgsearch.googleapis.com/v1/entities:search?query=Sheet+Metal+Werks&key=your_knowledge_graph_api_key_here&limit=5&types=Organization%2CCorporation%2CLocalBusiness",
+            "NOT FOUND in wikipedia",
+            "NOT FOUND in wikidata",
+            "Skipped crunchbase: API key not configured",
+            "NOT FOUND in linkedin",
+            "  Suggestion: Create a LinkedIn company page or verify the company name spelling",
+            "Recommendation: Create Wikipedia article to improve AI awareness",
+            "Recommendation: Improve structured data to appear in Google KG",
+            "Recommendation: Create or optimize LinkedIn company page for B2B visibility"
+          ],
+          "sources": {
+            "google_kg": {
+              "found": false,
+              "url": null,
+              "error": "400 Client Error: Bad Request for url: https://kgsearch.googleapis.com/v1/entities:search?query=Sheet+Metal+Werks&key=your_knowledge_graph_api_key_here&limit=5&types=Organization%2CCorporation%2CLocalBusiness",
+              "data": null
+            },
+            "wikipedia": {
+              "found": false,
+              "url": null,
+              "error": null,
+              "data": {
+                "related_articles": [
+                  "Monterey Car Week",
+                  "Wintersteiger",
+                  "List of military headstamps"
+                ]
+              }
+            },
+            "wikidata": {
+              "found": false,
+              "url": null,
+              "error": null,
+              "data": null
+            },
+            "crunchbase": {
+              "found": false,
+              "url": null,
+              "error": "CRUNCHBASE_API_KEY not set - skipping Crunchbase check",
+              "data": null
+            },
+            "linkedin": {
+              "found": false,
+              "url": "https://www.linkedin.com/company/sheet-metal-werks",
+              "error": null,
+              "data": {
+                "slugs_tried": [
+                  "sheet-metal-werks",
+                  "sheetmetalwerks"
+                ],
+                "suggestion": "Create a LinkedIn company page or verify the company name spelling"
+              }
+            }
+          },
+          "details": {
+            "sources_checked": 4,
+            "sources_found": 0,
+            "presence_rate": 0.0
+          }
+        },
+        "citation_likelihood": {
+          "score": 2,
+          "max": 15,
+          "findings": [
+            "No highly citable content detected",
+            "Recommendations to improve citation likelihood:",
+            "  - Add original research or survey data",
+            "  - Create comprehensive 'ultimate guide' content",
+            "  - Build interactive tools or calculators",
+            "  - Publish case studies with specific results",
+            "  - Include expert credentials and citations",
+            "Opportunities to increase citation likelihood:",
+            "  - Add original research, surveys, or proprietary data",
+            "  - Create comprehensive 'complete guide' content (3000+ words)",
+            "  - Build free tools, calculators, or templates",
+            "  - Highlight author credentials and expertise"
+          ],
+          "citable_content": [],
+          "details": {
+            "content_types_found": [],
+            "total_citable_items": 0,
+            "recommendations": [
+              "Add original research, surveys, or proprietary data",
+              "Create comprehensive 'complete guide' content (3000+ words)",
+              "Build free tools, calculators, or templates",
+              "Highlight author credentials and expertise"
+            ]
+          }
+        },
+        "sentiment": {
+          "score": 5,
+          "max": 10,
+          "findings": [
+            "Positive: 0/5 responses (0%)",
+            "Neutral: 5/5 responses (100%)",
+            "Negative: 0/5 responses (0%)"
+          ],
+          "details": {
+            "sentiment_counts": {
+              "positive": 0,
+              "neutral": 5,
+              "negative": 0
+            },
+            "total_analyzed": 5,
+            "results": [
+              {
+                "query": "What is Sheet Metal Werks?",
+                "system": "claude",
+                "sentiment": "neutral",
+                "confidence": 0.5,
+                "key_phrases": []
+              },
+              {
+                "query": "Tell me about Sheet Metal Werks",
+                "system": "claude",
+                "sentiment": "neutral",
+                "confidence": 0.5,
+                "key_phrases": []
+              },
+              {
+                "query": "Sheet Metal Werks company overview",
+                "system": "claude",
+                "sentiment": "neutral",
+                "confidence": 0.5,
+                "key_phrases": []
+              },
+              {
+                "query": "Who founded Sheet Metal Werks?",
+                "system": "claude",
+                "sentiment": "neutral",
+                "confidence": 0.5,
+                "key_phrases": []
+              },
+              {
+                "query": "What does Sheet Metal Werks do?",
+                "system": "claude",
+                "sentiment": "neutral",
+                "confidence": 0.5,
+                "key_phrases": []
+              }
+            ]
+          }
+        }
+      },
+      "ai_responses": [
+        {
+          "query": "What is Sheet Metal Werks?",
+          "system": "claude",
+          "response": "I don't have specific information about \"Sheet Metal Werks\" in my training data. However, based on the name, it could be:\n\n1. **A sheet metal fabrication company** - likely specializing in custom metal work, HVAC ductwork, industrial fabrication, or architectural metalwork\n\n2. **A business name** - possibly a local or regional sheet metal contractor or manufacturer\n\nTo help you better, I'd need more context:\n- Are you asking about a specific company in a particular location?\n- Is this related to a service you need or a business you heard about?\n- Are you looking for general information about sheet metal work?\n\nIf you're looking for a specific Sheet Metal Werks business, I'd recommend:\n- Checking their website or social media pages\n- Looking at Google Maps or business directories\n- Searching for reviews on platforms like Yelp or Google Reviews\n\nIs there something specific about sheet metal work or this company you'd like to know?",
+          "brand_mentioned": true,
+          "position": "first",
+          "sentiment": null
+        },
+        {
+          "query": "Tell me about Sheet Metal Werks",
+          "system": "claude",
+          "response": "I don't have specific information about \"Sheet Metal Werks\" in my training data. This could refer to:\n\n1. **A specific company** - There may be a sheet metal fabrication business by this name (note the spelling \"Werks\" instead of \"Works\"). These businesses typically provide services like:\n   - Custom metal fabrication\n   - HVAC ductwork\n   - Architectural metalwork\n   - Industrial metal components\n   - Welding and finishing services\n\n2. **A local business** - It could be a regional or local sheet metal shop that might not have a large online presence\n\nTo help you better, could you provide more context:\n- Is this a company you're looking for information about?\n- Do you have a location (city/state)?\n- Are you looking for services, employment info, or something else?\n\nAlternatively, you could:\n- Check their website directly if they have one\n- Search for them on Google Maps or business directories\n- Look for reviews on platforms like Yelp or Google Reviews\n\nIf you can share more details about what you're looking for, I'd be happy to help further!",
+          "brand_mentioned": true,
+          "position": "first",
+          "sentiment": null
+        },
+        {
+          "query": "Sheet Metal Werks company overview",
+          "system": "claude",
+          "response": "# Sheet Metal Werks Company Overview\n\nI don't have specific information about a company called \"Sheet Metal Werks\" in my training data. This could be because:\n\n1. **It's a smaller/regional business** - Many local sheet metal fabrication companies operate regionally\n2. **Spelling variation** - The company might use a different spelling (Works vs. Werks)\n3. **Recent establishment** - It may have been founded after my knowledge cutoff\n4. **Private company** - Limited public information available\n\n## Typical Sheet Metal Fabrication Services\n\nIf this is a sheet metal fabrication company, they likely offer services such as:\n\n- Custom metal fabrication\n- CNC punching, laser cutting, and forming\n- Welding and assembly\n- HVAC ductwork\n- Architectural metal work\n- Precision metal components\n- Prototype to production runs\n\n## How I Can Help\n\nIf you could provide:\n- **Location** (city/state)\n- **Industry focus** (HVAC, industrial, architectural, etc.)\n- **Context** for why you're asking (employment, partnership, competitor research, etc.)\n\nI could provide more relevant information or help you find what you're looking for about this specific company.\n\nWould you like general information about the sheet metal fabrication industry instead, or do you have additional details about this particular company?",
+          "brand_mentioned": true,
+          "position": "first",
+          "sentiment": null
+        },
+        {
+          "query": "Who founded Sheet Metal Werks?",
+          "system": "claude",
+          "response": "I don't have any information about who founded Sheet Metal Werks. This could be a specific company name, and without access to current databases or more context about which Sheet Metal Werks you're referring to (as there may be multiple companies with similar names), I cannot provide the founder's name.\n\nIf you're looking for this information, I'd recommend:\n- Checking the company's official website (typically in an \"About Us\" section)\n- Looking at their LinkedIn page\n- Searching business registration records\n- Contacting the company directly\n\nIs there anything else about the company you'd like to know that I might be able to help with?",
+          "brand_mentioned": true,
+          "position": "first",
+          "sentiment": null
+        },
+        {
+          "query": "What does Sheet Metal Werks do?",
+          "system": "claude",
+          "response": "I don't have any specific information about \"Sheet Metal Werks\" in my knowledge base. This could be:\n\n1. **A sheet metal fabrication company** - likely specializing in custom metal work, HVAC ductwork, architectural metalwork, or industrial fabrication\n2. **A specific business** - there may be local or regional companies with this name\n\nTo get accurate information about the specific Sheet Metal Werks you're asking about, I'd recommend:\n- Checking their website directly\n- Looking at their Google Business listing\n- Searching for them on social media platforms\n- Calling them if you have contact information\n\nIf you can provide more context (like a location or what prompted your question), I might be able to help you better!",
+          "brand_mentioned": true,
+          "position": "first",
+          "sentiment": null
+        }
+      ],
+      "accuracy_issues": [],
+      "recommendations": [
+        {
+          "priority": "high",
+          "category": "knowledge_graph",
+          "action": "Work toward Wikipedia presence",
+          "details": "Build notability through press coverage, awards, and industry recognition. Do not create your own Wikipedia article.",
+          "impact": "high",
+          "effort": "high"
+        },
+        {
+          "priority": "medium",
+          "category": "knowledge_graph",
+          "action": "Create Wikidata item",
+          "details": "Add your organization to Wikidata with proper structured properties.",
+          "impact": "medium",
+          "effort": "low"
+        },
+        {
+          "priority": "medium",
+          "category": "citation_likelihood",
+          "action": "Create citation-worthy content",
+          "details": "Publish original research, comprehensive guides, or free tools that AI systems would reference.",
+          "impact": "high",
+          "effort": "high"
+        },
+        {
+          "priority": "quick_win",
+          "category": "parseability",
+          "action": "Add Organization schema to homepage",
+          "details": "Implement JSON-LD Organization schema with accurate company information.",
+          "impact": "medium",
+          "effort": "low"
+        },
+        {
+          "priority": "quick_win",
+          "category": "accuracy",
+          "action": "Create a facts/media page",
+          "details": "Publish official company facts (founding date, founders, HQ, etc.) that AI can reference.",
+          "impact": "medium",
+          "effort": "low"
+        }
+      ]
+    }
+  },
+  "warnings": [],
+  "errors": [],
+  "overall_score": 54,
+  "grade": "F",
+  "component_scores": {
+    "technical": {
+      "score": 53,
+      "max": 100,
+      "weight": 0.3,
+      "weighted_score": 15.9
+    },
+    "content": {
+      "score": 57,
+      "max": 100,
+      "weight": 0.35,
+      "weighted_score": 19.9
+    },
+    "ai_visibility": {
+      "score": 52,
+      "max": 100,
+      "weight": 0.35,
+      "weighted_score": 18.2
+    }
+  },
+  "market_intelligence": {
+    "classification": {
+      "industry": "Manufacturing",
+      "vertical": "Metal Fabrication",
+      "niche": "Commercial HVAC Sheet Metal Ductwork and Industrial Fabrication",
+      "sub_niche": "Specialized HVAC Ductwork for Commercial Buildings and Data Center Cooling Systems",
+      "geographic_scope": "regional",
+      "service_area": "Not specified on available information",
+      "keywords": [
+        "sheet metal fabrication",
+        "HVAC ductwork",
+        "commercial HVAC",
+        "data center cooling",
+        "industrial sheet metal",
+        "duct fabrication",
+        "commercial ductwork",
+        "metal fabrication shop",
+        "HVAC manufacturing",
+        "cooling system ductwork",
+        "data center infrastructure",
+        "custom sheet metal"
+      ],
+      "confidence": 0.95
+    },
+    "market_landscape": {
+      "market_size_estimate": "Analysis required",
+      "growth_trend": "stable",
+      "market_leaders": [
+        "Lindab",
+        "Spiral Manufacturing"
+      ],
+      "emerging_players": [
+        "Superior Duct Fabrication"
+      ],
+      "ai_visibility_opportunity": "Moderate-High - B2B buyers researching via AI, early mover advantage",
+      "analysis_date": "2026-01-19T10:10:25.714104"
+    },
+    "competitors": [
+      {
+        "name": "Lindab",
+        "url": "https://www.lindab.com",
+        "description": "International ventilation and building products company specializing in HVAC ductwork systems and solutions for commercial buildings",
+        "why_competitor": "Major provider of commercial HVAC ductwork systems with focus on data centers and large commercial buildings",
+        "estimated_strength": "leader",
+        "geographic_overlap": "national",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Data Center Cooling",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "Spiral Manufacturing",
+        "url": "https://www.spiralmfg.com",
+        "description": "Manufacturer of spiral duct, fittings, and HVAC accessories for commercial and industrial applications",
+        "why_competitor": "Direct competitor in commercial HVAC ductwork fabrication with national distribution",
+        "estimated_strength": "leader",
+        "geographic_overlap": "national",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "AAON Coil Products",
+        "url": "https://www.aaoncoilproducts.com",
+        "description": "Custom HVAC coils and ductwork fabrication for commercial applications including data centers",
+        "why_competitor": "Specializes in custom HVAC solutions for commercial buildings and mission-critical facilities like data centers",
+        "estimated_strength": "strong",
+        "geographic_overlap": "national",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Data Center Cooling"
+        ]
+      },
+      {
+        "name": "Nexus Air Systems",
+        "url": "https://www.nexusairsystems.com",
+        "description": "Commercial sheet metal and HVAC ductwork contractor serving industrial and commercial sectors",
+        "why_competitor": "Regional competitor providing commercial HVAC ductwork and industrial fabrication services",
+        "estimated_strength": "strong",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "Engel Sheet Metal",
+        "url": "https://www.engelsheetmetal.com",
+        "description": "Commercial and industrial sheet metal fabrication specializing in HVAC ductwork systems",
+        "why_competitor": "Direct competitor in commercial HVAC ductwork fabrication and industrial sheet metal work",
+        "estimated_strength": "strong",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "Shambaugh & Son",
+        "url": "https://www.shambaughandson.com",
+        "description": "Mechanical contractor and sheet metal fabricator for commercial HVAC and industrial projects",
+        "why_competitor": "Provides commercial HVAC ductwork fabrication and serves data center market with specialized cooling solutions",
+        "estimated_strength": "strong",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Data Center Cooling",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "Precision Ductwork",
+        "url": "https://www.precisionduct.com",
+        "description": "Custom commercial HVAC ductwork fabrication for large commercial and institutional buildings",
+        "why_competitor": "Specialized in custom commercial HVAC ductwork including critical applications",
+        "estimated_strength": "moderate",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "Ace Duct & Fabrication",
+        "url": "https://www.aceduct.com",
+        "description": "Commercial HVAC ductwork and sheet metal fabrication for commercial construction projects",
+        "why_competitor": "Regional fabricator competing for commercial HVAC ductwork projects",
+        "estimated_strength": "moderate",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      },
+      {
+        "name": "Advanced Mechanical Systems",
+        "url": "https://www.advancedmech.com",
+        "description": "Sheet metal fabrication and HVAC contractor specializing in commercial buildings and data centers",
+        "why_competitor": "Targets same niche with data center cooling solutions and commercial HVAC ductwork",
+        "estimated_strength": "moderate",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Data Center Cooling"
+        ]
+      },
+      {
+        "name": "Superior Duct Fabrication",
+        "url": "https://www.superiorduct.net",
+        "description": "Commercial and industrial ductwork fabricator serving HVAC contractors and building owners",
+        "why_competitor": "Emerging regional competitor in commercial HVAC ductwork fabrication space",
+        "estimated_strength": "emerging",
+        "geographic_overlap": "partial",
+        "service_overlap": [
+          "Commercial HVAC Ductwork",
+          "Industrial Sheet Metal Fabrication"
+        ]
+      }
+    ],
+    "benchmark": {
+      "market_position_rank": 3,
+      "market_position_percentile": 50,
+      "vs_market_average": {
+        "overall": 10,
+        "technical": 8,
+        "content": 22,
+        "ai_visibility": 0
+      },
+      "competitive_advantages": [
+        "Overall SEO performance 10 points above market average",
+        "AI visibility 1 points ahead of competitors"
+      ],
+      "critical_gaps": [],
+      "market_opportunities": [
+        "Closing AI visibility gap could move from #3 to market leader"
+      ],
+      "ai_visibility_rank": 3,
+      "ai_visibility_gap_to_leader": 14,
+      "ai_optimization_priorities": []
+    },
+    "competitor_benchmarks": [
+      {
+        "competitor_name": "Lindab",
+        "competitor_url": "https://www.lindab.com",
+        "overall_score_diff": -9,
+        "technical_score_diff": -6,
+        "content_score_diff": -10,
+        "ai_visibility_score_diff": -11,
+        "strengths_vs_competitor": [],
+        "weaknesses_vs_competitor": [
+          "Technical SEO behind by 6 points",
+          "Content authority behind by 10 points",
+          "AI visibility behind by 11 points"
+        ],
+        "quick_wins": [
+          "Close technical gap with site speed and mobile optimization",
+          "Implement schema markup and structured data",
+          "Create AI-optimized FAQ content"
+        ],
+        "strategic_investments": [
+          "Develop comprehensive content strategy to build authority"
+        ]
+      },
+      {
+        "competitor_name": "Spiral Manufacturing",
+        "competitor_url": "https://www.spiralmfg.com",
+        "overall_score_diff": -11,
+        "technical_score_diff": -10,
+        "content_score_diff": -8,
+        "ai_visibility_score_diff": -14,
+        "strengths_vs_competitor": [],
+        "weaknesses_vs_competitor": [
+          "Technical SEO behind by 10 points",
+          "Content authority behind by 8 points",
+          "AI visibility behind by 14 points"
+        ],
+        "quick_wins": [
+          "Close technical gap with site speed and mobile optimization",
+          "Implement schema markup and structured data",
+          "Create AI-optimized FAQ content"
+        ],
+        "strategic_investments": [
+          "Develop comprehensive content strategy to build authority"
+        ]
+      },
+      {
+        "competitor_name": "AAON Coil Products",
+        "competitor_url": "https://www.aaoncoilproducts.com",
+        "overall_score_diff": 24,
+        "technical_score_diff": 20,
+        "content_score_diff": 43,
+        "ai_visibility_score_diff": 10,
+        "strengths_vs_competitor": [
+          "Technical SEO ahead by 20 points",
+          "Content authority ahead by 43 points",
+          "AI visibility ahead by 10 points"
+        ],
+        "weaknesses_vs_competitor": [],
+        "quick_wins": [],
+        "strategic_investments": []
+      },
+      {
+        "competitor_name": "Nexus Air Systems",
+        "competitor_url": "https://www.nexusairsystems.com",
+        "overall_score_diff": 23,
+        "technical_score_diff": 20,
+        "content_score_diff": 43,
+        "ai_visibility_score_diff": 7,
+        "strengths_vs_competitor": [
+          "Technical SEO ahead by 20 points",
+          "Content authority ahead by 43 points",
+          "AI visibility ahead by 7 points"
+        ],
+        "weaknesses_vs_competitor": [],
+        "quick_wins": [],
+        "strategic_investments": []
+      },
+      {
+        "competitor_name": "Engel Sheet Metal",
+        "competitor_url": "https://www.engelsheetmetal.com",
+        "overall_score_diff": 25,
+        "technical_score_diff": 20,
+        "content_score_diff": 43,
+        "ai_visibility_score_diff": 12,
+        "strengths_vs_competitor": [
+          "Technical SEO ahead by 20 points",
+          "Content authority ahead by 43 points",
+          "AI visibility ahead by 12 points"
+        ],
+        "weaknesses_vs_competitor": [],
+        "quick_wins": [],
+        "strategic_investments": []
+      }
+    ],
+    "premium_executive_summary": "# Executive Summary: SEO & AI Visibility Assessment for Sheet Metal Werks\n\n## Current Market Position\n\nSheet Metal Werks currently ranks #3 among six major competitors in the commercial HVAC sheet metal fabrication market, with an overall digital visibility score of 54/100. While this places the company at the median of the competitive set, the score represents a failing grade in absolute terms and signals significant untapped potential. More critically, the company sits just 14 points behind the AI visibility leader in a market where B2B buyers are increasingly turning to AI-powered search tools like ChatGPT and Perplexity to research suppliers and make purchasing decisions. This proximity to the top position represents a strategic opportunity to leapfrog established competitors like Lindab and Spiral Manufacturing who have yet to prioritize this emerging channel.\n\n## Competitive Landscape Analysis\n\nSheet Metal Werks demonstrates meaningful strength relative to the market average, outperforming competitors by 10 points overall and 22 points specifically in content authority. This indicates the foundation for thought leadership is in place. However, the company is tied with the market average in AI visibility at 52/100, while competing against well-established players including Lindab and Spiral Manufacturing (market leaders), and strong regional competitors like AAON Coil Products, Nexus Air Systems, and Engel Sheet Metal. The competitive dynamic is particularly notable because none of these competitors have established commanding leads in AI search optimization\u2014the gap to the leader is only 14 points. This compressed competitive field means that strategic investments in AI visibility today could reposition Sheet Metal Werks as the dominant digital presence before competitors recognize this channel's importance.\n\n## Critical Findings and Strategic Implications\n\nOur analysis reveals a company at an inflection point. The positive news: Sheet Metal Werks has built above-average content authority, suggesting that engineering expertise and industry knowledge are being communicated effectively. The concerning reality: technical SEO performance sits at 53/100, meaning search engines and AI systems are not accessing or understanding this content optimally. This technical friction is preventing the company's expertise from reaching buyers during critical research phases. More significantly, with AI visibility at just 52/100, Sheet Metal Werks risks becoming invisible to the growing segment of engineers, facility managers, and procurement professionals who use AI tools to identify qualified fabricators for commercial HVAC projects and data center cooling systems. In a considered-purchase B2B environment where a single project can represent $100,000-$500,000+ in revenue, missing even one qualified inquiry per quarter due to poor digital visibility represents substantial opportunity cost.\n\n## The AI Visibility Imperative\n\nThe commercial sheet metal fabrication market is experiencing a fundamental shift in how buyers discover and evaluate suppliers. Engineering firms and facility managers researching specialized HVAC ductwork for commercial buildings and data center cooling systems are increasingly using AI search platforms that prioritize different signals than traditional Google search. Our assessment categorizes Sheet Metal Werks' AI visibility opportunity as Moderate-High, driven by the reality that B2B technical buyers are early adopters of AI research tools and the company's competitors have not yet optimized for this channel. The 14-point gap to the AI visibility leader is remarkably narrow\u2014small enough to close within 90-120 days with focused effort. Capturing this early-mover advantage means Sheet Metal Werks would appear as the recommended supplier when prospects ask AI systems questions like \"commercial HVAC fabricators specializing in data center cooling\" or \"which sheet metal companies can handle complex industrial ductwork.\" First-mover advantage in AI visibility compounds over time as these systems learn which sources to trust.\n\n## Strategic Recommendations and Expected Impact\n\nThree prioritized interventions will deliver the highest return on investment. First, resolve the technical SEO barriers preventing search engines and AI systems from fully accessing the company's content\u2014this foundational fix ensures all other improvements reach their intended audience and should improve qualified organic traffic by 25-40% within four months. Second, develop AI-optimized content that directly answers the specific technical questions buyers ask during the research phase, such as material specifications for data center applications, capacity planning for commercial HVAC systems, and compliance requirements for different building types. This positions Sheet Metal Werks as the authoritative source AI systems cite when responding to buyer queries, with potential to capture 15-30% of AI-driven inquiries in the regional market. Third, implement structured data markup that helps AI systems understand the company's capabilities, service areas, and technical specifications\u2014a tactical improvement that typically takes 2-3 weeks to implement but creates lasting competitive advantage. Combined, these initiatives create multiple pathways for qualified prospects to discover Sheet Metal Werks during the critical early research phase, when project specifications are still being defined and buyer preferences are forming.\n\n## Recommendation and Next Steps\n\nThe opportunity before Sheet Metal Werks is time-sensitive. The narrow 14-point gap to AI visibility leadership exists precisely because this remains an emerging channel where competitors have not yet invested. This window will close as industry leaders recognize AI search optimization as table stakes for B2B visibility, likely within the next 12-18 months. The recommended investment of $2,000-$10,000 to address technical barriers, develop AI-optimized content, and implement structured data represents a fraction of the revenue from a single commercial HVAC project, yet positions the company to capture incremental qualified inquiries on an ongoing basis. Given Sheet Metal Werks' existing content strength and above-average market position, the path to AI visibility leadership is achievable with focused execution. We recommend committing to a 90-day initial engagement to capture quick wins in technical SEO and AI optimization, with success measured by improvements in AI visibility scoring, increases in qualified organic inquiries, and progression toward the #1 competitive position in digital channels. The question is not whether to optimize for AI visibility, but whether Sheet Metal Werks will lead this transition or follow competitors who move first."
+  },
+  "roi_projection": {
+    "disclosure": "These projections are based on published industry benchmarks and standard conversion assumptions. Actual results will vary based on your specific business model and execution.",
+    "data_source": "industry_benchmarks",
+    "current_state": {
+      "visibility_score": 54,
+      "market_rank": 3,
+      "monthly_missed_leads": 8,
+      "monthly_lost_revenue": "$21,000-$39,000"
+    },
+    "projected_improvement": {
+      "visibility_score": 74,
+      "market_rank": 1,
+      "lead_increase_pct": 150,
+      "monthly_revenue_gain": "$15,749-$29,250"
+    },
+    "roi_analysis": {
+      "engagement_cost_range": "$5,250-$11,250",
+      "estimated_roi": "25.2-46.8x",
+      "payback_period_months": 1
+    },
+    "cost_of_inaction": {
+      "monthly_opportunity_cost": "$21,000-$39,000",
+      "six_month_cost": "$126,000-$234,000",
+      "competitor_risk": "Each month of delay allows competitors to capture 8 additional leads"
+    }
+  },
+  "branding": {
+    "primaryColor": "#e11d48",
+    "logoUrl": ""
+  }
+};

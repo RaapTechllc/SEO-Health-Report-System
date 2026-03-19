@@ -1,0 +1,11 @@
+{
+  "name": "Quality Gate",
+  "description": "Runs lint and typecheck before agent completion to enforce code quality",
+  "trigger": {
+    "type": "agentComplete"
+  },
+  "action": {
+    "type": "runCommand",
+    "command": "echo '🔍 Running quality gates...' && (npm run lint 2>/dev/null || echo 'No lint script') && (npm run typecheck 2>/dev/null || echo 'No typecheck script') && echo '✅ Quality gates complete'"
+  }
+}

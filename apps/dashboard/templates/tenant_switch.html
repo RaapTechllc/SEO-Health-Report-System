@@ -1,0 +1,142 @@
+<!-- Tenant Switcher Modal -->
+<div id="tenant-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="tenant-modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeTenantModal()"></div>
+
+        <!-- Modal panel -->
+        <div class="relative inline-block bg-raap-card rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full border border-raap-border">
+            <div class="bg-raap-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-raap-primary/20 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-raap-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg leading-6 font-medium text-white" id="tenant-modal-title">
+                            Switch Tenant
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-400">
+                                Select a tenant to switch your current workspace.
+                            </p>
+                        </div>
+                        
+                        <!-- Tenant List -->
+                        <div id="tenant-list" class="mt-4 space-y-2 max-h-64 overflow-y-auto">
+                            <div class="flex items-center justify-center py-4">
+                                <svg class="animate-spin h-6 w-6 text-raap-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="ml-2 text-gray-400">Loading tenants...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-raap-dark px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-raap-border">
+                <button type="button" onclick="closeTenantModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-raap-border shadow-sm px-4 py-2 bg-raap-card text-base font-medium text-gray-300 hover:bg-raap-border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-raap-primary sm:mt-0 sm:w-auto sm:text-sm transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openTenantModal() {
+    document.getElementById('tenant-modal').classList.remove('hidden');
+    loadTenants();
+}
+
+function closeTenantModal() {
+    document.getElementById('tenant-modal').classList.add('hidden');
+}
+
+async function loadTenants() {
+    const listEl = document.getElementById('tenant-list');
+    
+    try {
+        const response = await fetch('/dashboard/tenants');
+        if (!response.ok) throw new Error('Failed to load tenants');
+        
+        const data = await response.json();
+        const tenants = data.tenants || [];
+        const currentTenantId = data.current_tenant_id;
+        
+        if (tenants.length === 0) {
+            listEl.innerHTML = `
+                <div class="text-center py-4 text-gray-400">
+                    No tenants available
+                </div>
+            `;
+            return;
+        }
+        
+        listEl.innerHTML = tenants.map(tenant => `
+            <button onclick="switchTenant('${tenant.id}')" 
+                    class="w-full flex items-center justify-between p-3 rounded-lg border ${tenant.id === currentTenantId ? 'border-raap-primary bg-raap-primary/10' : 'border-raap-border hover:border-gray-500 hover:bg-raap-dark'} transition-colors text-left">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-raap-primary to-raap-secondary flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">${tenant.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div>
+                        <div class="font-medium text-white">${escapeHtml(tenant.name)}</div>
+                        <div class="text-xs text-gray-400">${escapeHtml(tenant.id)}</div>
+                    </div>
+                </div>
+                ${tenant.id === currentTenantId ? `
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-raap-primary/20 text-raap-primary border border-raap-primary/30">
+                        Current
+                    </span>
+                ` : `
+                    <svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                `}
+            </button>
+        `).join('');
+    } catch (error) {
+        listEl.innerHTML = `
+            <div class="text-center py-4 text-red-400">
+                Failed to load tenants. Please try again.
+            </div>
+        `;
+    }
+}
+
+async function switchTenant(tenantId) {
+    try {
+        const response = await fetch('/dashboard/switch-tenant', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tenant_id: tenantId }),
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to switch tenant');
+        }
+        
+        window.location.reload();
+    } catch (error) {
+        alert('Failed to switch tenant: ' + error.message);
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeTenantModal();
+    }
+});
+</script>

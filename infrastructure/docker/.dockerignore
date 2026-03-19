@@ -1,0 +1,94 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# Local development
+*.db
+*.sqlite
+*.sqlite3
+seo_health.db
+test_e2e.db
+
+# Reports (generated at runtime)
+reports/
+logs/
+storage/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# macOS
+.DS_Store
+
+# Node (frontend)
+node_modules/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.log
+
+# Kiro specs (not needed in container)
+.kiro/
+
+# Claude config
+.claude/

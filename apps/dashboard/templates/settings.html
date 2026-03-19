@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-white">Account Settings</h1>
+        <p class="text-gray-400 mt-1">Manage your account and preferences</p>
+    </div>
+
+    {% if success %}
+    <div class="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-green-400 text-sm">{{ success }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-red-400 text-sm">{{ error }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Profile Information -->
+    <div class="bg-raap-card rounded-xl border border-raap-border p-6 mb-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Profile Information</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between py-3 border-b border-raap-border">
+                <div>
+                    <p class="text-sm text-gray-400">Email</p>
+                    <p class="text-white">{{ user_data.email }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-raap-primary to-raap-secondary flex items-center justify-center">
+                    <span class="text-white font-bold">{{ user_data.email[0]|upper }}</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-raap-border">
+                <div>
+                    <p class="text-sm text-gray-400">Role</p>
+                    <p class="text-white capitalize">{{ user_data.role }}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-medium {% if user_data.role == 'admin' %}bg-raap-primary/20 text-raap-primary{% else %}bg-gray-700 text-gray-300{% endif %}">
+                    {{ user_data.role|upper }}
+                </span>
+            </div>
+            <div class="flex items-center justify-between py-3">
+                <div>
+                    <p class="text-sm text-gray-400">Account Created</p>
+                    <p class="text-white">{{ user_data.created_at.strftime('%B %d, %Y') if user_data.created_at else 'N/A' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenant Information -->
+    {% if tenant_info %}
+    <div class="bg-raap-card rounded-xl border border-raap-border p-6 mb-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Organization</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between py-3 border-b border-raap-border">
+                <div>
+                    <p class="text-sm text-gray-400">Organization Name</p>
+                    <p class="text-white">{{ tenant_info.name }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-raap-primary to-raap-secondary flex items-center justify-center">
+                    <span class="text-white font-bold">{{ tenant_info.name[0]|upper }}</span>
+                </div>
+            </div>
+            {% if tenant_info.tier %}
+            <div class="flex items-center justify-between py-3">
+                <div>
+                    <p class="text-sm text-gray-400">Plan</p>
+                    <p class="text-white capitalize">{{ tenant_info.tier }}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-raap-secondary/20 text-raap-secondary">
+                    {{ tenant_info.tier|upper }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if user_data.role == 'admin' %}
+        <div class="mt-6 pt-4 border-t border-raap-border">
+            <a href="/dashboard/branding" class="inline-flex items-center text-sm text-raap-primary hover:text-raap-secondary transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                </svg>
+                Manage Branding Settings
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Change Password -->
+    <div class="bg-raap-card rounded-xl border border-raap-border p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Change Password</h2>
+        <form id="passwordForm" method="POST" action="/dashboard/settings/password" class="space-y-4">
+            <div>
+                <label for="current_password" class="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
+                <input 
+                    type="password" 
+                    id="current_password" 
+                    name="current_password" 
+                    required
+                    autocomplete="current-password"
+                    class="w-full px-4 py-3 bg-raap-dark border border-raap-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:border-transparent transition-all"
+                    placeholder="••••••••"
+                >
+            </div>
+            <div>
+                <label for="new_password" class="block text-sm font-medium text-gray-300 mb-2">New Password</label>
+                <input 
+                    type="password" 
+                    id="new_password" 
+                    name="new_password" 
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                    class="w-full px-4 py-3 bg-raap-dark border border-raap-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:border-transparent transition-all"
+                    placeholder="••••••••"
+                >
+                <p class="mt-1 text-xs text-gray-500">Minimum 8 characters</p>
+            </div>
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
+                <input 
+                    type="password" 
+                    id="confirm_password" 
+                    name="confirm_password" 
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                    class="w-full px-4 py-3 bg-raap-dark border border-raap-border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:border-transparent transition-all"
+                    placeholder="••••••••"
+                >
+                <p id="passwordMatchError" class="mt-1 text-xs text-red-400 hidden">Passwords do not match</p>
+            </div>
+            <div class="pt-2">
+                <button 
+                    type="submit" 
+                    class="px-6 py-3 bg-gradient-to-r from-raap-primary to-raap-secondary text-white font-medium rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-raap-primary focus:ring-offset-2 focus:ring-offset-raap-card transition-all"
+                >
+                    Update Password
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('passwordForm');
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const matchError = document.getElementById('passwordMatchError');
+
+    function checkPasswordMatch() {
+        if (confirmPassword.value && newPassword.value !== confirmPassword.value) {
+            matchError.classList.remove('hidden');
+            confirmPassword.classList.add('border-red-500');
+            confirmPassword.classList.remove('border-raap-border');
+            return false;
+        } else {
+            matchError.classList.add('hidden');
+            confirmPassword.classList.remove('border-red-500');
+            confirmPassword.classList.add('border-raap-border');
+            return true;
+        }
+    }
+
+    confirmPassword.addEventListener('input', checkPasswordMatch);
+    newPassword.addEventListener('input', function() {
+        if (confirmPassword.value) {
+            checkPasswordMatch();
+        }
+    });
+
+    form.addEventListener('submit', function(e) {
+        if (!checkPasswordMatch()) {
+            e.preventDefault();
+            return;
+        }
+        
+        if (newPassword.value.length < 8) {
+            e.preventDefault();
+            alert('Password must be at least 8 characters');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{# Quota usage widget - compact design for sidebar/navbar #}
+{# Variables: quota (QuotaStatus object or dict) #}
+
+{% set usage_percent = (quota.monthly_audits_used / quota.monthly_audits_limit * 100) if quota.monthly_audits_limit > 0 else 0 %}
+{% set is_unlimited = quota.monthly_audits_limit == -1 %}
+{% set is_warning = usage_percent >= 80 and not is_unlimited %}
+{% set is_critical = usage_percent >= 100 and not is_unlimited %}
+
+<div id="quota-widget" class="bg-raap-card rounded-lg p-3 border {{ 'border-red-500/50' if is_critical else 'border-yellow-500/50' if is_warning else 'border-raap-border' }}">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Monthly Audits</span>
+        {% if is_critical %}
+        <span class="text-xs font-semibold text-red-400">Limit Reached</span>
+        {% elif is_warning %}
+        <span class="text-xs font-semibold text-yellow-400">{{ (100 - usage_percent)|round|int }}% left</span>
+        {% endif %}
+    </div>
+    
+    <div class="flex items-baseline space-x-1 mb-2">
+        <span class="text-lg font-bold text-gray-100">{{ quota.monthly_audits_used }}</span>
+        <span class="text-sm text-gray-500">/</span>
+        {% if is_unlimited %}
+        <span class="text-sm text-gray-400">∞</span>
+        {% else %}
+        <span class="text-sm text-gray-400">{{ quota.monthly_audits_limit }}</span>
+        {% endif %}
+    </div>
+    
+    {% if not is_unlimited %}
+    <div class="w-full bg-raap-dark rounded-full h-1.5 mb-2">
+        <div class="h-1.5 rounded-full transition-all duration-500 {{ 'bg-red-500' if is_critical else 'bg-yellow-500' if is_warning else 'bg-gradient-to-r from-raap-primary to-raap-secondary' }}"
+             style="width: {{ [usage_percent, 100]|min }}%"></div>
+    </div>
+    {% endif %}
+    
+    <div class="flex items-center justify-between text-xs">
+        {% if quota.reset_date %}
+        <span class="text-gray-500">
+            Resets {{ quota.reset_date.strftime('%b %d') if quota.reset_date else 'soon' }}
+        </span>
+        {% endif %}
+        
+        {% if is_critical or is_warning %}
+        <a href="/pricing" class="text-raap-primary hover:text-raap-secondary transition-colors font-medium">
+            Upgrade →
+        </a>
+        {% endif %}
+    </div>
+    
+    {% if quota.concurrent_audits > 0 %}
+    <div class="mt-2 pt-2 border-t border-raap-border">
+        <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-500">Running</span>
+            <span class="text-gray-300">{{ quota.concurrent_audits }}/{{ quota.max_concurrent }}</span>
+        </div>
+    </div>
+    {% endif %}
+</div>

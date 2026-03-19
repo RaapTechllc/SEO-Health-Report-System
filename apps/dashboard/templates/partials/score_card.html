@@ -1,0 +1,54 @@
+{# Reusable score card component #}
+{# Usage: {% include 'partials/score_card.html' with context %} #}
+{# Variables: title, score, grade, description, trend (optional), icon (optional) #}
+
+<div class="bg-raap-card rounded-xl p-6 border border-raap-border score-card">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-200">{{ title }}</h3>
+        {% if trend is defined and trend is not none %}
+        <span class="text-sm flex items-center {{ 'text-green-400' if trend > 0 else 'text-red-400' if trend < 0 else 'text-gray-400' }}">
+            {% if trend > 0 %}
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+            </svg>
+            +{{ trend }}%
+            {% elif trend < 0 %}
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+            {{ trend }}%
+            {% else %}
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/>
+            </svg>
+            0%
+            {% endif %}
+        </span>
+        {% endif %}
+    </div>
+    
+    <div class="flex items-end space-x-4">
+        <div class="text-5xl font-bold score-value" 
+             id="score-{{ title|lower|replace(' ', '-') }}"
+             data-score="{{ score if score is not none else 0 }}">
+            {{ score if score is not none else '—' }}
+        </div>
+        {% if grade %}
+        <div class="grade-badge grade-{{ grade|lower|replace('+', '-plus')|replace('-', '-minus') if grade|length > 1 else 'grade-' ~ grade|lower }} mb-2">
+            {{ grade }}
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if description %}
+    <p class="mt-3 text-sm text-gray-400">{{ description }}</p>
+    {% endif %}
+    
+    {% if score is not none %}
+    <div class="mt-4 w-full bg-raap-dark rounded-full h-2">
+        <div class="score-progress h-2 rounded-full transition-all duration-1000 ease-out"
+             style="width: {{ score }}%"
+             data-score="{{ score }}"></div>
+    </div>
+    {% endif %}
+</div>

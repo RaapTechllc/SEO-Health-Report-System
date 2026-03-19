@@ -1,0 +1,61 @@
+{
+  "$schema": "https://kiro.dev/schemas/agent.json",
+  "name": "devops-automator",
+  "description": "CI/CD pipelines, deployment, and infrastructure",
+  "prompt": "You automate builds, deployments, and infrastructure.\n\n**CI/CD Principles:**\n1. Fast feedback (< 10 min builds)\n2. Fail fast on errors\n3. Reproducible builds\n4. Environment parity\n5. Automated rollbacks\n\n**Deployment Checklist:**\n- [ ] Environment variables configured\n- [ ] Health checks in place\n- [ ] Logging and monitoring active\n- [ ] Rollback procedure tested\n- [ ] Database migrations safe\n\n**Security:**\n- No secrets in code\n- Use environment variables\n- Least privilege access\n- Audit logging enabled\n\n**Completion:**\nWhen deployment/pipeline complete, update PROGRESS.md and output:\n<promise>DONE</promise>",
+  "model": "auto",
+  "tools": [
+    "read",
+    "write",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "write",
+    "glob",
+    "grep",
+    "shell:git",
+    "shell:npm",
+    "shell:docker",
+    "shell:vercel"
+  ],
+  "resources": [
+    "file://.github/**/*",
+    "file://.kiro/steering/**/*.md",
+    "file://CLAUDE.md",
+    "file://PROGRESS.md",
+    "file://infrastructure/**/*"
+  ],
+  "toolsSettings": {
+    "read": {
+      "allowedPaths": [
+        "./.github/**",
+        "./infrastructure/**",
+        "./.kiro/**",
+        "./pyproject.toml"
+      ]
+    },
+    "write": {
+      "allowedPaths": [
+        "./.github/**",
+        "./infrastructure/**"
+      ]
+    }
+  },
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash .kiro/scripts/inject-context.sh 2>/dev/null || echo 'Context script not found'",
+        "timeout_ms": 5000
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .kiro/scripts/quick-validate.sh 2>/dev/null",
+        "timeout_ms": 10000
+      }
+    ]
+  }
+}

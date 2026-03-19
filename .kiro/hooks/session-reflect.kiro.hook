@@ -1,0 +1,13 @@
+{
+  "name": "Session Reflection Reminder",
+  "description": "Reminds to capture learnings at end of significant work sessions",
+  "version": "1.0.0",
+  "trigger": {
+    "type": "onAgentMessage",
+    "pattern": "<promise>DONE</promise>|task complete|finished|all done"
+  },
+  "action": {
+    "type": "sendMessage",
+    "message": "Task complete. Before ending, consider: Were there any corrections or learnings this session? Use @reflect to capture them to LEARNINGS.md so we don't repeat mistakes."
+  }
+}

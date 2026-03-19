@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SEO Health Report{% endblock %} | RaapTech</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    
+    <!-- SVG Gradient Definition for Score Ring -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#0ea5e9"/>
+                <stop offset="100%" style="stop-color:#14b8a6"/>
+            </linearGradient>
+        </defs>
+    </svg>
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-raap-darker text-gray-100 min-h-screen">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-raap-primary focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-white">Skip to content</a>
+    <nav class="bg-raap-dark border-b border-raap-border" role="navigation" aria-label="Main navigation">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/dashboard" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-raap-primary to-raap-secondary flex items-center justify-center">
+                            <span class="text-white font-bold text-lg">R</span>
+                        </div>
+                        <span class="text-xl font-semibold gradient-text">RaapTech SEO</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard/audits" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Audits
+                    </a>
+                    <a href="/admin/health" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Admin Health
+                    </a>
+                    <a href="/docs" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        API Docs
+                    </a>
+                    
+                    {% if user %}
+                    <!-- Quota Widget (compact inline) -->
+                    {% if quota %}
+                    <div class="hidden lg:block">
+                        {% include 'partials/quota_widget.html' %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Tenant Switcher -->
+                    <div class="relative flex items-center">
+                        <button onclick="openTenantModal()" aria-label="Switch tenant: {{ tenant_name or 'No Tenant' }}" class="flex items-center space-x-2 px-3 py-1.5 rounded-md border border-raap-border bg-raap-card hover:bg-raap-dark hover:border-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-raap-primary">
+                            <div class="w-6 h-6 rounded bg-gradient-to-br from-raap-primary to-raap-secondary flex items-center justify-center" aria-hidden="true">
+                                <span class="text-white font-bold text-xs">{{ (tenant_name or 'T')[0]|upper }}</span>
+                            </div>
+                            <span class="text-sm text-gray-300 max-w-[120px] truncate">{{ tenant_name or 'No Tenant' }}</span>
+                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- User Menu -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button 
+                            onclick="toggleUserMenu()" 
+                            class="flex items-center space-x-2 text-sm text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-raap-primary"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            aria-label="User menu"
+                            id="user-menu-button"
+                        >
+                            <span>{{ user.email }}</span>
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div 
+                            id="userMenu" 
+                            class="hidden absolute right-0 mt-2 w-48 bg-raap-card rounded-lg border border-raap-border shadow-xl py-1 z-50"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="user-menu-button"
+                        >
+                            <a href="/dashboard/settings" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-raap-dark hover:text-white transition-colors" role="menuitem">
+                                <svg class="h-4 w-4 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Settings
+                            </a>
+                            <form action="/dashboard/logout" method="post" class="block">
+                                <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-raap-dark hover:text-white transition-colors" role="menuitem">
+                                    <svg class="h-4 w-4 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Sign Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                        function toggleUserMenu() {
+                            const menu = document.getElementById('userMenu');
+                            menu.classList.toggle('hidden');
+                        }
+                        document.addEventListener('click', function(e) {
+                            const menu = document.getElementById('userMenu');
+                            const button = e.target.closest('button');
+                            if (!button || button.getAttribute('onclick') !== 'toggleUserMenu()') {
+                                if (menu && !menu.contains(e.target)) {
+                                    menu.classList.add('hidden');
+                                }
+                            }
+                        });
+                    </script>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-raap-border mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between text-sm text-gray-500">
+                <span>RaapTech SEO Health Report System</span>
+                <span>v2.0.0</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/dashboard/static/js/audit-progress.js" defer></script>
+    <script src="/dashboard/static/js/fixes-filter.js" defer></script>
+    
+    {% if user %}
+    {% include 'tenant_switch.html' %}
+    {% endif %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

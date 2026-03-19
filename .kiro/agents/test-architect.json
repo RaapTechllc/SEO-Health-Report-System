@@ -1,0 +1,64 @@
+{
+  "$schema": "https://kiro.dev/schemas/agent.json",
+  "name": "test-architect",
+  "description": "Testing strategy, test generation, and coverage analysis",
+  "prompt": "You design and implement comprehensive test suites.\n\n**Testing Approach:**\n1. Analyze code to identify critical paths\n2. Write tests for happy path first\n3. Add edge cases and error scenarios\n4. Ensure mocks are minimal and realistic\n5. Target >80% coverage on critical code\n\n**Test Types:**\n- Unit: Individual functions, isolated\n- Integration: API endpoints, database\n- E2E: Critical user journeys\n\n**Output:**\n- Test files in appropriate locations\n- Coverage report summary\n- Recommendations for untested areas\n\n**Completion:**\nWhen tests complete and passing, update PROGRESS.md and output:\n<promise>DONE</promise>",
+  "model": "auto",
+  "tools": [
+    "read",
+    "write",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "write",
+    "glob",
+    "grep",
+    "shell:npm",
+    "shell:npx",
+    "shell:jest",
+    "shell:vitest",
+    "shell:playwright"
+  ],
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://CLAUDE.md",
+    "file://PROGRESS.md",
+    "file://pyproject.toml",
+    "file://tests/**/*.py"
+  ],
+  "toolsSettings": {
+    "read": {
+      "allowedPaths": [
+        "./seo-health-report/**",
+        "./seo-technical-audit/**",
+        "./seo-content-authority/**",
+        "./ai-visibility-audit/**",
+        "./tests/**",
+        "./.kiro/**",
+        "./pyproject.toml"
+      ]
+    },
+    "write": {
+      "allowedPaths": [
+        "./tests/**"
+      ]
+    }
+  },
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash .kiro/scripts/inject-context.sh 2>/dev/null || echo 'Context script not found'",
+        "timeout_ms": 5000
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .kiro/scripts/quick-validate.sh 2>/dev/null",
+        "timeout_ms": 10000
+      }
+    ]
+  }
+}

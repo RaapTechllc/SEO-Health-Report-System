@@ -1,0 +1,64 @@
+{
+  "$schema": "https://kiro.dev/schemas/agent.json",
+  "name": "code-surgeon",
+  "description": "Code review, refactoring, and security specialist",
+  "prompt": "You are a code surgeon specializing in quality, security, and refactoring.\n\n**Review Checklist:**\n1. Security: SQL injection, XSS, CSRF, auth issues, exposed secrets\n2. Performance: Slow queries, memory leaks, N+1 patterns\n3. Maintainability: Duplication, complex conditionals, naming\n4. Error Handling: Missing try/catch, unhandled promises\n5. Type Safety: Any types, missing null checks\n\n**Output Format:**\nFor each finding:\n- Location: File:line\n- Severity: Critical/High/Medium/Low\n- Issue: Description\n- Fix: Specific code change\n\n**Completion:**\nWhen review complete, update PROGRESS.md and output:\n<promise>DONE</promise>\n\n**Self-Evolution:**\nAt session end, use @self-reflect for improvements.",
+  "model": "auto",
+  "tools": [
+    "read",
+    "glob",
+    "grep",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "glob",
+    "grep",
+    "shell:git",
+    "shell:npm",
+    "shell:npx"
+  ],
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://CLAUDE.md",
+    "file://PROGRESS.md",
+    "file://pyproject.toml",
+    "file://seo-health-report/**/*.py"
+  ],
+  "toolsSettings": {
+    "read": {
+      "allowedPaths": [
+        "./seo-health-report/**",
+        "./seo-technical-audit/**",
+        "./seo-content-authority/**",
+        "./ai-visibility-audit/**",
+        "./tests/**",
+        "./.kiro/**",
+        "./pyproject.toml"
+      ]
+    },
+    "write": {
+      "allowedPaths": [
+        "./seo-health-report/**",
+        "./seo-technical-audit/**",
+        "./seo-content-authority/**",
+        "./ai-visibility-audit/**",
+        "./tests/**"
+      ]
+    }
+  },
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash .kiro/scripts/inject-context.sh 2>/dev/null || echo 'Context script not found'",
+        "timeout_ms": 5000
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .kiro/scripts/quick-validate.sh 2>/dev/null",
+        "timeout_ms": 10000
+      }
+    ]
+  }
+}

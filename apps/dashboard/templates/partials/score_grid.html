@@ -1,0 +1,163 @@
+{# Score grid component for displaying audit results #}
+{# Usage: {% include 'partials/score_grid.html' %} #}
+{# Variables: overall_score, overall_grade, technical_score, technical_grade, content_score, content_grade, ai_score, ai_grade #}
+
+<div class="score-grid space-y-6">
+    {# Overall Score - Large prominent display #}
+    <div class="bg-raap-card rounded-xl p-8 border border-raap-border overall-score-card">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="flex-1">
+                <h2 class="text-xl font-semibold text-gray-300 mb-2">Overall SEO Health Score</h2>
+                <p class="text-gray-400 text-sm">Combined score from all audit modules</p>
+            </div>
+            <div class="mt-6 md:mt-0 flex items-center space-x-6">
+                <div class="relative">
+                    <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" stroke-width="8"/>
+                        <circle cx="50" cy="50" r="45" fill="none" 
+                                class="score-ring"
+                                stroke-width="8"
+                                stroke-linecap="round"
+                                stroke-dasharray="283"
+                                stroke-dashoffset="{{ 283 - (283 * (overall_score|default(0)) / 100) }}"
+                                data-score="{{ overall_score|default(0) }}"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-4xl font-bold score-value" id="overall-score-display">
+                            {{ overall_score if overall_score is not none else '—' }}
+                        </span>
+                    </div>
+                </div>
+                {% if overall_grade %}
+                <div class="grade-badge-large grade-{{ overall_grade|lower|replace('+', '-plus')|replace('-', '-minus') if overall_grade|length > 1 else 'grade-' ~ overall_grade|lower }}">
+                    {{ overall_grade }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Score breakdown bar #}
+        <div class="mt-8">
+            <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                <span>0</span>
+                <span>25</span>
+                <span>50</span>
+                <span>75</span>
+                <span>100</span>
+            </div>
+            <div class="w-full bg-raap-dark rounded-full h-3 overflow-hidden">
+                <div class="score-progress-gradient h-3 rounded-full transition-all duration-1000 ease-out"
+                     style="width: {{ overall_score|default(0) }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Module Scores Grid #}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {# Technical SEO Score #}
+        <div class="bg-raap-card rounded-xl p-6 border border-raap-border module-score-card">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-200">Technical SEO</h3>
+                </div>
+                <span class="text-xs text-gray-500 bg-raap-dark px-2 py-1 rounded">30% weight</span>
+            </div>
+            
+            <div class="flex items-end space-x-4">
+                <span class="text-4xl font-bold score-value" id="technical-score-display">
+                    {{ technical_score if technical_score is not none else '—' }}
+                </span>
+                {% if technical_grade %}
+                <div class="grade-badge grade-{{ technical_grade|lower|replace('+', '-plus')|replace('-', '-minus') if technical_grade|length > 1 else 'grade-' ~ technical_grade|lower }} mb-1">
+                    {{ technical_grade }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <p class="mt-3 text-sm text-gray-400">Site speed, crawlability, mobile-friendliness</p>
+            
+            {% if technical_score is not none %}
+            <div class="mt-4 w-full bg-raap-dark rounded-full h-2">
+                <div class="h-2 rounded-full transition-all duration-1000 ease-out bg-blue-400"
+                     style="width: {{ technical_score }}%"></div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Content & Authority Score #}
+        <div class="bg-raap-card rounded-xl p-6 border border-raap-border module-score-card">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-200">Content & Authority</h3>
+                </div>
+                <span class="text-xs text-gray-500 bg-raap-dark px-2 py-1 rounded">35% weight</span>
+            </div>
+            
+            <div class="flex items-end space-x-4">
+                <span class="text-4xl font-bold score-value" id="content-score-display">
+                    {{ content_score if content_score is not none else '—' }}
+                </span>
+                {% if content_grade %}
+                <div class="grade-badge grade-{{ content_grade|lower|replace('+', '-plus')|replace('-', '-minus') if content_grade|length > 1 else 'grade-' ~ content_grade|lower }} mb-1">
+                    {{ content_grade }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <p class="mt-3 text-sm text-gray-400">Content quality, backlinks, domain authority</p>
+            
+            {% if content_score is not none %}
+            <div class="mt-4 w-full bg-raap-dark rounded-full h-2">
+                <div class="h-2 rounded-full transition-all duration-1000 ease-out bg-purple-400"
+                     style="width: {{ content_score }}%"></div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# AI Visibility Score #}
+        <div class="bg-raap-card rounded-xl p-6 border border-raap-border module-score-card">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-200">AI Visibility</h3>
+                </div>
+                <span class="text-xs text-gray-500 bg-raap-dark px-2 py-1 rounded">35% weight</span>
+            </div>
+            
+            <div class="flex items-end space-x-4">
+                <span class="text-4xl font-bold score-value" id="ai-score-display">
+                    {{ ai_score if ai_score is not none else '—' }}
+                </span>
+                {% if ai_grade %}
+                <div class="grade-badge grade-{{ ai_grade|lower|replace('+', '-plus')|replace('-', '-minus') if ai_grade|length > 1 else 'grade-' ~ ai_grade|lower }} mb-1">
+                    {{ ai_grade }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <p class="mt-3 text-sm text-gray-400">AI search presence, structured data, citations</p>
+            
+            {% if ai_score is not none %}
+            <div class="mt-4 w-full bg-raap-dark rounded-full h-2">
+                <div class="h-2 rounded-full transition-all duration-1000 ease-out bg-teal-400"
+                     style="width: {{ ai_score }}%"></div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

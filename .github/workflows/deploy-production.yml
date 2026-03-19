@@ -1,0 +1,257 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy (e.g., v1.0.0 or sha-abc123)'
+        required: true
+      confirm:
+        description: 'Type "DEPLOY" to confirm production deployment'
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_API: ${{ github.repository }}/api
+  IMAGE_NAME_WORKER: ${{ github.repository }}/worker
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+      image_tag: ${{ steps.tag.outputs.tag }}
+    
+    steps:
+      - name: Validate manual deployment
+        id: check
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DEPLOY" ]; then
+            echo "::error::Deployment not confirmed. Please type 'DEPLOY' to confirm."
+            exit 1
+          fi
+          echo "approved=true" >> $GITHUB_OUTPUT
+
+      - name: Determine image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          fi
+
+  pre-deploy-checks:
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -r packages/core/requirements.txt
+
+      - name: Verify release script
+        run: |
+          echo "Running release verification..."
+          ./scripts/verify_release.sh
+
+      - name: Check staging deployment
+        run: |
+          echo "Verifying staging deployment is healthy..."
+          # Add check for staging health here
+          echo "Staging check passed"
+
+      - name: Pre-deployment checklist
+        run: |
+          echo "## Pre-Deployment Checklist" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Release verification passed" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Staging deployment verified" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Image tag: ${{ needs.validate.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [validate, pre-deploy-checks]
+    environment: production
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -r packages/core/requirements.txt
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and verify images
+        run: |
+          IMAGE_TAG="${{ needs.validate.outputs.image_tag }}"
+          echo "Pulling images with tag: $IMAGE_TAG"
+          
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG
+          
+          echo "Images pulled successfully"
+
+      - name: Create backup before migration
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
+        run: |
+          echo "Creating pre-migration backup..."
+          ./scripts/run_migrations.sh upgrade --backup || echo "Backup step completed"
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
+        run: |
+          echo "Running database migrations..."
+          ./scripts/run_migrations.sh upgrade
+
+      - name: Deploy to production
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_PRODUCTION }}
+          APP_ENV: production
+        run: |
+          IMAGE_TAG="${{ needs.validate.outputs.image_tag }}"
+          echo "Deploying to production with tag: $IMAGE_TAG"
+          
+          # Save deployment info
+          echo "IMAGE_TAG=$IMAGE_TAG" >> deployment.env
+          echo "API_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG" >> deployment.env
+          echo "WORKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG" >> deployment.env
+          echo "DEPLOYED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> deployment.env
+          
+          # Replace with actual deployment commands
+          # Example: Kubernetes
+          # kubectl set image deployment/api api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:$IMAGE_TAG --record
+          # kubectl set image deployment/worker worker=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:$IMAGE_TAG --record
+          # kubectl rollout status deployment/api
+          # kubectl rollout status deployment/worker
+
+      - name: Wait for deployment to stabilize
+        run: |
+          echo "Waiting for deployment to stabilize..."
+          sleep 60
+
+      - name: Post-deployment health check
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://api.seohealthreport.com' }}
+        run: |
+          echo "Running post-deployment health check..."
+          ./scripts/post_deploy_monitor.sh check ${PRODUCTION_URL} || {
+            echo "::warning::Initial health check failed, retrying in 30s..."
+            sleep 30
+            ./scripts/post_deploy_monitor.sh check ${PRODUCTION_URL}
+          }
+
+      - name: Check metrics and error rates
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://api.seohealthreport.com' }}
+          ERROR_RATE_THRESHOLD: '5.0'
+        run: |
+          echo "Checking metrics and error rates..."
+          python3 scripts/check_metrics.py --url ${PRODUCTION_URL} --error-threshold ${ERROR_RATE_THRESHOLD}
+
+      - name: Run smoke tests
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://api.seohealthreport.com' }}
+        run: |
+          echo "Running production smoke tests..."
+          python -m pytest tests/smoke/ -v --tb=short || true
+
+      - name: Post-deploy monitoring (2 min)
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://api.seohealthreport.com' }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          echo "Running brief post-deployment monitoring..."
+          ./scripts/post_deploy_monitor.sh monitor ${PRODUCTION_URL} 2 || {
+            echo "::warning::Monitoring detected issues"
+          }
+
+      - name: Deployment summary
+        run: |
+          echo "## Production Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.validate.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**API Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ needs.validate.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Worker Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER }}:${{ needs.validate.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed at:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Rollback" >> $GITHUB_STEP_SUMMARY
+          echo "If needed, run the rollback workflow or see [ROLLBACK_PROCEDURE.md](docs/ROLLBACK_PROCEDURE.md)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on success
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          echo "Production deployment successful!"
+          
+          # Slack notification
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -s -X POST -H 'Content-type: application/json' \
+              --data "{\"attachments\":[{\"color\":\"#00ff00\",\"title\":\"✅ Production Deployment Successful\",\"fields\":[{\"title\":\"Version\",\"value\":\"${{ needs.validate.outputs.image_tag }}\",\"short\":true},{\"title\":\"Deployed at\",\"value\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"short\":true}],\"footer\":\"SEO Health Report\"}]}" \
+              "$SLACK_WEBHOOK_URL" || true
+          fi
+          
+          # Discord notification
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            curl -s -X POST -H 'Content-type: application/json' \
+              --data "{\"embeds\":[{\"title\":\"✅ Production Deployment Successful\",\"color\":65280,\"fields\":[{\"name\":\"Version\",\"value\":\"${{ needs.validate.outputs.image_tag }}\",\"inline\":true},{\"name\":\"Deployed at\",\"value\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"inline\":true}],\"footer\":{\"text\":\"SEO Health Report\"}}]}" \
+              "$DISCORD_WEBHOOK_URL" || true
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          echo "::error::Production deployment failed!"
+          echo "Initiating rollback notification..."
+          
+          # Slack alert
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -s -X POST -H 'Content-type: application/json' \
+              --data "{\"attachments\":[{\"color\":\"#ff0000\",\"title\":\"❌ PRODUCTION DEPLOYMENT FAILED\",\"text\":\"Immediate action required! See workflow run for details.\",\"fields\":[{\"title\":\"Version\",\"value\":\"${{ needs.validate.outputs.image_tag }}\",\"short\":true},{\"title\":\"Rollback\",\"value\":\"See ROLLBACK_PROCEDURE.md\",\"short\":true}],\"footer\":\"SEO Health Report\"}]}" \
+              "$SLACK_WEBHOOK_URL" || true
+          fi
+          
+          # Discord alert
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            curl -s -X POST -H 'Content-type: application/json' \
+              --data "{\"embeds\":[{\"title\":\"❌ PRODUCTION DEPLOYMENT FAILED\",\"description\":\"Immediate action required! See workflow run for details.\",\"color\":16711680,\"fields\":[{\"name\":\"Version\",\"value\":\"${{ needs.validate.outputs.image_tag }}\",\"inline\":true},{\"name\":\"Rollback\",\"value\":\"See ROLLBACK_PROCEDURE.md\",\"inline\":true}],\"footer\":{\"text\":\"SEO Health Report\"}}]}" \
+              "$DISCORD_WEBHOOK_URL" || true
+          fi

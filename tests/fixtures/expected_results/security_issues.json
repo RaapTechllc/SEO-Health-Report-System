@@ -1,0 +1,58 @@
+{
+  "fixture_name": "security_issues",
+  "url": "http://insecure-site.test",
+  "expected_score_range": [35, 55],
+  "expected_grade": ["D", "F"],
+  "expected_issues": [
+    "no_https",
+    "missing_security_headers",
+    "mixed_content"
+  ],
+  "expected_issue_details": {
+    "no_https": {
+      "severity": "critical",
+      "category": "security",
+      "description_contains": ["HTTPS", "SSL", "TLS"]
+    },
+    "missing_security_headers": {
+      "severity": "medium",
+      "category": "security",
+      "description_contains": "header"
+    }
+  },
+  "expected_components": {
+    "crawlability": {
+      "min_score": 14,
+      "max_score": 20
+    },
+    "indexing": {
+      "min_score": 10,
+      "max_score": 15
+    },
+    "speed": {
+      "min_score": 18,
+      "max_score": 25
+    },
+    "mobile": {
+      "min_score": 10,
+      "max_score": 15
+    },
+    "security": {
+      "min_score": 0,
+      "max_score": 4,
+      "expected_issues": [
+        "Not using HTTPS",
+        "Missing security headers"
+      ]
+    },
+    "structured_data": {
+      "min_score": 8,
+      "max_score": 15
+    }
+  },
+  "validation_rules": {
+    "should_have_critical_security_issue": true,
+    "should_detect_no_https": true,
+    "should_recommend_enabling_https": true
+  }
+}
