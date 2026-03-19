@@ -59,7 +59,11 @@ reports/
 # Misc
 *.log
 *.db
+*.sqlite
 nul
+
+# Audit venv
+.audit-venv/
 
 # Pip install artifacts (Windows)
 =*

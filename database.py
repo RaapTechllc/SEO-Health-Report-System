@@ -105,7 +105,7 @@ class Payment(Base):
     tier = Column(String(50), nullable=False)
     status = Column(String(50), default="pending", index=True)  # pending, succeeded, failed
     audit_id = Column(String(36), ForeignKey("audits.id"), nullable=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     user = relationship("User", back_populates="payments")
     tenant = relationship("Tenant", back_populates="payments")
@@ -138,8 +138,8 @@ class TenantBranding(Base):
     primary_color = Column(String(7), default="#1E3A8A")  # hex color
     secondary_color = Column(String(7), default="#3B82F6")  # hex color
     footer_text = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     tenant = relationship("Tenant", back_populates="branding")
 
@@ -163,8 +163,8 @@ class TenantQuota(Base):
     max_pages_per_audit = Column(Integer, default=50)  # basic=50, pro=200, enterprise=1000
     max_ai_prompts_per_audit = Column(Integer, default=10)  # basic=10, pro=50, enterprise=200
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     tenant = relationship("Tenant", back_populates="quota")
 
@@ -200,7 +200,7 @@ class WebhookDelivery(Base):
     response_code = Column(Integer, nullable=True)
     response_body = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     delivered_at = Column(DateTime, nullable=True)
 
     webhook = relationship("Webhook", back_populates="deliveries")

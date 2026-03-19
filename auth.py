@@ -5,12 +5,13 @@ Authentication module with JWT tokens.
 import hashlib
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
+from passlib.hash import bcrypt
 from sqlalchemy.orm import Session
 
 from database import User, get_db
@@ -32,14 +33,16 @@ security = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using SHA256 with salt."""
-    salt = os.urandom(16).hex()
-    hashed = hashlib.sha256((salt + password).encode()).hexdigest()
-    return f"{salt}:{hashed}"
+    """Hash a password using bcrypt."""
+    return bcrypt.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash."""
+    """Verify a password against its hash. Supports bcrypt and legacy SHA-256."""
+    if hashed_password.startswith("$2"):
+        # bcrypt hash
+        return bcrypt.verify(plain_password, hashed_password)
+    # Legacy SHA-256 format: salt:hash
     try:
         salt, stored_hash = hashed_password.split(":")
         computed_hash = hashlib.sha256((salt + plain_password).encode()).hexdigest()
@@ -48,9 +51,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
+def needs_rehash(hashed_password: str) -> bool:
+    """Check if a password hash needs to be upgraded to bcrypt."""
+    return not hashed_password.startswith("$2")
+
+
 def create_access_token(user_id: str, role: str = "user", tenant_id: Optional[str] = None) -> str:
     """Create a JWT access token."""
-    expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     payload = {"sub": user_id, "role": role, "exp": expire}
     if tenant_id:
         payload["tenant_id"] = tenant_id
@@ -82,10 +90,14 @@ def create_user(db: Session, email: str, password: str, role: str = "user") -> U
 
 
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
-    """Authenticate a user by email and password."""
+    """Authenticate a user by email and password. Rehashes to bcrypt on success if needed."""
     user = db.query(User).filter(User.email == email.lower()).first()
     if not user or not verify_password(password, user.password_hash):
         return None
+    # Rehash legacy passwords to bcrypt on successful login
+    if needs_rehash(user.password_hash):
+        user.password_hash = hash_password(password)
+        db.commit()
     return user
 
 

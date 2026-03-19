@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
@@ -21,7 +21,8 @@ from apps.api.openapi import (
     AUDIT_STATUS_EXAMPLE,
     ERROR_RESPONSES,
 )
-from database import Audit, get_db
+from auth import require_auth
+from database import Audit, User, get_db
 from packages.seo_health_report.metrics import metrics
 from packages.seo_health_report.progress import get_audit_progress
 from packages.seo_health_report.scripts.calculate_scores import calculate_composite_score
@@ -249,7 +250,7 @@ async def run_audit_task(
             audit.grade = result["grade"]
             audit.result = result
             audit.report_path = str(report_path)
-            audit.completed_at = datetime.utcnow()
+            audit.completed_at = datetime.now(timezone.utc)
             db.commit()
 
             # Prepare webhook payload
@@ -322,7 +323,8 @@ async def start_audit(
     request: AuditRequest,
     http_request: Request,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    user: User = Depends(require_auth),
+    db: Session = Depends(get_db),
 ):
     """Start a new SEO audit (async via background task)."""
     check_rate_limit(http_request)
@@ -334,7 +336,8 @@ async def start_audit(
         url=request.url,
         company_name=request.company_name,
         tier=request.tier,
-        status="queued"
+        status="queued",
+        user_id=user.id,
     )
     db.add(audit)
     db.commit()
@@ -348,7 +351,7 @@ async def start_audit(
         keywords=request.keywords,
         competitors=request.competitors,
         tier=request.tier,
-        tenant_id=None
+        tenant_id=getattr(user, "tenant_id", None),
     )
 
     # Legacy job queue code commented out for now
@@ -615,9 +618,18 @@ async def get_audit_pdf(audit_id: str, db: Session = Depends(get_db)):
         }
     }
 )
-async def list_audits(db: Session = Depends(get_db)):
-    """List all audits."""
-    audits = db.query(Audit).order_by(Audit.created_at.desc()).limit(100).all()
+async def list_audits(
+    user: User = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
+    """List audits for the authenticated user."""
+    audits = (
+        db.query(Audit)
+        .filter(Audit.user_id == user.id)
+        .order_by(Audit.created_at.desc())
+        .limit(100)
+        .all()
+    )
     return {
         "audits": [{
             "audit_id": a.id, "status": a.status, "url": a.url,

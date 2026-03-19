@@ -7,7 +7,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from apps.api.openapi import COMPETITOR_EXAMPLE, ERROR_RESPONSES
-from database import Competitor, get_db
+from auth import require_auth
+from database import Competitor, User, get_db
 
 router = APIRouter(prefix="/competitors", tags=["competitors"])
 
@@ -46,7 +47,11 @@ class CompetitorRequest(BaseModel):
         422: ERROR_RESPONSES[422],
     }
 )
-async def add_competitor(request: CompetitorRequest, db: Session = Depends(get_db)):
+async def add_competitor(
+    request: CompetitorRequest,
+    user: User = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
     """Add a competitor for monitoring."""
     competitor_id = f"comp_{uuid.uuid4().hex[:12]}"
 
@@ -55,7 +60,8 @@ async def add_competitor(request: CompetitorRequest, db: Session = Depends(get_d
         url=request.url,
         company_name=request.company_name,
         monitoring_frequency=request.monitoring_frequency,
-        alert_threshold=request.alert_threshold
+        alert_threshold=request.alert_threshold,
+        user_id=user.id,
     )
     db.add(competitor)
     db.commit()
@@ -87,9 +93,12 @@ async def add_competitor(request: CompetitorRequest, db: Session = Depends(get_d
         }
     }
 )
-async def list_competitors(db: Session = Depends(get_db)):
-    """List all monitored competitors."""
-    competitors = db.query(Competitor).all()
+async def list_competitors(
+    user: User = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
+    """List monitored competitors for the authenticated user."""
+    competitors = db.query(Competitor).filter(Competitor.user_id == user.id).all()
     return {
         "competitors": [{
             "competitor_id": c.id, "url": c.url, "company_name": c.company_name,
@@ -109,9 +118,16 @@ async def list_competitors(db: Session = Depends(get_db)):
         404: ERROR_RESPONSES[404],
     }
 )
-async def delete_competitor(competitor_id: str, db: Session = Depends(get_db)):
+async def delete_competitor(
+    competitor_id: str,
+    user: User = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
     """Remove a competitor from monitoring."""
-    competitor = db.query(Competitor).filter(Competitor.id == competitor_id).first()
+    competitor = db.query(Competitor).filter(
+        Competitor.id == competitor_id,
+        Competitor.user_id == user.id,
+    ).first()
     if not competitor:
         raise HTTPException(status_code=404, detail="Competitor not found")
     db.delete(competitor)

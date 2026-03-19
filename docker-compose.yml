@@ -7,8 +7,8 @@ services:
       - "3032:8000"
     environment:
       - APP_ENV=development
-      - DATABASE_URL=sqlite:///./seo_health.db
-      - JWT_SECRET_KEY=dev-secret-key-minimum-32-characters-long
+      - DATABASE_URL=${DATABASE_URL:-postgresql://seo:${POSTGRES_PASSWORD}@db:5432/seo_health}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env}
     volumes:
       - .:/app
       - ./reports:/app/reports
@@ -23,7 +23,7 @@ services:
       dockerfile: infrastructure/docker/worker.Dockerfile
     environment:
       - APP_ENV=development
-      - DATABASE_URL=sqlite:///./seo_health.db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://seo:${POSTGRES_PASSWORD}@db:5432/seo_health}
       - WORKER_LEASE_SECONDS=300
     volumes:
       - .:/app
@@ -36,9 +36,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=seo
-      - POSTGRES_PASSWORD=seopassword
-      - POSTGRES_DB=seo_health
+      - POSTGRES_USER=${POSTGRES_USER:-seo}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      - POSTGRES_DB=${POSTGRES_DB:-seo_health}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
