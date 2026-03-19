@@ -199,13 +199,13 @@ def build_audit_webhook_payload(
     Returns:
         Webhook payload dict
     """
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     payload = {
         "event": "audit.completed" if status == "completed" else "audit.failed",
         "audit_id": audit_id,
         "status": status,
-        "timestamp": datetime.utcnow().isoformat() + "Z"
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z"
     }
 
     if overall_score is not None:

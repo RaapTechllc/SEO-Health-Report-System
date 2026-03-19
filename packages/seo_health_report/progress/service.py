@@ -1,6 +1,6 @@
 """Progress tracking service with time estimation."""
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import text
@@ -155,7 +155,7 @@ def get_audit_progress(db: Session, audit_id: str) -> Optional[AuditProgress]:
     elapsed = 0
     estimated_completion = None
     if started_at:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         elapsed = int((now - started_at).total_seconds())
 
         if status not in ("completed", "failed") and overall_pct > 0:

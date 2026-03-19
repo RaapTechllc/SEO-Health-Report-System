@@ -11,7 +11,7 @@ This handler:
 import hashlib
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import text
@@ -62,7 +62,7 @@ async def handle_hello_audit(
         "final_url": result.final_url,
         "html_hash": html_hash,
         "content_length": len(result.content),
-        "completed_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
     }
 
     await write_progress_event(

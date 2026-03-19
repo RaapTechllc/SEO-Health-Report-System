@@ -8,329 +8,227 @@ Provides secure HTTP fetching with protection against:
 - Resource exhaustion
 
 All external HTTP requests should go through this module.
+Uses httpx for async-first HTTP with sync fallback.
 """
 
 import ipaddress
 import socket
-import urllib.parse
+from dataclasses import dataclass
 from typing import Optional
 from urllib.parse import urlparse
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+import httpx
 
 # Configuration
-MAX_REDIRECTS = 3
+MAX_REDIRECTS = 5
 CONNECT_TIMEOUT = 10
 READ_TIMEOUT = 30
 MAX_RESPONSE_SIZE = 10 * 1024 * 1024  # 10 MB
 ALLOWED_SCHEMES = {"http", "https"}
 BLOCKED_PORTS = {22, 23, 25, 445, 3389}  # SSH, Telnet, SMTP, SMB, RDP
 
-# User agent for all requests
 USER_AGENT = "SEOHealthReport/1.0 (+https://seohealthreport.com/bot)"
+
+BLOCKED_RANGES: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = [
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("169.254.0.0/16"),
+    ipaddress.ip_network("0.0.0.0/8"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+    ipaddress.ip_network("fe80::/10"),
+]
 
 
 class SSRFProtectionError(Exception):
     """Raised when a request is blocked due to SSRF protection."""
-
     pass
 
 
+# Alias for backwards compat
+SSRFError = SSRFProtectionError
+
+
+@dataclass
+class FetchResult:
+    url: str
+    status_code: int
+    content: bytes
+    headers: dict[str, str]
+    final_url: str
+
+
 def is_private_ip(ip: str) -> bool:
-    """
-    Check if an IP address is private, loopback, or link-local.
-
-    Args:
-        ip: IP address string (IPv4 or IPv6)
-
-    Returns:
-        True if the IP is private/internal, False if public
-    """
+    """Check if an IP address is private, loopback, or link-local."""
     try:
         ip_obj = ipaddress.ip_address(ip)
-        return (
-            ip_obj.is_private
-            or ip_obj.is_loopback
-            or ip_obj.is_link_local
-            or ip_obj.is_reserved
-            or ip_obj.is_multicast
-            or ip_obj.is_unspecified
-        )
+        return any(ip_obj in net for net in BLOCKED_RANGES)
     except ValueError:
-        # Invalid IP, block it
         return True
 
 
-def resolve_and_validate(hostname: str) -> str:
-    """
-    Resolve hostname to IP and validate it's not private.
+def validate_ip(ip: str) -> None:
+    """Validate that an IP address is not in blocked ranges."""
+    if is_private_ip(ip):
+        raise SSRFProtectionError(f"SSRF blocked: IP '{ip}' is in a blocked range")
 
-    Args:
-        hostname: The hostname to resolve
 
-    Returns:
-        The resolved IP address
-
-    Raises:
-        SSRFProtectionError: If the resolved IP is private/blocked
-    """
+def resolve_dns(hostname: str) -> str:
+    """Resolve hostname to IP address and validate it."""
     try:
-        # Resolve hostname to IP
-        ip = socket.gethostbyname(hostname)
-
-        if is_private_ip(ip):
-            raise SSRFProtectionError(
-                f"SSRF blocked: hostname '{hostname}' resolves to private IP '{ip}'"
-            )
-
+        results = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+        if not results:
+            raise SSRFProtectionError(f"DNS resolution failed for {hostname}: no results")
+        ip = results[0][4][0]
+        validate_ip(ip)
         return ip
     except socket.gaierror as e:
-        raise SSRFProtectionError(
-            f"DNS resolution failed for '{hostname}': {e}"
-        ) from e
+        raise SSRFProtectionError(f"DNS resolution failed for '{hostname}': {e}") from e
+
+
+# Alias
+resolve_and_validate = resolve_dns
 
 
 def validate_url(url: str) -> tuple[str, str, int]:
-    """
-    Validate URL for SSRF protection.
-
-    Args:
-        url: The URL to validate
-
-    Returns:
-        Tuple of (scheme, hostname, port)
-
-    Raises:
-        SSRFProtectionError: If the URL is blocked
-    """
+    """Validate URL for SSRF protection. Returns (scheme, hostname, port)."""
     try:
         parsed = urlparse(url)
     except Exception as e:
         raise SSRFProtectionError(f"Invalid URL: {e}") from e
 
-    # Validate scheme
     scheme = parsed.scheme.lower()
     if scheme not in ALLOWED_SCHEMES:
-        raise SSRFProtectionError(
-            f"SSRF blocked: scheme '{scheme}' not allowed. Use http or https."
-        )
+        raise SSRFProtectionError(f"SSRF blocked: scheme '{scheme}' not allowed")
 
-    # Validate hostname exists
     hostname = parsed.hostname
     if not hostname:
         raise SSRFProtectionError("SSRF blocked: no hostname in URL")
 
-    # Check for IP literals (only check if hostname is actually an IP address)
-    try:
-        import ipaddress
-        # Try to parse as IP - if successful, check if private
-        ip_obj = ipaddress.ip_address(hostname)
-        if (
-            ip_obj.is_private
-            or ip_obj.is_loopback
-            or ip_obj.is_link_local
-            or ip_obj.is_reserved
-            or ip_obj.is_multicast
-            or ip_obj.is_unspecified
-        ):
-            raise SSRFProtectionError(
-                f"SSRF blocked: private IP address '{hostname}' not allowed"
-            )
-    except ValueError:
-        # Not an IP literal (it's a hostname), will resolve and validate later
-        pass
+    if parsed.username or parsed.password:
+        raise SSRFProtectionError("URLs with credentials (user:pass) are not allowed")
 
-    # Validate port
+    # Check IP literals directly
+    try:
+        ip_obj = ipaddress.ip_address(hostname)
+        if any(ip_obj in net for net in BLOCKED_RANGES):
+            raise SSRFProtectionError(f"SSRF blocked: private IP '{hostname}'")
+    except ValueError:
+        pass  # Not an IP literal, will resolve later
+
     port = parsed.port or (443 if scheme == "https" else 80)
     if port in BLOCKED_PORTS:
         raise SSRFProtectionError(f"SSRF blocked: port {port} not allowed")
 
-    # Resolve hostname and validate resolved IP
-    resolve_and_validate(hostname)
-
+    resolve_dns(hostname)
     return scheme, hostname, port
 
 
-def create_safe_session(
+async def safe_fetch(
+    url: str,
+    timeout: float = 30.0,
+    max_bytes: int = MAX_RESPONSE_SIZE,
     max_redirects: int = MAX_REDIRECTS,
-    retries: int = 3,
-) -> requests.Session:
-    """
-    Create a requests Session with safe defaults.
+    user_agent: str = USER_AGENT,
+) -> FetchResult:
+    """Fetch a URL with SSRF protection (async)."""
+    current_url = url
+    redirect_count = 0
 
-    Args:
-        max_redirects: Maximum number of redirects to follow
-        retries: Number of retries for transient failures
+    async with httpx.AsyncClient(
+        timeout=httpx.Timeout(timeout),
+        follow_redirects=False,
+    ) as client:
+        while True:
+            validate_url(current_url)
 
-    Returns:
-        Configured requests.Session
-    """
-    session = requests.Session()
+            response = await client.get(
+                current_url,
+                headers={"User-Agent": user_agent},
+            )
 
-    # Configure retries
-    retry_strategy = Retry(
-        total=retries,
-        backoff_factor=0.5,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["HEAD", "GET", "OPTIONS"],
-    )
+            if response.status_code in (301, 302, 303, 307, 308):
+                redirect_count += 1
+                if redirect_count > max_redirects:
+                    raise SSRFProtectionError(f"Too many redirects (max {max_redirects})")
 
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
+                location = response.headers.get("location")
+                if not location:
+                    raise SSRFProtectionError("Redirect missing Location header")
 
-    # Set default headers
-    session.headers.update({
-        "User-Agent": USER_AGENT,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-    })
+                parsed = urlparse(current_url)
+                if location.startswith("/"):
+                    current_url = f"{parsed.scheme}://{parsed.netloc}{location}"
+                else:
+                    current_url = location
+                continue
 
-    # Limit redirects
-    session.max_redirects = max_redirects
+            content = response.content
+            if len(content) > max_bytes:
+                raise SSRFProtectionError(
+                    f"Response size {len(content)} exceeds limit {max_bytes}"
+                )
 
-    return session
+            return FetchResult(
+                url=url,
+                status_code=response.status_code,
+                content=content,
+                headers=dict(response.headers),
+                final_url=str(response.url),
+            )
 
 
 def safe_get(
     url: str,
     timeout: tuple[int, int] = (CONNECT_TIMEOUT, READ_TIMEOUT),
     max_size: int = MAX_RESPONSE_SIZE,
-    allow_redirects: bool = True,
     headers: Optional[dict] = None,
     verify_ssl: bool = True,
-) -> requests.Response:
-    """
-    Perform a safe HTTP GET request with SSRF protection.
-
-    Args:
-        url: URL to fetch
-        timeout: Tuple of (connect_timeout, read_timeout) in seconds
-        max_size: Maximum response size in bytes
-        allow_redirects: Whether to follow redirects
-        headers: Additional headers to send
-        verify_ssl: Whether to verify SSL certificates
-
-    Returns:
-        requests.Response object
-
-    Raises:
-        SSRFProtectionError: If the request is blocked
-        requests.RequestException: For other request failures
-    """
-    # Validate initial URL
+) -> httpx.Response:
+    """Perform a safe synchronous HTTP GET with SSRF protection."""
     validate_url(url)
 
-    session = create_safe_session()
-
-    # Merge custom headers
-    if headers:
-        session.headers.update(headers)
-
-    # Make request with streaming to check size
-    response = session.get(
-        url,
-        timeout=timeout,
-        allow_redirects=False,  # Handle redirects manually for validation
+    with httpx.Client(
+        timeout=httpx.Timeout(connect=timeout[0], read=timeout[1]),
+        follow_redirects=False,
         verify=verify_ssl,
-        stream=True,
-    )
+    ) as client:
+        req_headers = {"User-Agent": USER_AGENT}
+        if headers:
+            req_headers.update(headers)
 
-    # Handle redirects with validation
-    redirect_count = 0
-    while response.is_redirect and allow_redirects and redirect_count < MAX_REDIRECTS:
-        redirect_url = response.headers.get("Location")
-        if not redirect_url:
-            break
+        current_url = url
+        redirect_count = 0
 
-        # Handle relative redirects
-        redirect_url = urllib.parse.urljoin(url, redirect_url)
+        while True:
+            response = client.get(current_url, headers=req_headers)
 
-        # Validate redirect target
-        validate_url(redirect_url)
+            if response.status_code in (301, 302, 303, 307, 308):
+                redirect_count += 1
+                if redirect_count > MAX_REDIRECTS:
+                    raise SSRFProtectionError(f"Too many redirects (max {MAX_REDIRECTS})")
+                location = response.headers.get("location")
+                if not location:
+                    break
+                parsed = urlparse(current_url)
+                if location.startswith("/"):
+                    current_url = f"{parsed.scheme}://{parsed.netloc}{location}"
+                else:
+                    current_url = location
+                validate_url(current_url)
+                continue
 
-        response = session.get(
-            redirect_url,
-            timeout=timeout,
-            allow_redirects=False,
-            verify=verify_ssl,
-            stream=True,
-        )
-        redirect_count += 1
-        url = redirect_url
-
-    # Check content length
-    content_length = response.headers.get("Content-Length")
-    if content_length and int(content_length) > max_size:
-        response.close()
-        raise SSRFProtectionError(
-            f"Response too large: {content_length} bytes exceeds limit of {max_size}"
-        )
-
-    # Read content with size limit
-    content = b""
-    for chunk in response.iter_content(chunk_size=8192):
-        content += chunk
-        if len(content) > max_size:
-            response.close()
-            raise SSRFProtectionError(
-                f"Response exceeded size limit of {max_size} bytes"
-            )
-
-    # Replace response content
-    response._content = content
-
-    return response
-
-
-def safe_head(
-    url: str,
-    timeout: tuple[int, int] = (CONNECT_TIMEOUT, READ_TIMEOUT),
-    headers: Optional[dict] = None,
-    verify_ssl: bool = True,
-) -> requests.Response:
-    """
-    Perform a safe HTTP HEAD request with SSRF protection.
-
-    Args:
-        url: URL to check
-        timeout: Tuple of (connect_timeout, read_timeout) in seconds
-        headers: Additional headers to send
-        verify_ssl: Whether to verify SSL certificates
-
-    Returns:
-        requests.Response object
-
-    Raises:
-        SSRFProtectionError: If the request is blocked
-    """
-    validate_url(url)
-
-    session = create_safe_session()
-
-    if headers:
-        session.headers.update(headers)
-
-    return session.head(
-        url,
-        timeout=timeout,
-        allow_redirects=True,
-        verify=verify_ssl,
-    )
+            if len(response.content) > max_size:
+                raise SSRFProtectionError(
+                    f"Response exceeded size limit of {max_size} bytes"
+                )
+            return response
 
 
 def is_url_safe(url: str) -> tuple[bool, Optional[str]]:
-    """
-    Check if a URL is safe to fetch without making a request.
-
-    Args:
-        url: URL to validate
-
-    Returns:
-        Tuple of (is_safe, error_message)
-    """
+    """Check if a URL is safe to fetch without making a request."""
     try:
         validate_url(url)
         return True, None

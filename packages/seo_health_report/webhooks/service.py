@@ -11,7 +11,7 @@ Features:
 import json
 import logging
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Optional
 
@@ -315,7 +315,7 @@ class WebhookService:
         # Build payload with event envelope
         full_payload = {
             "event": delivery.event_type,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
             "delivery_id": delivery.id,
             "data": delivery.payload,
         }
@@ -344,7 +344,7 @@ class WebhookService:
 
             if response.status_code < 400:
                 delivery.status = "delivered"
-                delivery.delivered_at = datetime.utcnow()
+                delivery.delivered_at = datetime.now(timezone.utc)
                 delivery.error_message = None
                 self.db.commit()
 
@@ -364,7 +364,7 @@ class WebhookService:
         # Schedule retry if under max attempts
         if delivery.attempts < MAX_RETRIES:
             delay = RETRY_DELAYS[delivery.attempts - 1]
-            delivery.next_retry_at = datetime.utcnow() + timedelta(seconds=delay)
+            delivery.next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
             delivery.status = "pending"
             logger.info(f"Webhook {delivery.id} scheduled for retry in {delay}s")
         else:
@@ -386,7 +386,7 @@ class WebhookService:
 
         pending = self.db.query(WebhookDelivery).filter(
             WebhookDelivery.status == "pending",
-            WebhookDelivery.next_retry_at <= datetime.utcnow(),
+            WebhookDelivery.next_retry_at <= datetime.now(timezone.utc),
         ).limit(100).all()
 
         count = 0

@@ -19,7 +19,7 @@ import sys
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -119,7 +119,7 @@ def analyze_metrics(base_url: str, error_threshold: float = 5.0) -> MetricsSumma
     if status != 200:
         issues.append(f"Metrics endpoint returned status {status}")
         return MetricsSummary(
-            timestamp=datetime.utcnow().isoformat() + "Z",
+            timestamp=datetime.now(timezone.utc).isoformat() + "Z",
             url=base_url,
             healthy=healthy,
             total_requests=0,
@@ -189,7 +189,7 @@ def analyze_metrics(base_url: str, error_threshold: float = 5.0) -> MetricsSumma
             webhook_failed += int(count)
 
     return MetricsSummary(
-        timestamp=datetime.utcnow().isoformat() + "Z",
+        timestamp=datetime.now(timezone.utc).isoformat() + "Z",
         url=base_url,
         healthy=healthy,
         total_requests=total_requests,
@@ -232,7 +232,7 @@ def send_slack_alert(webhook_url: str, summary: MetricsSummary) -> bool:
             "title_link": summary.url,
             "fields": fields,
             "footer": "Post-Deploy Monitor",
-            "ts": int(datetime.utcnow().timestamp()),
+            "ts": int(datetime.now(timezone.utc).timestamp()),
         }]
     }
 

@@ -5,7 +5,7 @@ Uses secure cookies with HttpOnly, SameSite, and Secure flags.
 
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, Response
@@ -23,13 +23,13 @@ IS_PRODUCTION = os.getenv("ENVIRONMENT", "development").lower() == "production"
 def create_session(user_id: str, tenant_id: Optional[str], role: str) -> str:
     """Create a new session and return session ID."""
     session_id = str(uuid.uuid4())
-    expires_at = datetime.utcnow() + timedelta(hours=SESSION_EXPIRY_HOURS)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=SESSION_EXPIRY_HOURS)
 
     _sessions[session_id] = {
         "user_id": user_id,
         "tenant_id": tenant_id,
         "role": role,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "expires_at": expires_at.isoformat(),
     }
 
@@ -43,7 +43,7 @@ def get_session(session_id: str) -> Optional[dict]:
         return None
 
     expires_at = datetime.fromisoformat(session["expires_at"])
-    if datetime.utcnow() > expires_at:
+    if datetime.now(timezone.utc) > expires_at:
         delete_session(session_id)
         return None
 
@@ -132,7 +132,7 @@ def require_dashboard_auth(
 
 def cleanup_expired_sessions() -> int:
     """Remove expired sessions. Returns count of removed sessions."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     expired = [
         sid for sid, session in _sessions.items()
         if datetime.fromisoformat(session["expires_at"]) < now

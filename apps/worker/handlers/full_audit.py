@@ -10,7 +10,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -192,7 +192,7 @@ async def handle_full_audit(
             technical_score=technical_score,
             content_score=content_score,
             ai_visibility_score=ai_visibility_score,
-            completed_at=datetime.utcnow().isoformat(),
+            completed_at=datetime.now(timezone.utc).isoformat(),
         )
 
         html_path = await generate_html_report_simple(audit_result, raw_result, tenant_id)
@@ -393,7 +393,7 @@ async def generate_html_report_simple(
     <h1>SEO Health Report</h1>
     <h2>{audit_result.company_name}</h2>
     <p>URL: <a href="{audit_result.url}">{audit_result.url}</a></p>
-    <p>Generated: {audit_result.completed_at or datetime.utcnow().isoformat()}</p>
+    <p>Generated: {audit_result.completed_at or datetime.now(timezone.utc).isoformat()}</p>
 
     <div class="section">
         <h3>Overall Score</h3>

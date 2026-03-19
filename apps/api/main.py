@@ -7,12 +7,9 @@ Production-ready API with database persistence, authentication, and payments.
 
 import logging
 import os
-import sys
 from pathlib import Path
 
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root / "seo-health-report"))
-sys.path.insert(0, str(project_root.parent.parent))  # Add root for packages
+project_root = Path(__file__).parent.parent.parent  # repo root
 
 # Import configuration and validate at startup
 from packages.config import get_settings, validate_startup

@@ -1,6 +1,6 @@
 """Authentication handling for the SEO Health SDK."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import httpx
@@ -36,13 +36,13 @@ class TokenAuth(httpx.Auth):
 
     def set_token_expiry(self, expires_in: int) -> None:
         """Set token expiration time."""
-        self._token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+        self._token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
 
     def is_token_expired(self) -> bool:
         """Check if the token is expired."""
         if self._token_expires_at is None:
             return False
-        return datetime.utcnow() >= self._token_expires_at - timedelta(seconds=30)
+        return datetime.now(timezone.utc) >= self._token_expires_at - timedelta(seconds=30)
 
     def auth_flow(self, request: httpx.Request):
         """Add authentication headers to request."""

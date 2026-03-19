@@ -5,7 +5,7 @@ Shared schemas between API and worker components.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Optional
 
@@ -175,7 +175,7 @@ class AuditResponse:
     status: AuditStatus
     message: str = ""
     estimated_time_seconds: Optional[int] = None
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -206,7 +206,7 @@ class AuditResult:
     report_path: Optional[str] = None
     report_pdf_path: Optional[str] = None
     error_message: Optional[str] = None
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     completed_at: Optional[str] = None
     execution_time_ms: Optional[int] = None
 
@@ -242,7 +242,7 @@ class ProgressEvent:
     progress_percent: int
     message: str = ""
     details: Optional[dict[str, Any]] = None
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
         return {

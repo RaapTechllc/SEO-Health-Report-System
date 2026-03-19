@@ -7,7 +7,7 @@ Implements append-only ledger pattern for accurate cost tracking per report.
 
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from sqlalchemy.orm import Session
@@ -153,7 +153,7 @@ def record_cost_event(
         cost_usd=cost_usd or 0.0,
         currency="USD",
         metadata_json=metadata,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
 
     db.add(event)
