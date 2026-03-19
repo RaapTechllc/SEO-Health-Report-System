@@ -175,7 +175,9 @@ class TestWebhookServiceIntegration:
 
         # Only the webhook subscribed to audit.completed should receive delivery
         assert mock_deliver.call_count == 1
-        mock_deliver.assert_called_with(mock_webhook_completed, "audit.completed", {"audit_id": "123"})
+        mock_deliver.assert_called_with(
+            mock_webhook_completed, "audit.completed", {"audit_id": "123"}
+        )
 
     @pytest.mark.asyncio
     async def test_fire_event_skips_inactive_webhooks(self):
@@ -207,7 +209,15 @@ class TestAuditWebhookPayloads:
 
     def test_completed_payload_required_fields(self):
         """Test that completed audit payload has all required fields."""
-        required_fields = ["audit_id", "url", "company_name", "tier", "overall_score", "grade", "completed_at"]
+        required_fields = [
+            "audit_id",
+            "url",
+            "company_name",
+            "tier",
+            "overall_score",
+            "grade",
+            "completed_at",
+        ]
 
         audit_data = {
             "url": "https://example.com",
@@ -268,16 +278,19 @@ class TestWebhookEventTypes:
     def test_audit_completed_event_value(self):
         """Test AUDIT_COMPLETED event value."""
         from packages.seo_health_report.webhooks import WebhookEvent
+
         assert WebhookEvent.AUDIT_COMPLETED.value == "audit.completed"
 
     def test_audit_failed_event_value(self):
         """Test AUDIT_FAILED event value."""
         from packages.seo_health_report.webhooks import WebhookEvent
+
         assert WebhookEvent.AUDIT_FAILED.value == "audit.failed"
 
     def test_audit_started_event_value(self):
         """Test AUDIT_STARTED event value."""
         from packages.seo_health_report.webhooks import WebhookEvent
+
         assert WebhookEvent.AUDIT_STARTED.value == "audit.started"
 
     def test_event_in_subscription_check(self):
@@ -366,6 +379,5 @@ class TestWebhookDeliveryFlow:
                         )
 
                         mock_metrics.inc_counter.assert_called_with(
-                            "webhook_deliveries_total",
-                            labels={"status": "success"}
+                            "webhook_deliveries_total", labels={"status": "success"}
                         )

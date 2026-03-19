@@ -57,7 +57,11 @@ def redact_dict(data: dict) -> dict:
             result[key] = redact_dict(value)
         elif isinstance(value, list):
             result[key] = [
-                redact_dict(item) if isinstance(item, dict) else redact_sensitive(item) if isinstance(item, str) else item
+                redact_dict(item)
+                if isinstance(item, dict)
+                else redact_sensitive(item)
+                if isinstance(item, str)
+                else item
                 for item in value
             ]
         elif isinstance(value, str):

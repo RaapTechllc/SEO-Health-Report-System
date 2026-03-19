@@ -14,12 +14,11 @@ from models import CompetitorProfile
 from monitor import monitor
 from pydantic import BaseModel, HttpUrl
 from scheduler import scheduler
-
 from storage import CompetitorStorage
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'competitive_intel'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'multi-tier-reports'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "competitive_intel"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "multi-tier-reports"))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from multi_tier_reports.api import router as tier_router
 from ooda_orchestrator import ooda_orchestrator
@@ -33,7 +32,8 @@ API_KEY = os.getenv("OODA_API_KEY", "ooda-demo-key-change-in-production")
 # Rate limiting
 rate_limit_store = defaultdict(list)
 RATE_LIMIT_REQUESTS = 100  # requests per window
-RATE_LIMIT_WINDOW = 3600   # 1 hour in seconds
+RATE_LIMIT_WINDOW = 3600  # 1 hour in seconds
+
 
 def verify_api_key(credentials: HTTPAuthorizationCredentials = Security(security)):
     """Verify API key authentication."""
@@ -41,13 +41,16 @@ def verify_api_key(credentials: HTTPAuthorizationCredentials = Security(security
         raise HTTPException(status_code=401, detail="Invalid API key")
     return credentials.credentials
 
+
 def check_rate_limit(api_key: str):
     """Check if request is within rate limits."""
     now = time.time()
     window_start = now - RATE_LIMIT_WINDOW
 
     # Clean old requests
-    rate_limit_store[api_key] = [req_time for req_time in rate_limit_store[api_key] if req_time > window_start]
+    rate_limit_store[api_key] = [
+        req_time for req_time in rate_limit_store[api_key] if req_time > window_start
+    ]
 
     # Check limit
     if len(rate_limit_store[api_key]) >= RATE_LIMIT_REQUESTS:
@@ -56,12 +59,14 @@ def check_rate_limit(api_key: str):
     # Add current request
     rate_limit_store[api_key].append(now)
 
+
 # Pydantic models for API
 class CompetitorCreate(BaseModel):
     url: HttpUrl
     company_name: str
     monitoring_frequency: int = 60
     alert_threshold: int = 10
+
 
 class CompetitorResponse(BaseModel):
     id: int
@@ -74,9 +79,13 @@ class CompetitorResponse(BaseModel):
     created_at: str
     updated_at: str
 
+
 # FastAPI app
-app = FastAPI(title="Competitive OODA Loop System", version="2.0.0",
-              description="Complete competitive intelligence platform with real-time monitoring, analysis, and automated response")
+app = FastAPI(
+    title="Competitive OODA Loop System",
+    version="2.0.0",
+    description="Complete competitive intelligence platform with real-time monitoring, analysis, and automated response",
+)
 
 # Add CORS middleware
 app.add_middleware(
@@ -94,6 +103,7 @@ logger = logging.getLogger(__name__)
 app.include_router(competitive_router)
 app.include_router(tier_router)
 
+
 @app.post("/competitors", response_model=dict)
 async def add_competitor(competitor_data: CompetitorCreate, api_key: str = Depends(verify_api_key)):
     """Add new competitor for monitoring."""
@@ -103,19 +113,23 @@ async def add_competitor(competitor_data: CompetitorCreate, api_key: str = Depen
 
         # Validate URL format
         url_str = str(competitor_data.url)
-        if not url_str.startswith(('http://', 'https://')):
+        if not url_str.startswith(("http://", "https://")):
             raise HTTPException(status_code=400, detail="Invalid URL format")
 
         # Validate company name
         if len(competitor_data.company_name.strip()) < 2:
-            raise HTTPException(status_code=400, detail="Company name must be at least 2 characters")
+            raise HTTPException(
+                status_code=400, detail="Company name must be at least 2 characters"
+            )
 
         # Convert to internal model
         competitor = CompetitorProfile(
             url=url_str,
             company_name=competitor_data.company_name.strip(),
-            monitoring_frequency=max(30, min(1440, competitor_data.monitoring_frequency)),  # 30min to 24h
-            alert_threshold=max(5, min(50, competitor_data.alert_threshold))  # 5 to 50 points
+            monitoring_frequency=max(
+                30, min(1440, competitor_data.monitoring_frequency)
+            ),  # 30min to 24h
+            alert_threshold=max(5, min(50, competitor_data.alert_threshold)),  # 5 to 50 points
         )
 
         # Add to storage
@@ -124,7 +138,7 @@ async def add_competitor(competitor_data: CompetitorCreate, api_key: str = Depen
         return {
             "success": True,
             "competitor_id": competitor_id,
-            "message": f"Added competitor: {competitor_data.company_name}"
+            "message": f"Added competitor: {competitor_data.company_name}",
         }
 
     except ValueError as e:
@@ -132,6 +146,7 @@ async def add_competitor(competitor_data: CompetitorCreate, api_key: str = Depen
     except Exception as e:
         logger.error(f"Failed to add competitor: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @app.get("/competitors", response_model=list[CompetitorResponse])
 async def list_competitors():
@@ -149,7 +164,7 @@ async def list_competitors():
                 monitoring_frequency=c.monitoring_frequency,
                 alert_threshold=c.alert_threshold,
                 created_at=c.created_at.isoformat(),
-                updated_at=c.updated_at.isoformat()
+                updated_at=c.updated_at.isoformat(),
             )
             for c in competitors
         ]
@@ -157,6 +172,7 @@ async def list_competitors():
     except Exception as e:
         logger.error(f"Failed to list competitors: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @app.get("/competitors/{competitor_id}", response_model=CompetitorResponse)
 async def get_competitor(competitor_id: int):
@@ -176,7 +192,7 @@ async def get_competitor(competitor_id: int):
             monitoring_frequency=competitor.monitoring_frequency,
             alert_threshold=competitor.alert_threshold,
             created_at=competitor.created_at.isoformat(),
-            updated_at=competitor.updated_at.isoformat()
+            updated_at=competitor.updated_at.isoformat(),
         )
 
     except HTTPException:
@@ -185,10 +201,12 @@ async def get_competitor(competitor_id: int):
         logger.error(f"Failed to get competitor {competitor_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "competitive_monitor"}
+
 
 @app.get("/competitors/{competitor_id}/history")
 async def get_competitor_history(competitor_id: int):
@@ -206,13 +224,17 @@ async def get_competitor_history(competitor_id: int):
                 "company_name": competitor.company_name,
                 "url": competitor.url,
                 "current_score": competitor.current_score,
-                "last_score": competitor.last_score
+                "last_score": competitor.last_score,
             },
             "trends": {
-                "direction": "up" if competitor.current_score > competitor.last_score else "down" if competitor.current_score < competitor.last_score else "stable",
-                "change": competitor.current_score - competitor.last_score
+                "direction": "up"
+                if competitor.current_score > competitor.last_score
+                else "down"
+                if competitor.current_score < competitor.last_score
+                else "stable",
+                "change": competitor.current_score - competitor.last_score,
             },
-            "history": []  # Would contain actual snapshots
+            "history": [],  # Would contain actual snapshots
         }
 
     except HTTPException:
@@ -220,6 +242,7 @@ async def get_competitor_history(competitor_id: int):
     except Exception as e:
         logger.error(f"Failed to get competitor history: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @app.get("/dashboard")
 async def get_dashboard():
@@ -232,7 +255,7 @@ async def get_dashboard():
 
         # Calculate summary stats
         total_competitors = len(competitors)
-        active_monitoring = scheduler_status['scheduled_competitors']
+        active_monitoring = scheduler_status["scheduled_competitors"]
 
         # Score distribution
         scores = [c.current_score for c in competitors if c.current_score > 0]
@@ -245,10 +268,10 @@ async def get_dashboard():
             "top_ai_gaps": [
                 "Low AI search presence",
                 "Poor content structure for AI",
-                "Missing schema markup"
+                "Missing schema markup",
             ],
             "market_position": "competitive",
-            "threat_level": "medium"
+            "threat_level": "medium",
         }
 
         # OODA loop metrics
@@ -257,7 +280,7 @@ async def get_dashboard():
             "system_status": ooda_status["system_status"],
             "last_execution": ooda_status["last_execution"],
             "performance_metrics": ooda_status["performance_metrics"],
-            "components_status": ooda_status["components_status"]
+            "components_status": ooda_status["components_status"],
         }
 
         return {
@@ -266,7 +289,7 @@ async def get_dashboard():
                 "active_monitoring": active_monitoring,
                 "average_score": round(avg_score, 1),
                 "recent_alerts": len(recent_alerts),
-                "ooda_cycles_completed": ooda_status["current_cycle"]
+                "ooda_cycles_completed": ooda_status["current_cycle"],
             },
             "competitors": [
                 {
@@ -275,10 +298,18 @@ async def get_dashboard():
                     "url": c.url,
                     "current_score": c.current_score,
                     "last_score": c.last_score,
-                    "trend": "up" if c.current_score > c.last_score else "down" if c.current_score < c.last_score else "stable",
+                    "trend": "up"
+                    if c.current_score > c.last_score
+                    else "down"
+                    if c.current_score < c.last_score
+                    else "stable",
                     "monitoring_frequency": c.monitoring_frequency,
                     "last_updated": c.updated_at.isoformat(),
-                    "threat_level": "high" if c.current_score > 80 else "medium" if c.current_score > 60 else "low"
+                    "threat_level": "high"
+                    if c.current_score > 80
+                    else "medium"
+                    if c.current_score > 60
+                    else "low",
                 }
                 for c in competitors
             ],
@@ -292,13 +323,14 @@ async def get_dashboard():
                 "battlecard_generation": True,
                 "tier_recommendations": True,
                 "automated_responses": True,
-                "ai_visibility_tracking": True
-            }
+                "ai_visibility_tracking": True,
+            },
         }
 
     except Exception as e:
         logger.error(f"Failed to get dashboard data: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @app.post("/monitoring/start")
 async def start_monitoring():
@@ -310,6 +342,7 @@ async def start_monitoring():
         logger.error(f"Failed to start monitoring: {e}")
         raise HTTPException(status_code=500, detail="Failed to start monitoring")
 
+
 @app.post("/monitoring/stop")
 async def stop_monitoring():
     """Stop the monitoring system."""
@@ -320,6 +353,7 @@ async def stop_monitoring():
         logger.error(f"Failed to stop monitoring: {e}")
         raise HTTPException(status_code=500, detail="Failed to stop monitoring")
 
+
 @app.post("/ooda/execute")
 async def execute_ooda_cycle():
     """Manually trigger OODA loop execution."""
@@ -327,33 +361,28 @@ async def execute_ooda_cycle():
         trigger_event = {
             "type": "manual_trigger",
             "timestamp": "2026-01-12T22:00:00Z",
-            "prospect_url": "https://our-site.com"
+            "prospect_url": "https://our-site.com",
         }
 
         result = ooda_orchestrator.execute_full_ooda_cycle(trigger_event)
 
-        return {
-            "success": True,
-            "message": "OODA cycle executed successfully",
-            "result": result
-        }
+        return {"success": True, "message": "OODA cycle executed successfully", "result": result}
 
     except Exception as e:
         logger.error(f"Failed to execute OODA cycle: {e}")
         raise HTTPException(status_code=500, detail="Failed to execute OODA cycle")
+
 
 @app.get("/ooda/status")
 async def get_ooda_status():
     """Get current OODA loop status."""
     try:
         status = ooda_orchestrator.get_ooda_status()
-        return {
-            "success": True,
-            "ooda_status": status
-        }
+        return {"success": True, "ooda_status": status}
     except Exception as e:
         logger.error(f"Failed to get OODA status: {e}")
         raise HTTPException(status_code=500, detail="Failed to get OODA status")
+
 
 @app.post("/api/validate-url")
 async def validate_url(request: dict, api_key: str = Depends(verify_api_key)):
@@ -370,18 +399,21 @@ async def validate_url(request: dict, api_key: str = Depends(verify_api_key)):
         corrections = []
 
         # Add protocol if missing
-        if not corrected.startswith(('http://', 'https://')):
+        if not corrected.startswith(("http://", "https://")):
             corrected = f"https://{corrected}"
             corrections.append("Added HTTPS protocol")
 
         # Add www if simple domain
-        if corrected.count('.') == 1 and '/' not in corrected.replace('https://', '').replace('http://', ''):
-            corrected = corrected.replace('://', '://www.')
+        if corrected.count(".") == 1 and "/" not in corrected.replace("https://", "").replace(
+            "http://", ""
+        ):
+            corrected = corrected.replace("://", "://www.")
             corrections.append("Added www subdomain")
 
         # Validate final URL
         try:
             from urllib.parse import urlparse
+
             parsed = urlparse(corrected)
             is_valid = bool(parsed.scheme and parsed.netloc)
         except Exception:
@@ -392,13 +424,15 @@ async def validate_url(request: dict, api_key: str = Depends(verify_api_key)):
                 "original": url,
                 "corrected": corrected,
                 "isValid": is_valid,
-                "corrections": corrections
+                "corrections": corrections,
             },
             "suggestions": [
                 "Ensure URL includes protocol (https://)",
                 "Check for typos in domain name",
-                "Verify the website is accessible"
-            ] if not is_valid else []
+                "Verify the website is accessible",
+            ]
+            if not is_valid
+            else [],
         }
 
     except HTTPException:
@@ -406,6 +440,7 @@ async def validate_url(request: dict, api_key: str = Depends(verify_api_key)):
     except Exception as e:
         logger.error(f"URL validation failed: {e}")
         raise HTTPException(status_code=500, detail="Validation failed")
+
 
 @app.get("/api/docs/{section}")
 async def get_documentation(section: str):
@@ -425,11 +460,11 @@ async def get_documentation(section: str):
                             {
                                 "language": "curl",
                                 "code": 'curl -H "Authorization: Bearer YOUR_API_KEY" https://api.ooda-system.com/competitors',
-                                "description": "Example authenticated request"
+                                "description": "Example authenticated request",
                             }
-                        ]
+                        ],
                     }
-                ]
+                ],
             },
             "guides": {
                 "title": "Getting Started",
@@ -439,9 +474,9 @@ async def get_documentation(section: str):
                         "id": "quickstart",
                         "title": "5-Minute Quick Start",
                         "content": "Get your first competitive analysis running in 5 minutes.",
-                        "codeExamples": []
+                        "codeExamples": [],
                     }
-                ]
+                ],
             },
             "examples": {
                 "title": "Code Examples",
@@ -455,12 +490,12 @@ async def get_documentation(section: str):
                             {
                                 "language": "python",
                                 "code": "import requests\n\nresponse = requests.post('/competitive-analysis/', json=data)",
-                                "description": "Python API integration example"
+                                "description": "Python API integration example",
                             }
-                        ]
+                        ],
                     }
-                ]
-            }
+                ],
+            },
         }
 
         if section not in docs:
@@ -469,7 +504,7 @@ async def get_documentation(section: str):
         return {
             "content": docs[section],
             "navigation": list(docs.keys()),
-            "searchIndex": [s["title"] for s in docs[section]["sections"]]
+            "searchIndex": [s["title"] for s in docs[section]["sections"]],
         }
 
     except HTTPException:
@@ -478,6 +513,8 @@ async def get_documentation(section: str):
         logger.error(f"Failed to get documentation: {e}")
         raise HTTPException(status_code=500, detail="Failed to load documentation")
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

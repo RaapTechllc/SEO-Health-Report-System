@@ -41,7 +41,7 @@ Examples:
     python run_audit.py --url https://example.com --company "Example Co"
     python run_audit.py --config audit_config.json
     python run_audit.py --url https://example.com --company "Example" --keywords "seo,marketing" --output ./reports
-        """
+        """,
     )
 
     parser.add_argument("--url", help="Target URL to audit")
@@ -49,8 +49,12 @@ Examples:
     parser.add_argument("--keywords", help="Comma-separated primary keywords")
     parser.add_argument("--competitors", help="Comma-separated competitor URLs")
     parser.add_argument("--config", help="Path to JSON config file")
-    parser.add_argument("--output", default="./reports", help="Output directory (default: ./reports)")
-    parser.add_argument("--format", choices=["json", "pdf", "both"], default="json", help="Output format")
+    parser.add_argument(
+        "--output", default="./reports", help="Output directory (default: ./reports)"
+    )
+    parser.add_argument(
+        "--format", choices=["json", "pdf", "both"], default="json", help="Output format"
+    )
 
     return parser.parse_args()
 
@@ -105,6 +109,7 @@ def main():
 
         # Calculate overall score
         from packages.seo_health_report.scripts.calculate_scores import calculate_composite_score
+
         scores = calculate_composite_score(result)
         result["overall_score"] = scores.get("overall_score", 0)
         result["grade"] = scores.get("grade", "N/A")
@@ -112,7 +117,9 @@ def main():
 
         # Save JSON output
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        domain = config["target_url"].replace("https://", "").replace("http://", "").replace("/", "_")
+        domain = (
+            config["target_url"].replace("https://", "").replace("http://", "").replace("/", "_")
+        )
         output_file = output_dir / f"seo_audit_{domain}_{timestamp}.json"
 
         with open(output_file, "w") as f:

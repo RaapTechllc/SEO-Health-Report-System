@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 # Check if stripe is available
 try:
     import stripe
+
     STRIPE_AVAILABLE = True
 except ImportError:
     STRIPE_AVAILABLE = False
@@ -32,21 +33,19 @@ except ImportError:
 
 class MockStripeSession:
     """Mock Stripe checkout session."""
+
     def __init__(self, session_id="cs_test_abc123", status="complete"):
         self.id = session_id
         self.url = f"https://checkout.stripe.com/c/pay/{session_id}"
         self.payment_status = status
         self.customer_email = "test@example.com"
         self.amount_total = 80000
-        self.metadata = {
-            "user_id": "user_123",
-            "tier": "basic",
-            "audit_url": "https://example.com"
-        }
+        self.metadata = {"user_id": "user_123", "tier": "basic", "audit_url": "https://example.com"}
 
 
 class MockStripeEvent:
     """Mock Stripe webhook event."""
+
     def __init__(self, event_type="checkout.session.completed"):
         self.type = event_type
         self.data = MagicMock()
@@ -55,9 +54,21 @@ class MockStripeEvent:
 
 # Tier pricing for tests (defined independently of payments.py to avoid import issues)
 TEST_TIER_PRICES = {
-    "basic": {"amount": 80000, "name": "Basic SEO Audit", "description": "Technical + Content audit"},
-    "pro": {"amount": 250000, "name": "Pro SEO Audit", "description": "Full audit with AI visibility"},
-    "enterprise": {"amount": 600000, "name": "Enterprise SEO Audit", "description": "Custom branding + competitive analysis"}
+    "basic": {
+        "amount": 80000,
+        "name": "Basic SEO Audit",
+        "description": "Technical + Content audit",
+    },
+    "pro": {
+        "amount": 250000,
+        "name": "Pro SEO Audit",
+        "description": "Full audit with AI visibility",
+    },
+    "enterprise": {
+        "amount": 600000,
+        "name": "Enterprise SEO Audit",
+        "description": "Custom branding + competitive analysis",
+    },
 }
 
 
@@ -117,7 +128,7 @@ class TestPaymentCheckoutFlow:
             "session_id": mock_session.id,
             "checkout_url": mock_session.url,
             "amount": TEST_TIER_PRICES["basic"]["amount"],
-            "tier": "basic"
+            "tier": "basic",
         }
 
         assert checkout_result["session_id"] == "cs_test_abc123"
@@ -127,6 +138,7 @@ class TestPaymentCheckoutFlow:
 
     def test_checkout_invalid_tier_raises(self):
         """Test that invalid tier raises ValueError."""
+
         def create_checkout_session(tier, **kwargs):
             if tier not in TEST_TIER_PRICES:
                 raise ValueError(f"Invalid tier: {tier}")
@@ -204,7 +216,7 @@ class TestCompletePaymentToAuditFlow:
             "company_name": "Test Corp",
             "tier": "basic",
             "status": "pending",
-            "created_at": datetime.now(UTC).isoformat()
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         # Verify audit can be created
@@ -224,7 +236,7 @@ class TestCompletePaymentToAuditFlow:
             "session_id": mock_session.id,
             "checkout_url": mock_session.url,
             "amount": 80000,
-            "tier": "basic"
+            "tier": "basic",
         }
 
         assert checkout_result["session_id"] is not None
@@ -240,10 +252,10 @@ class TestCompletePaymentToAuditFlow:
                     "metadata": {
                         "user_id": user_id,
                         "tier": "basic",
-                        "audit_url": "https://example.com"
-                    }
+                        "audit_url": "https://example.com",
+                    },
                 }
-            }
+            },
         }
 
         assert webhook_event["type"] == "checkout.session.completed"
@@ -256,7 +268,7 @@ class TestCompletePaymentToAuditFlow:
             "overall_score": 75,
             "grade": "C",
             "url": "https://example.com",
-            "company_name": "Test Corp"
+            "company_name": "Test Corp",
         }
 
         assert audit_result["status"] == "completed"
@@ -266,7 +278,7 @@ class TestCompletePaymentToAuditFlow:
         report_result = {
             "success": True,
             "report_url": "/audits/audit_abc123/report/html",
-            "pdf_url": "/audits/audit_abc123/report/pdf"
+            "pdf_url": "/audits/audit_abc123/report/pdf",
         }
 
         assert report_result["success"] is True
@@ -285,7 +297,7 @@ class TestPaymentDatabaseIntegration:
             "amount": 80000,
             "tier": "basic",
             "status": "pending",
-            "created_at": datetime.now(UTC).isoformat()
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         assert payment_record["status"] == "pending"
@@ -396,6 +408,7 @@ class TestPaymentErrorHandling:
 
     def test_checkout_creation_error_handling(self):
         """Test handling of checkout creation errors."""
+
         def create_checkout_with_error(tier):
             if tier == "trigger_error":
                 raise Exception("Stripe error: API connection failed")
@@ -406,6 +419,7 @@ class TestPaymentErrorHandling:
 
     def test_invalid_session_id_handling(self):
         """Test handling of invalid session ID."""
+
         def get_session(session_id):
             if session_id == "invalid":
                 raise Exception("Stripe error: No such checkout session")
@@ -416,6 +430,7 @@ class TestPaymentErrorHandling:
 
     def test_refund_error_handling(self):
         """Test handling of refund errors."""
+
         def create_refund(payment_intent_id):
             if payment_intent_id == "pi_invalid":
                 raise Exception("Stripe error: Refund failed - payment not found")
@@ -432,11 +447,13 @@ class TestStripeIntegration:
     def test_stripe_module_importable(self):
         """Test that stripe module can be imported."""
         import stripe
+
         assert stripe is not None
 
     def test_payments_module_importable(self):
         """Test that payments module can be imported."""
         from payments import TIER_PRICES, create_checkout_session
+
         assert TIER_PRICES is not None
         assert callable(create_checkout_session)
 
@@ -453,7 +470,7 @@ class TestStripeIntegration:
                 user_email="test@example.com",
                 audit_url="https://example.com",
                 success_url="http://localhost/success",
-                cancel_url="http://localhost/cancel"
+                cancel_url="http://localhost/cancel",
             )
 
             assert result["session_id"] == "cs_test_abc123"

@@ -251,9 +251,7 @@ async def handle_full_audit(
                 report_url=html_path,
             )
             webhook_secret = get_webhook_secret(tenant_id)
-            webhook_result = await deliver_webhook(
-                callback_url, webhook_payload, webhook_secret
-            )
+            webhook_result = await deliver_webhook(callback_url, webhook_payload, webhook_secret)
 
             if webhook_result.success:
                 db.execute(
@@ -287,9 +285,7 @@ async def handle_full_audit(
             webhook_payload = build_audit_webhook_payload(
                 audit_id=audit_id, status="failed", error_message=error_msg
             )
-            await deliver_webhook(
-                callback_url, webhook_payload, get_webhook_secret(tenant_id)
-            )
+            await deliver_webhook(callback_url, webhook_payload, get_webhook_secret(tenant_id))
 
         raise
 
@@ -362,14 +358,10 @@ async def generate_html_report_simple(
     report_path = reports_dir / f"{audit_result.audit_id}.html"
 
     grade_value = (
-        audit_result.grade.value
-        if hasattr(audit_result.grade, "value")
-        else audit_result.grade
+        audit_result.grade.value if hasattr(audit_result.grade, "value") else audit_result.grade
     )
     tier_value = (
-        audit_result.tier.value
-        if hasattr(audit_result.tier, "value")
-        else audit_result.tier
+        audit_result.tier.value if hasattr(audit_result.tier, "value") else audit_result.tier
     )
 
     html = f"""<!DOCTYPE html>
@@ -405,15 +397,15 @@ async def generate_html_report_simple(
         <h3>Component Scores</h3>
         <div class="component">
             <strong>Technical</strong><br>
-            {audit_result.technical_score if audit_result.technical_score is not None else 'N/A'}
+            {audit_result.technical_score if audit_result.technical_score is not None else "N/A"}
         </div>
         <div class="component">
             <strong>Content</strong><br>
-            {audit_result.content_score if audit_result.content_score is not None else 'N/A'}
+            {audit_result.content_score if audit_result.content_score is not None else "N/A"}
         </div>
         <div class="component">
             <strong>AI Visibility</strong><br>
-            {audit_result.ai_visibility_score if audit_result.ai_visibility_score is not None else 'N/A'}
+            {audit_result.ai_visibility_score if audit_result.ai_visibility_score is not None else "N/A"}
         </div>
     </div>
 

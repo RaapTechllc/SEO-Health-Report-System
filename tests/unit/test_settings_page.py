@@ -21,6 +21,7 @@ app.include_router(router, prefix="/dashboard")
 
 class MockUser:
     """Mock user for testing."""
+
     def __init__(
         self,
         id="user_123",
@@ -28,7 +29,7 @@ class MockUser:
         tenant_id=None,
         role="user",
         password_hash="salt:hash",
-        created_at=None
+        created_at=None,
     ):
         self.id = id
         self.email = email
@@ -40,6 +41,7 @@ class MockUser:
 
 class MockTenant:
     """Mock tenant for testing."""
+
     def __init__(self, id="tenant_456", name="Test Org", settings_json=None):
         self.id = id
         self.name = name
@@ -63,6 +65,7 @@ def mock_db():
 @pytest.fixture
 def client(mock_db):
     """Create test client with mocked database."""
+
     def mock_get_db():
         return mock_db
 
@@ -87,9 +90,7 @@ class TestSettingsPage:
         mock_db.query.return_value.filter.return_value.first.return_value = mock_user
 
         response = client.get(
-            "/dashboard/settings",
-            cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            "/dashboard/settings", cookies={SESSION_COOKIE_NAME: session_id}, follow_redirects=False
         )
 
         assert response.status_code == 200
@@ -103,9 +104,7 @@ class TestSettingsPage:
         mock_db.query.return_value.filter.return_value.first.return_value = mock_user
 
         response = client.get(
-            "/dashboard/settings",
-            cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            "/dashboard/settings", cookies={SESSION_COOKIE_NAME: session_id}, follow_redirects=False
         )
 
         assert response.status_code == 200
@@ -118,17 +117,17 @@ class TestSettingsPage:
         mock_tenant = MockTenant(settings_json={"tier": "pro"})
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
-            mock_user,   # for require_dashboard_auth -> get_current_dashboard_user
-            mock_user,   # for settings_page user_record lookup
-            mock_tenant, # for get_tenant_name
-            mock_tenant, # for tenant_info lookup in settings_page
+            mock_user,  # for require_dashboard_auth -> get_current_dashboard_user
+            mock_user,  # for settings_page user_record lookup
+            mock_tenant,  # for get_tenant_name
+            mock_tenant,  # for tenant_info lookup in settings_page
         ]
 
         with patch("apps.dashboard.routes.get_quota_for_user", return_value=None):
             response = client.get(
                 "/dashboard/settings",
                 cookies={SESSION_COOKIE_NAME: session_id},
-                follow_redirects=False
+                follow_redirects=False,
             )
 
         assert response.status_code == 200
@@ -142,17 +141,17 @@ class TestSettingsPage:
         mock_tenant = MockTenant()
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
-            mock_user,   # for require_dashboard_auth -> get_current_dashboard_user
-            mock_user,   # for settings_page user_record lookup
-            mock_tenant, # for get_tenant_name
-            mock_tenant, # for tenant_info lookup in settings_page
+            mock_user,  # for require_dashboard_auth -> get_current_dashboard_user
+            mock_user,  # for settings_page user_record lookup
+            mock_tenant,  # for get_tenant_name
+            mock_tenant,  # for tenant_info lookup in settings_page
         ]
 
         with patch("apps.dashboard.routes.get_quota_for_user", return_value=None):
             response = client.get(
                 "/dashboard/settings",
                 cookies={SESSION_COOKIE_NAME: session_id},
-                follow_redirects=False
+                follow_redirects=False,
             )
 
         assert response.status_code == 200
@@ -165,17 +164,17 @@ class TestSettingsPage:
         mock_tenant = MockTenant()
 
         mock_db.query.return_value.filter.return_value.first.side_effect = [
-            mock_user,   # for require_dashboard_auth -> get_current_dashboard_user
-            mock_user,   # for settings_page user_record lookup
-            mock_tenant, # for get_tenant_name
-            mock_tenant, # for tenant_info lookup in settings_page
+            mock_user,  # for require_dashboard_auth -> get_current_dashboard_user
+            mock_user,  # for settings_page user_record lookup
+            mock_tenant,  # for get_tenant_name
+            mock_tenant,  # for tenant_info lookup in settings_page
         ]
 
         with patch("apps.dashboard.routes.get_quota_for_user", return_value=None):
             response = client.get(
                 "/dashboard/settings",
                 cookies={SESSION_COOKIE_NAME: session_id},
-                follow_redirects=False
+                follow_redirects=False,
             )
 
         assert response.status_code == 200
@@ -190,7 +189,7 @@ class TestSettingsPage:
         response = client.get(
             "/dashboard/settings?success=Password+updated+successfully",
             cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 200
@@ -205,7 +204,7 @@ class TestSettingsPage:
         response = client.get(
             "/dashboard/settings?error=Current+password+is+incorrect",
             cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 200
@@ -224,7 +223,7 @@ class TestChangePassword:
                 "new_password": "newpassword123",
                 "confirm_password": "newpassword123",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code == 401
 
@@ -242,7 +241,7 @@ class TestChangePassword:
                 "confirm_password": "differentpassword",
             },
             cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 302
@@ -262,11 +261,13 @@ class TestChangePassword:
                 "confirm_password": "short",
             },
             cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            follow_redirects=False,
         )
 
         assert response.status_code == 302
-        assert "error=Password+must+be+at+least+8+characters" in response.headers.get("location", "")
+        assert "error=Password+must+be+at+least+8+characters" in response.headers.get(
+            "location", ""
+        )
 
     def test_change_password_validates_current_password(self, client, mock_db):
         """Password change fails if current password is wrong."""
@@ -283,7 +284,7 @@ class TestChangePassword:
                     "confirm_password": "newpassword123",
                 },
                 cookies={SESSION_COOKIE_NAME: session_id},
-                follow_redirects=False
+                follow_redirects=False,
             )
 
         assert response.status_code == 302
@@ -305,7 +306,7 @@ class TestChangePassword:
                         "confirm_password": "newpassword123",
                     },
                     cookies={SESSION_COOKIE_NAME: session_id},
-                    follow_redirects=False
+                    follow_redirects=False,
                 )
 
         assert response.status_code == 302
@@ -319,7 +320,9 @@ class TestChangePassword:
         mock_db.query.return_value.filter.return_value.first.return_value = mock_user
 
         with patch("apps.dashboard.routes.verify_password", return_value=True):
-            with patch("apps.dashboard.routes.hash_password", return_value="newsalt:newhash") as mock_hash:
+            with patch(
+                "apps.dashboard.routes.hash_password", return_value="newsalt:newhash"
+            ) as mock_hash:
                 client.post(
                     "/dashboard/settings/password",
                     data={
@@ -328,7 +331,7 @@ class TestChangePassword:
                         "confirm_password": "newpassword123",
                     },
                     cookies={SESSION_COOKIE_NAME: session_id},
-                    follow_redirects=False
+                    follow_redirects=False,
                 )
 
         mock_hash.assert_called_once_with("newpassword123")
@@ -345,9 +348,7 @@ class TestNavbarSettingsLink:
         mock_db.query.return_value.filter.return_value.first.return_value = mock_user
 
         response = client.get(
-            "/dashboard/settings",
-            cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            "/dashboard/settings", cookies={SESSION_COOKIE_NAME: session_id}, follow_redirects=False
         )
 
         assert response.status_code == 200

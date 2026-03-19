@@ -19,6 +19,7 @@ class TestPartialResults:
     def client(self):
         """Create test client with mocked dependencies."""
         from apps.api.main import app
+
         return TestClient(app)
 
     @pytest.fixture
@@ -120,11 +121,13 @@ class TestPartialResults:
             }
 
         with patch("scripts.orchestrate.run_full_audit", new=mock_run_full_audit):
-            result = asyncio.run(mock_run_full_audit(
-                target_url="https://example.com",
-                company_name="Test Company",
-                primary_keywords=["seo"],
-            ))
+            result = asyncio.run(
+                mock_run_full_audit(
+                    target_url="https://example.com",
+                    company_name="Test Company",
+                    primary_keywords=["seo"],
+                )
+            )
 
         assert result["audits"]["technical"]["score"] == 80
         assert result["audits"]["technical"]["status"] == "completed"
@@ -145,7 +148,9 @@ class TestPartialResults:
                 "audits": {
                     "technical": {"score": 85, "grade": "B", "status": "completed"},
                     "content": {"score": 72, "grade": "C", "status": "completed"},
-                    "ai_visibility": handle_audit_failure("ai_visibility", "OpenAI API rate limited"),
+                    "ai_visibility": handle_audit_failure(
+                        "ai_visibility", "OpenAI API rate limited"
+                    ),
                 },
                 "warnings": [],
                 "errors": ["AI visibility audit failed: OpenAI API rate limited"],
@@ -282,19 +287,14 @@ class TestPartialResults:
         assert result["audits"]["technical"]["status"] == "completed"
         assert result["audits"]["technical"]["score"] == 90
 
-        failed_count = sum(
-            1 for a in result["audits"].values()
-            if a.get("status") == "unavailable"
-        )
+        failed_count = sum(1 for a in result["audits"].values() if a.get("status") == "unavailable")
         assert failed_count == 2
 
     def test_all_modules_failed_returns_meaningful_response(self, fully_failed_audit_result):
         """When all modules fail, return meaningful error response."""
         audits = fully_failed_audit_result["audits"]
 
-        all_failed = all(
-            a.get("status") == "unavailable" for a in audits.values()
-        )
+        all_failed = all(a.get("status") == "unavailable" for a in audits.values())
         assert all_failed
 
         assert len(fully_failed_audit_result["errors"]) > 0
@@ -359,15 +359,11 @@ class TestPartialResults:
             result = asyncio.run(mock_run_full_audit())
 
         completed_count = sum(
-            1 for a in result["audits"].values()
-            if a.get("status") == "completed"
+            1 for a in result["audits"].values() if a.get("status") == "completed"
         )
         assert completed_count == 2
 
-        failed_count = sum(
-            1 for a in result["audits"].values()
-            if a.get("status") == "unavailable"
-        )
+        failed_count = sum(1 for a in result["audits"].values() if a.get("status") == "unavailable")
         assert failed_count == 1
 
 
@@ -444,7 +440,11 @@ class TestPartialResultsReportGeneration:
         partial_result = {
             "audits": {
                 "technical": {"score": 75, "status": "completed"},
-                "content": {"score": None, "status": "unavailable", "message": "Temporarily unavailable"},
+                "content": {
+                    "score": None,
+                    "status": "unavailable",
+                    "message": "Temporarily unavailable",
+                },
                 "ai_visibility": {"score": 80, "status": "completed"},
             }
         }
@@ -462,11 +462,12 @@ class TestPartialResultsReportGeneration:
                 "technical": {"score": 70, "issues": [], "recommendations": []},
                 "content": {"score": None, "status": "unavailable"},
                 "ai_visibility": {"score": None, "status": "unavailable"},
-            }
+            },
         }
 
         available_modules = [
-            name for name, data in partial_result["audits"].items()
+            name
+            for name, data in partial_result["audits"].items()
             if data.get("status") != "unavailable" and data.get("score") is not None
         ]
         assert len(available_modules) == 1

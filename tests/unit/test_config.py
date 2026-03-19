@@ -35,11 +35,7 @@ class TestConfigDefaults:
     def test_scoring_weights_default(self):
         """Test default scoring weights sum to 1.0."""
         config = Config()
-        total = (
-            config.score_weight_technical
-            + config.score_weight_content
-            + config.score_weight_ai
-        )
+        total = config.score_weight_technical + config.score_weight_content + config.score_weight_ai
         assert abs(total - 1.0) < 0.01
 
     def test_grade_thresholds_default(self):

@@ -115,6 +115,8 @@ def create_rate_limit_middleware(
     enabled: bool = True,
 ):
     """Factory function to create rate limit middleware with configuration."""
+
     def middleware_factory(app):
         return RateLimitHeadersMiddleware(app, default_tier=default_tier, enabled=enabled)
+
     return middleware_factory

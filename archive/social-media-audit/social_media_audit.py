@@ -22,7 +22,7 @@ def check_linkedin_presence(company_name: str, domain: str) -> dict[str, Any]:
         Dict with LinkedIn presence data
     """
     # Try common LinkedIn URL patterns
-    slug = company_name.lower().replace(' ', '-').replace(',', '').replace('.', '')
+    slug = company_name.lower().replace(" ", "-").replace(",", "").replace(".", "")
     possible_urls = [
         f"https://www.linkedin.com/company/{slug}",
         f"https://www.linkedin.com/company/{slug}-inc",
@@ -43,7 +43,7 @@ def check_linkedin_presence(company_name: str, domain: str) -> dict[str, Any]:
     linkedin_on_site = False
     try:
         response = requests.get(f"https://{domain}", timeout=10)
-        if 'linkedin.com/company/' in response.text:
+        if "linkedin.com/company/" in response.text:
             linkedin_on_site = True
             # Extract the actual URL
             match = re.search(r'linkedin\.com/company/([^"\'<>\s]+)', response.text)
@@ -61,8 +61,8 @@ def check_linkedin_presence(company_name: str, domain: str) -> dict[str, Any]:
         "score": score,
         "findings": [
             "LinkedIn company page found" if has_page else "No LinkedIn company page found",
-            f"URL: {found_url}" if found_url else "Consider creating a LinkedIn company page"
-        ]
+            f"URL: {found_url}" if found_url else "Consider creating a LinkedIn company page",
+        ],
     }
 
 
@@ -81,7 +81,7 @@ def find_social_profiles(domain: str) -> dict[str, Any]:
         "twitter": None,
         "facebook": None,
         "instagram": None,
-        "youtube": None
+        "youtube": None,
     }
 
     try:
@@ -126,8 +126,8 @@ def find_social_profiles(domain: str) -> dict[str, Any]:
         "score": score,
         "findings": [
             f"Found {found_count}/5 social media profiles",
-            *[f"{platform.title()}: {url}" for platform, url in profiles.items() if url]
-        ]
+            *[f"{platform.title()}: {url}" for platform, url in profiles.items() if url],
+        ],
     }
 
 
@@ -166,11 +166,12 @@ def check_social_consistency(domain: str, profiles: dict[str, str]) -> dict[str,
         "score": max(0, score),
         "issues": issues,
         "findings": [
-            "Social profiles are consistent" if score >= 80 else "Social profiles need consistency improvements",
-            *issues
-        ]
+            "Social profiles are consistent"
+            if score >= 80
+            else "Social profiles need consistency improvements",
+            *issues,
+        ],
     }
-
 
 
 def get_grok_sentiment(company_name: str, domain: str) -> dict[str, Any]:
@@ -188,15 +189,12 @@ def get_grok_sentiment(company_name: str, domain: str) -> dict[str, Any]:
             "sentiment": "Unknown",
             "score": 0,
             "summary": "Grok API key not configured.",
-            "available": False
+            "available": False,
         }
 
     try:
         # standard OpenAI-compatible client for xAI
-        client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.x.ai/v1"
-        )
+        client = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
 
         prompt = f"""Analyze the current social media sentiment for:
 Company: {company_name}
@@ -220,9 +218,12 @@ Return JSON:
         completion = client.chat.completions.create(
             model=os.environ.get("XAI_MODEL", "grok-4-1-fast-reasoning"),
             messages=[
-                {"role": "system", "content": "You are a social media analyst with access to real-time X/Twitter data."},
-                {"role": "user", "content": prompt}
-            ]
+                {
+                    "role": "system",
+                    "content": "You are a social media analyst with access to real-time X/Twitter data.",
+                },
+                {"role": "user", "content": prompt},
+            ],
         )
 
         content = completion.choices[0].message.content
@@ -234,6 +235,7 @@ Return JSON:
                 content = content[4:]
 
         import json
+
         data = json.loads(content.strip())
         return {**data, "available": True}
 
@@ -243,7 +245,7 @@ Return JSON:
             "sentiment": "Error",
             "score": 0,
             "summary": f"Could not analyze sentiment: {str(e)}",
-            "available": False
+            "available": False,
         }
 
 
@@ -259,7 +261,7 @@ def run_social_audit(company_name: str, domain: str) -> dict[str, Any]:
         Complete social audit results
     """
     # Remove protocol from domain if present
-    domain = domain.replace('https://', '').replace('http://', '').split('/')[0]
+    domain = domain.replace("https://", "").replace("http://", "").split("/")[0]
 
     # Check LinkedIn
     linkedin_result = check_linkedin_presence(company_name, domain)
@@ -268,10 +270,7 @@ def run_social_audit(company_name: str, domain: str) -> dict[str, Any]:
     profiles_result = find_social_profiles(domain)
 
     # Check consistency
-    consistency_result = check_social_consistency(
-        domain,
-        profiles_result['profiles']
-    )
+    consistency_result = check_social_consistency(domain, profiles_result["profiles"])
 
     # Check Grok Sentiment
     sentiment_result = get_grok_sentiment(company_name, domain)
@@ -280,90 +279,99 @@ def run_social_audit(company_name: str, domain: str) -> dict[str, Any]:
     # Adjusted weights to include sentiment if available
     if sentiment_result.get("available"):
         overall_score = int(
-            (linkedin_result['score'] * 0.25) +
-            (profiles_result['score'] * 0.45) +
-            (consistency_result['score'] * 0.1) +
-            (sentiment_result.get("score", 50) * 0.2)
+            (linkedin_result["score"] * 0.25)
+            + (profiles_result["score"] * 0.45)
+            + (consistency_result["score"] * 0.1)
+            + (sentiment_result.get("score", 50) * 0.2)
         )
     else:
         overall_score = int(
-            (linkedin_result['score'] * 0.3) +
-            (profiles_result['score'] * 0.5) +
-            (consistency_result['score'] * 0.2)
+            (linkedin_result["score"] * 0.3)
+            + (profiles_result["score"] * 0.5)
+            + (consistency_result["score"] * 0.2)
         )
 
     findings = [
         f"Overall social media score: {overall_score}/100",
-        *linkedin_result['findings'],
-        *profiles_result['findings'][:3],
+        *linkedin_result["findings"],
+        *profiles_result["findings"][:3],
     ]
 
     if sentiment_result.get("available"):
-        findings.append(f"Grok Sentiment: {sentiment_result['sentiment']} ({sentiment_result['summary']})")
+        findings.append(
+            f"Grok Sentiment: {sentiment_result['sentiment']} ({sentiment_result['summary']})"
+        )
 
     return {
         "score": overall_score,
         "max": 100,
-        "grade": "A" if overall_score >= 90 else
-                 "B" if overall_score >= 80 else
-                 "C" if overall_score >= 70 else
-                 "D" if overall_score >= 60 else "F",
+        "grade": "A"
+        if overall_score >= 90
+        else "B"
+        if overall_score >= 80
+        else "C"
+        if overall_score >= 70
+        else "D"
+        if overall_score >= 60
+        else "F",
         "components": {
             "linkedin": linkedin_result,
             "profiles": profiles_result,
             "consistency": consistency_result,
-            "sentiment": sentiment_result
+            "sentiment": sentiment_result,
         },
         "findings": findings,
         "recommendations": generate_social_recommendations(
-            linkedin_result,
-            profiles_result,
-            consistency_result
-        )
+            linkedin_result, profiles_result, consistency_result
+        ),
     }
 
 
 def generate_social_recommendations(
-    linkedin: dict,
-    profiles: dict,
-    consistency: dict
+    linkedin: dict, profiles: dict, consistency: dict
 ) -> list[dict[str, Any]]:
     """Generate prioritized social media recommendations."""
     recommendations = []
 
     # LinkedIn recommendations
-    if not linkedin['has_page']:
-        recommendations.append({
-            "priority": "high",
-            "category": "linkedin",
-            "action": "Create LinkedIn company page",
-            "details": "LinkedIn is essential for B2B credibility and SEO",
-            "impact": "high",
-            "effort": "low"
-        })
+    if not linkedin["has_page"]:
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "linkedin",
+                "action": "Create LinkedIn company page",
+                "details": "LinkedIn is essential for B2B credibility and SEO",
+                "impact": "high",
+                "effort": "low",
+            }
+        )
 
     # Profile completeness
-    missing_count = 5 - profiles['found_count']
+    missing_count = 5 - profiles["found_count"]
     if missing_count > 0:
-        recommendations.append({
-            "priority": "medium",
-            "category": "social_presence",
-            "action": f"Add {missing_count} missing social profiles",
-            "details": "Complete social presence improves brand credibility",
-            "impact": "medium",
-            "effort": "low"
-        })
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "social_presence",
+                "action": f"Add {missing_count} missing social profiles",
+                "details": "Complete social presence improves brand credibility",
+                "impact": "medium",
+                "effort": "low",
+            }
+        )
 
     # Consistency issues
-    if consistency['issues']:
-        recommendations.append({
-            "priority": "medium",
-            "category": "consistency",
-            "action": "Fix social profile consistency",
-            "details": "; ".join(consistency['issues'][:2]),
-            "impact": "medium",
-            "effort": "low"
-        })
+    if consistency["issues"]:
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "consistency",
+                "action": "Fix social profile consistency",
+                "details": "; ".join(consistency["issues"][:2]),
+                "impact": "medium",
+                "effort": "low",
+            }
+        )
 
     return recommendations
 

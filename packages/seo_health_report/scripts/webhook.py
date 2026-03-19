@@ -21,6 +21,7 @@ from packages.seo_health_report.scripts.safe_fetch import SSRFError, resolve_dns
 @dataclass
 class WebhookResult:
     """Result of webhook delivery attempt."""
+
     success: bool
     attempts: int
     status_code: Optional[int] = None
@@ -39,11 +40,7 @@ def sign_webhook_payload(payload: dict, secret: str) -> str:
         Hex-encoded signature
     """
     body = json.dumps(payload, sort_keys=True, default=str)
-    signature = hmac.new(
-        secret.encode('utf-8'),
-        body.encode('utf-8'),
-        hashlib.sha256
-    )
+    signature = hmac.new(secret.encode("utf-8"), body.encode("utf-8"), hashlib.sha256)
     return signature.hexdigest()
 
 
@@ -73,7 +70,7 @@ async def validate_callback_url(url: str) -> None:
     """
     parsed = urlparse(url)
 
-    if parsed.scheme not in ('http', 'https'):
+    if parsed.scheme not in ("http", "https"):
         raise ValueError(f"Invalid scheme: {parsed.scheme}")
 
     if not parsed.hostname:
@@ -86,7 +83,8 @@ async def validate_callback_url(url: str) -> None:
 def calculate_backoff(attempt: int, base: float = 1.0, max_delay: float = 60.0) -> float:
     """Calculate exponential backoff with jitter."""
     import random
-    delay = min(base * (2 ** attempt), max_delay)
+
+    delay = min(base * (2**attempt), max_delay)
     jitter = random.uniform(0, delay * 0.1)
     return delay + jitter
 
@@ -96,7 +94,7 @@ async def deliver_webhook(
     payload: dict[str, Any],
     secret: str,
     max_attempts: int = 5,
-    timeout: float = 10.0
+    timeout: float = 10.0,
 ) -> WebhookResult:
     """
     Deliver webhook with signing and retries.
@@ -114,11 +112,7 @@ async def deliver_webhook(
     try:
         await validate_callback_url(callback_url)
     except (SSRFError, ValueError) as e:
-        return WebhookResult(
-            success=False,
-            attempts=0,
-            error=f"Invalid callback URL: {e}"
-        )
+        return WebhookResult(success=False, attempts=0, error=f"Invalid callback URL: {e}")
 
     safe_payload = redact_dict(payload)
 
@@ -126,7 +120,7 @@ async def deliver_webhook(
     headers = {
         "Content-Type": "application/json",
         "X-Webhook-Signature": signature,
-        "User-Agent": "SEOHealthReport-Webhook/1.0"
+        "User-Agent": "SEOHealthReport-Webhook/1.0",
     }
 
     last_error = None
@@ -135,18 +129,12 @@ async def deliver_webhook(
     for attempt in range(max_attempts):
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
-                response = await client.post(
-                    callback_url,
-                    json=safe_payload,
-                    headers=headers
-                )
+                response = await client.post(callback_url, json=safe_payload, headers=headers)
                 last_status = response.status_code
 
                 if 200 <= response.status_code < 300:
                     return WebhookResult(
-                        success=True,
-                        attempts=attempt + 1,
-                        status_code=response.status_code
+                        success=True, attempts=attempt + 1, status_code=response.status_code
                     )
 
                 if 400 <= response.status_code < 500 and response.status_code != 429:
@@ -154,7 +142,7 @@ async def deliver_webhook(
                         success=False,
                         attempts=attempt + 1,
                         status_code=response.status_code,
-                        error=f"Client error: {response.status_code}"
+                        error=f"Client error: {response.status_code}",
                     )
 
                 last_error = f"HTTP {response.status_code}"
@@ -170,10 +158,7 @@ async def deliver_webhook(
             await asyncio.sleep(calculate_backoff(attempt))
 
     return WebhookResult(
-        success=False,
-        attempts=max_attempts,
-        status_code=last_status,
-        error=last_error
+        success=False, attempts=max_attempts, status_code=last_status, error=last_error
     )
 
 
@@ -183,7 +168,7 @@ def build_audit_webhook_payload(
     overall_score: Optional[int] = None,
     grade: Optional[str] = None,
     report_url: Optional[str] = None,
-    error_message: Optional[str] = None
+    error_message: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Build standard webhook payload for audit completion.
@@ -205,7 +190,7 @@ def build_audit_webhook_payload(
         "event": "audit.completed" if status == "completed" else "audit.failed",
         "audit_id": audit_id,
         "status": status,
-        "timestamp": datetime.now(timezone.utc).isoformat() + "Z"
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
     }
 
     if overall_score is not None:

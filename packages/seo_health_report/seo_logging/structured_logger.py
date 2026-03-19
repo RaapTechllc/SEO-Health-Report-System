@@ -144,10 +144,12 @@ def get_logger(name: str) -> logging.Logger:
         if is_json_logging_enabled():
             handler.setFormatter(JSONFormatter())
         else:
-            handler.setFormatter(logging.Formatter(
-                "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-                datefmt="%Y-%m-%d %H:%M:%S"
-            ))
+            handler.setFormatter(
+                logging.Formatter(
+                    "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S",
+                )
+            )
 
         logger.addHandler(handler)
         logger.setLevel(get_log_level())

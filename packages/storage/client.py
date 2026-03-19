@@ -8,6 +8,7 @@ from typing import Optional
 try:
     import boto3
     from botocore.exceptions import ClientError
+
     BOTO3_AVAILABLE = True
 except ImportError:
     boto3 = None
@@ -170,8 +171,7 @@ class S3StorageBackend(StorageBackend):
         """
         if not BOTO3_AVAILABLE:
             raise ImportError(
-                "boto3 is required for S3 storage. "
-                "Install it with: pip install boto3"
+                "boto3 is required for S3 storage. Install it with: pip install boto3"
             )
 
         self.bucket_name = bucket_name or os.environ.get("S3_BUCKET_NAME")
@@ -188,11 +188,7 @@ class S3StorageBackend(StorageBackend):
             session_kwargs["aws_access_key_id"] = ak
             session_kwargs["aws_secret_access_key"] = sk
 
-        self._client = boto3.client(
-            "s3",
-            region_name=self.region,
-            **session_kwargs
-        )
+        self._client = boto3.client("s3", region_name=self.region, **session_kwargs)
 
     def upload(self, key: str, data: bytes, content_type: str = "application/octet-stream") -> str:
         """Upload data to S3."""

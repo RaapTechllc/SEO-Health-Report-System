@@ -22,17 +22,20 @@ logger = logging.getLogger(__name__)
 
 class TransientError(Exception):
     """Retry-able errors: timeouts, 429, 503, network issues."""
+
     pass
 
 
 class PermanentError(Exception):
     """Non-retry-able: 404, invalid URL, SSRF blocked."""
+
     pass
 
 
 @dataclass
 class AuditJob:
     """Represents an audit job from the database."""
+
     job_id: str
     tenant_id: str
     audit_id: str
@@ -76,11 +79,16 @@ def _redact_error(error_message: str) -> str:
     """Redact sensitive data from error messages."""
     try:
         from packages.seo_health_report.scripts.redaction import redact_sensitive
+
         return redact_sensitive(error_message)
     except ImportError:
         import re
+
         patterns = [
-            (r"(?i)(api[_-]?key|token|secret|password|auth)['\"]?\s*[:=]\s*['\"]?[\w\-\.]+", "[REDACTED]"),
+            (
+                r"(?i)(api[_-]?key|token|secret|password|auth)['\"]?\s*[:=]\s*['\"]?[\w\-\.]+",
+                "[REDACTED]",
+            ),
             (r"(?i)authorization:\s*bearer\s+[\w\-\.]+", "Authorization: Bearer [REDACTED]"),
         ]
         result = error_message
@@ -228,6 +236,7 @@ def calculate_backoff(attempt: int, base_seconds: int = 30, max_seconds: int = 3
         Delay in seconds.
     """
     import random
+
     delay = min(base_seconds * (2 ** (attempt - 1)), max_seconds)
     jitter = random.uniform(0, delay * 0.1)
     return int(delay + jitter)
@@ -288,11 +297,9 @@ def renew_lease(job_id: str, worker_id: str, lease_seconds: int = 300) -> bool:
             SET locked_until = datetime('now', '+' || :lease_seconds || ' seconds')
             WHERE job_id = :job_id AND locked_by = :worker_id
         """)
-        result = db.execute(query, {
-            "job_id": job_id,
-            "worker_id": worker_id,
-            "lease_seconds": lease_seconds
-        })
+        result = db.execute(
+            query, {"job_id": job_id, "worker_id": worker_id, "lease_seconds": lease_seconds}
+        )
         db.commit()
         renewed = result.rowcount > 0
         if renewed:
@@ -348,7 +355,9 @@ async def _execute_audit(job: AuditJob, worker_id: str = None, lease_seconds: in
     company_name = job.payload.get("company_name")
 
     if not url or not company_name:
-        raise PermanentError(f"Missing required payload fields: url={url}, company_name={company_name}")
+        raise PermanentError(
+            f"Missing required payload fields: url={url}, company_name={company_name}"
+        )
 
     db: Session = SessionLocal()
     try:

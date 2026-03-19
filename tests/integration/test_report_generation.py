@@ -14,9 +14,7 @@ from datetime import datetime
 import pytest
 
 # Add project root to path
-project_root = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
@@ -439,9 +437,7 @@ class TestPdfReportGeneration:
         pdf_exists = os.path.exists(result["output_path"])
         md_path = result["output_path"].replace(".pdf", ".md")
         md_exists = os.path.exists(md_path)
-        assert pdf_exists or md_exists, (
-            f"Neither {result['output_path']} nor {md_path} exists"
-        )
+        assert pdf_exists or md_exists, f"Neither {result['output_path']} nor {md_path} exists"
 
     @pytest.mark.integration
     def test_pdf_file_created_with_reportlab(
@@ -632,9 +628,7 @@ class TestEdgeCases:
     """Test edge cases in report generation."""
 
     @pytest.mark.integration
-    def test_empty_recommendations_handled(
-        self, sample_scores, sample_executive_summary, tmp_path
-    ):
+    def test_empty_recommendations_handled(self, sample_scores, sample_executive_summary, tmp_path):
         """Test report generates with empty recommendations."""
         from seo_health_report.scripts.build_report import build_report_document
 

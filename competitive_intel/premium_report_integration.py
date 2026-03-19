@@ -32,7 +32,7 @@ async def run_market_analysis(
     audit_data: dict[str, Any],
     products_services: Optional[list[str]] = None,
     location: Optional[str] = None,
-    max_competitors: int = 8
+    max_competitors: int = 8,
 ) -> dict[str, Any]:
     """
     Run comprehensive market analysis for a completed audit.
@@ -59,44 +59,48 @@ async def run_market_analysis(
 
     # Step 1: Analyze market landscape (includes classification + competitor discovery)
     market_landscape = await analyze_market_landscape(
-        company_name=company_name,
-        url=url,
-        products_services=products_services,
-        location=location
+        company_name=company_name, url=url, products_services=products_services, location=location
     )
 
-    logger.info(f"Classified as: {market_landscape.classification.industry} > {market_landscape.classification.vertical} > {market_landscape.classification.niche}")
+    logger.info(
+        f"Classified as: {market_landscape.classification.industry} > {market_landscape.classification.vertical} > {market_landscape.classification.niche}"
+    )
     logger.info(f"Discovered {len(market_landscape.competitors)} competitors")
 
     # Step 2: Run REAL audits on competitors
-    logger.info(f"Running real audits on {min(max_competitors, len(market_landscape.competitors))} competitors...")
+    logger.info(
+        f"Running real audits on {min(max_competitors, len(market_landscape.competitors))} competitors..."
+    )
     competitor_audits = []
     for competitor in market_landscape.competitors[:max_competitors]:
         # Run actual audit on competitor sites
         competitor_audit = await _run_real_competitor_audit(
-            competitor,
-            market_landscape.classification
+            competitor, market_landscape.classification
         )
         competitor_audits.append(competitor_audit)
 
     # Filter to only successful audits
     successful_audits = [a for a in competitor_audits if a.get("data_source") == "real_audit"]
-    logger.info(f"Successfully audited {len(successful_audits)} of {len(competitor_audits)} competitors")
+    logger.info(
+        f"Successfully audited {len(successful_audits)} of {len(competitor_audits)} competitors"
+    )
 
     # Step 3: Benchmark against competitors
     benchmark_report = await benchmark_against_competitors(
         client_audit=audit_data,
         competitor_audits=competitor_audits,
-        classification=market_landscape.classification
+        classification=market_landscape.classification,
     )
 
-    logger.info(f"Market position: #{benchmark_report.market_position_rank} of {len(competitor_audits) + 1}")
+    logger.info(
+        f"Market position: #{benchmark_report.market_position_rank} of {len(competitor_audits) + 1}"
+    )
 
     # Step 4: Generate premium executive summary
     executive_summary = await generate_premium_executive_summary(
         client_audit=audit_data,
         benchmark_report=benchmark_report,
-        market_landscape=market_landscape
+        market_landscape=market_landscape,
     )
 
     # Step 5: Enhance audit data with market intelligence
@@ -156,9 +160,9 @@ async def run_market_analysis(
 
 
 async def _run_real_competitor_audit(
-    competitor: 'DiscoveredCompetitor',
+    competitor: "DiscoveredCompetitor",
     classification: IndustryClassification,
-    rate_limiter_delay: float = 2.0
+    rate_limiter_delay: float = 2.0,
 ) -> dict[str, Any]:
     """
     Run a REAL SEO audit on a competitor URL.
@@ -209,7 +213,7 @@ async def _run_real_competitor_audit(
                 "technical": {"score": tech_score},
                 "content": {"score": content_score},
                 "ai_visibility": {"score": ai_score},
-            }
+            },
         }
 
     except Exception as e:
@@ -225,7 +229,7 @@ async def _run_real_competitor_audit(
                 "technical": {"score": None},
                 "content": {"score": None},
                 "ai_visibility": {"score": None},
-            }
+            },
         }
 
 
@@ -233,12 +237,12 @@ def run_market_analysis_sync(
     audit_data: dict[str, Any],
     products_services: Optional[list[str]] = None,
     location: Optional[str] = None,
-    max_competitors: int = 8
+    max_competitors: int = 8,
 ) -> dict[str, Any]:
     """Sync wrapper for run_market_analysis."""
-    return asyncio.run(run_market_analysis(
-        audit_data, products_services, location, max_competitors
-    ))
+    return asyncio.run(
+        run_market_analysis(audit_data, products_services, location, max_competitors)
+    )
 
 
 def enhance_audit_with_market_intel(json_path: str, output_path: str = None) -> str:
@@ -270,7 +274,7 @@ def enhance_audit_with_market_intel(json_path: str, output_path: str = None) -> 
 
 
 __all__ = [
-    'run_market_analysis',
-    'run_market_analysis_sync',
-    'enhance_audit_with_market_intel',
+    "run_market_analysis",
+    "run_market_analysis_sync",
+    "enhance_audit_with_market_intel",
 ]

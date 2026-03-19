@@ -71,9 +71,7 @@ class TestAuthenticationFlow:
 
     def test_login_endpoint_exists(self, client):
         """Login endpoint should exist and accept POST."""
-        response = client.post(
-            "/auth/login", json={"email": "test@test.com", "password": "wrong"}
-        )
+        response = client.post("/auth/login", json={"email": "test@test.com", "password": "wrong"})
         # Should return 401 (unauthorized) or 422 (validation), not 404
         assert response.status_code in [401, 403, 422]
 

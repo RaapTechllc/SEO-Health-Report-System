@@ -44,6 +44,7 @@ BLOCKED_RANGES: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = [
 
 class SSRFProtectionError(Exception):
     """Raised when a request is blocked due to SSRF protection."""
+
     pass
 
 
@@ -167,9 +168,7 @@ async def safe_fetch(
 
             content = response.content
             if len(content) > max_bytes:
-                raise SSRFProtectionError(
-                    f"Response size {len(content)} exceeds limit {max_bytes}"
-                )
+                raise SSRFProtectionError(f"Response size {len(content)} exceeds limit {max_bytes}")
 
             return FetchResult(
                 url=url,
@@ -221,9 +220,7 @@ def safe_get(
                 continue
 
             if len(response.content) > max_size:
-                raise SSRFProtectionError(
-                    f"Response exceeded size limit of {max_size} bytes"
-                )
+                raise SSRFProtectionError(f"Response exceeded size limit of {max_size} bytes")
             return response
 
 

@@ -276,6 +276,7 @@ class TestServiceSpecific429:
     @pytest.mark.asyncio
     async def test_ai_api_429_with_fallback(self):
         """AI API 429 should trigger fallback analysis."""
+
         # Simulate AI API call that returns 429
         async def mock_ai_call():
             raise Exception("429 Rate Limit")

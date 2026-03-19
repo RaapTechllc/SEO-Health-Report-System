@@ -44,6 +44,7 @@ class UpdateBrandingRequest(BaseModel):
         if v is None:
             return v
         import re
+
         if not re.match(r"^#[0-9A-Fa-f]{6}$", v):
             raise ValueError("Color must be hex format like #1E3A8A")
         return v

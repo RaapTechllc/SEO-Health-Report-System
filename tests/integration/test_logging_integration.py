@@ -87,6 +87,7 @@ class TestRequestLoggingMiddleware:
     def test_error_response_logs_request_id(self, client, caplog):
         """Test that error responses are logged with request context."""
         import logging
+
         with caplog.at_level(logging.ERROR):
             response = client.get("/error")
         assert response.status_code == 500
@@ -118,6 +119,7 @@ class TestRequestIdPropagation:
         assert request_id_var.get() == "req-abc"
 
         from packages.seo_health_report.seo_logging import tenant_id_var, user_id_var
+
         assert user_id_var.get() == "user-123"
         assert tenant_id_var.get() == "tenant-456"
 
@@ -206,10 +208,7 @@ class TestSensitiveHeaderFiltering:
         client = TestClient(app)
 
         with caplog.at_level(logging.INFO):
-            client.get(
-                "/protected",
-                headers={"Authorization": "Bearer secret-token-12345"}
-            )
+            client.get("/protected", headers={"Authorization": "Bearer secret-token-12345"})
 
         for record in caplog.records:
             assert "secret-token-12345" not in record.getMessage()
@@ -255,6 +254,7 @@ class TestStructuredLogger:
         os.environ["LOG_FORMAT"] = "json"
         import packages.seo_health_report.seo_logging.structured_logger as logger_module
         from packages.seo_health_report.seo_logging.structured_logger import _loggers
+
         logger_module._is_json_mode = None
 
         if "test.extra.new" in _loggers:

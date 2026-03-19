@@ -161,17 +161,21 @@ class TestAuditExecutionFlow:
         self, mock_db, sample_payload, mock_raw_audit_result, mock_composite_scores
     ):
         """Test handle_full_audit() with mocked orchestrate.run_full_audit."""
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ) as mock_run_audit, patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ) as mock_run_audit,
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             result = await handle_full_audit(
                 audit_id="audit-123",
@@ -200,6 +204,7 @@ class TestAuditExecutionFlow:
         progress_calls = []
 
         original_execute = mock_db.execute
+
         def capture_execute(*args, **kwargs):
             if args and "audit_progress_events" in str(args[0]):
                 params = args[0] if len(args) == 1 else args[1]
@@ -209,17 +214,21 @@ class TestAuditExecutionFlow:
 
         mock_db.execute = MagicMock(side_effect=capture_execute)
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             await handle_full_audit(
                 audit_id="audit-123",
@@ -256,17 +265,21 @@ class TestAuditExecutionFlow:
 
         mock_db.execute = MagicMock(side_effect=capture_execute)
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             await handle_full_audit(
                 audit_id="audit-123",
@@ -301,17 +314,21 @@ class TestProgressEventsWrittenCorrectly:
 
         mock_db.execute = MagicMock(side_effect=capture_execute)
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             await handle_full_audit(
                 audit_id="audit-123",
@@ -322,7 +339,7 @@ class TestProgressEventsWrittenCorrectly:
 
         for i in range(1, len(progress_values)):
             assert progress_values[i] >= progress_values[i - 1], (
-                f"Progress should increase: {progress_values[i-1]} -> {progress_values[i]}"
+                f"Progress should increase: {progress_values[i - 1]} -> {progress_values[i]}"
             )
 
         assert progress_values[-1] == 100
@@ -356,17 +373,21 @@ class TestResultStoredInCorrectFormat:
         self, mock_db, sample_payload, mock_raw_audit_result, mock_composite_scores
     ):
         """Verify result_json has 'raw' and 'summary' keys."""
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             result = await handle_full_audit(
                 audit_id="audit-123",
@@ -384,17 +405,21 @@ class TestResultStoredInCorrectFormat:
         self, mock_db, sample_payload, mock_raw_audit_result, mock_composite_scores
     ):
         """Verify summary matches AuditResult schema."""
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             result = await handle_full_audit(
                 audit_id="audit-123",
@@ -424,18 +449,22 @@ class TestResultStoredInCorrectFormat:
         """Verify HTML report path is generated and stored."""
         expected_path = "reports/default/audit-123.html"
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value=expected_path,
-        ) as mock_gen_report:
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value=expected_path,
+            ) as mock_gen_report,
+        ):
             result = await handle_full_audit(
                 audit_id="audit-123",
                 job_id="job-456",
@@ -481,21 +510,23 @@ class TestErrorHandling:
         assert len(failed_updates) >= 1
 
     @pytest.mark.asyncio
-    async def test_webhook_delivered_on_failure(
-        self, mock_db, sample_payload_with_callback
-    ):
+    async def test_webhook_delivered_on_failure(self, mock_db, sample_payload_with_callback):
         """Test that webhook is delivered on failure."""
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            side_effect=Exception("Audit failed unexpectedly"),
-        ), patch(
-            "apps.worker.handlers.full_audit.build_audit_webhook_payload",
-            return_value={"event": "audit.failed", "audit_id": "audit-123"},
-        ) as mock_build_payload, patch(
-            "apps.worker.handlers.full_audit.deliver_webhook",
-            new_callable=AsyncMock,
-        ) as mock_deliver:
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                side_effect=Exception("Audit failed unexpectedly"),
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.build_audit_webhook_payload",
+                return_value={"event": "audit.failed", "audit_id": "audit-123"},
+            ) as mock_build_payload,
+            patch(
+                "apps.worker.handlers.full_audit.deliver_webhook",
+                new_callable=AsyncMock,
+            ) as mock_deliver,
+        ):
             with pytest.raises(Exception):
                 await handle_full_audit(
                     audit_id="audit-123",
@@ -585,25 +616,31 @@ class TestWebhookDelivery:
         mock_webhook_result = MagicMock()
         mock_webhook_result.success = True
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/test-tenant/audit-123.html",
-        ), patch(
-            "apps.worker.handlers.full_audit.build_audit_webhook_payload",
-            return_value={"event": "audit.completed", "audit_id": "audit-123"},
-        ) as mock_build, patch(
-            "apps.worker.handlers.full_audit.deliver_webhook",
-            new_callable=AsyncMock,
-            return_value=mock_webhook_result,
-        ) as mock_deliver:
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/test-tenant/audit-123.html",
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.build_audit_webhook_payload",
+                return_value={"event": "audit.completed", "audit_id": "audit-123"},
+            ) as mock_build,
+            patch(
+                "apps.worker.handlers.full_audit.deliver_webhook",
+                new_callable=AsyncMock,
+                return_value=mock_webhook_result,
+            ) as mock_deliver,
+        ):
             await handle_full_audit(
                 audit_id="audit-123",
                 job_id="job-456",
@@ -636,21 +673,26 @@ class TestWebhookDelivery:
         mock_webhook_result = MagicMock()
         mock_webhook_result.success = True
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/test-tenant/audit-123.html",
-        ), patch(
-            "apps.worker.handlers.full_audit.deliver_webhook",
-            new_callable=AsyncMock,
-            return_value=mock_webhook_result,
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/test-tenant/audit-123.html",
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.deliver_webhook",
+                new_callable=AsyncMock,
+                return_value=mock_webhook_result,
+            ),
         ):
             await handle_full_audit(
                 audit_id="audit-123",
@@ -667,9 +709,7 @@ class TestTierHandling:
     """Tests for different audit tiers."""
 
     @pytest.mark.asyncio
-    async def test_basic_tier_handled(
-        self, mock_db, mock_raw_audit_result, mock_composite_scores
-    ):
+    async def test_basic_tier_handled(self, mock_db, mock_raw_audit_result, mock_composite_scores):
         """Test basic tier audit execution."""
         payload = {
             "url": "https://example.com",
@@ -680,17 +720,21 @@ class TestTierHandling:
             "tenant_id": "default",
         }
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/default/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/default/audit-123.html",
+            ),
         ):
             result = await handle_full_audit(
                 audit_id="audit-123",
@@ -715,17 +759,21 @@ class TestTierHandling:
             "tenant_id": "enterprise-tenant",
         }
 
-        with patch(
-            "apps.worker.handlers.full_audit.run_full_audit",
-            new_callable=AsyncMock,
-            return_value=mock_raw_audit_result,
-        ), patch(
-            "apps.worker.handlers.full_audit.calculate_composite_score",
-            return_value=mock_composite_scores,
-        ), patch(
-            "apps.worker.handlers.full_audit.generate_html_report_simple",
-            new_callable=AsyncMock,
-            return_value="reports/enterprise-tenant/audit-123.html",
+        with (
+            patch(
+                "apps.worker.handlers.full_audit.run_full_audit",
+                new_callable=AsyncMock,
+                return_value=mock_raw_audit_result,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.calculate_composite_score",
+                return_value=mock_composite_scores,
+            ),
+            patch(
+                "apps.worker.handlers.full_audit.generate_html_report_simple",
+                new_callable=AsyncMock,
+                return_value="reports/enterprise-tenant/audit-123.html",
+            ),
         ):
             result = await handle_full_audit(
                 audit_id="audit-123",

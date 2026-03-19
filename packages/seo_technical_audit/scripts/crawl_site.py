@@ -13,9 +13,7 @@ from typing import Any, Optional
 from urllib.parse import urljoin, urlparse
 
 # Add parent directory to path for logger import
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from seo_health_report.config import get_config
 from seo_health_report.scripts.logger import get_logger
@@ -78,7 +76,11 @@ def fetch_url(url: str, timeout: int = None) -> Optional[str]:
         return None
     except Exception as e:
         # Handle 404s gracefully - missing robots.txt/sitemaps are normal
-        if hasattr(e, 'response') and hasattr(e.response, 'status_code') and e.response.status_code == 404:
+        if (
+            hasattr(e, "response")
+            and hasattr(e.response, "status_code")
+            and e.response.status_code == 404
+        ):
             logger.debug(f"File not found (404): {url}")
         elif "404" in str(e):
             logger.debug(f"File not found: {url}")
@@ -245,9 +247,7 @@ def check_robots(url: str) -> dict[str, Any]:
     return result
 
 
-def check_sitemaps(
-    url: str, sitemap_urls: Optional[list[str]] = None
-) -> dict[str, Any]:
+def check_sitemaps(url: str, sitemap_urls: Optional[list[str]] = None) -> dict[str, Any]:
     """
     Analyze XML sitemaps.
 
@@ -502,9 +502,7 @@ def analyze_meta_robots(html: str, url: str) -> dict[str, Any]:
     matches = re.findall(robots_pattern, html, re.IGNORECASE)
 
     # Also check for reverse order
-    robots_pattern_alt = (
-        r'<meta[^>]*content=["\']([^"\']+)["\'][^>]*name=["\']robots["\']'
-    )
+    robots_pattern_alt = r'<meta[^>]*content=["\']([^"\']+)["\'][^>]*name=["\']robots["\']'
     matches.extend(re.findall(robots_pattern_alt, html, re.IGNORECASE))
 
     for match in matches:
@@ -552,16 +550,12 @@ def analyze_canonical(html: str, page_url: str) -> dict[str, Any]:
     result = {"canonical_url": None, "is_self_referencing": False, "issues": []}
 
     # Find canonical tag
-    canonical_pattern = (
-        r'<link[^>]*rel=["\']canonical["\'][^>]*href=["\']([^"\']+)["\']'
-    )
+    canonical_pattern = r'<link[^>]*rel=["\']canonical["\'][^>]*href=["\']([^"\']+)["\']'
     match = re.search(canonical_pattern, html, re.IGNORECASE)
 
     if not match:
         # Try reverse order
-        canonical_pattern_alt = (
-            r'<link[^>]*href=["\']([^"\']+)["\'][^>]*rel=["\']canonical["\']'
-        )
+        canonical_pattern_alt = r'<link[^>]*href=["\']([^"\']+)["\'][^>]*rel=["\']canonical["\']'
         match = re.search(canonical_pattern_alt, html, re.IGNORECASE)
 
     if match:
@@ -668,9 +662,7 @@ def analyze_internal_links(html: str, page_url: str, base_url: str) -> dict[str,
     return result
 
 
-def analyze_crawlability(
-    url: str, depth: int = 50, check_pages: bool = True
-) -> dict[str, Any]:
+def analyze_crawlability(url: str, depth: int = 50, check_pages: bool = True) -> dict[str, Any]:
     """
     Comprehensive crawlability analysis.
 
@@ -751,7 +743,7 @@ def analyze_crawlability(
     score = 20
     for issue in result["issues"]:
         # Handle both dataclass and dict formats
-        if hasattr(issue, 'severity'):
+        if hasattr(issue, "severity"):
             severity = issue.severity
         else:
             severity = issue.get("severity", "low") if isinstance(issue, dict) else "low"

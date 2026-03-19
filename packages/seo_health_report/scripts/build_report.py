@@ -86,9 +86,7 @@ def build_report_document(
         {
             "type": "technical",
             "title": "Technical Health",
-            "score": scores.get("component_scores", {})
-            .get("technical", {})
-            .get("score", 0),
+            "score": scores.get("component_scores", {}).get("technical", {}).get("score", 0),
             "content": build_technical_section(technical_data),
         }
     )
@@ -99,9 +97,7 @@ def build_report_document(
         {
             "type": "content",
             "title": "Content & Authority",
-            "score": scores.get("component_scores", {})
-            .get("content", {})
-            .get("score", 0),
+            "score": scores.get("component_scores", {}).get("content", {}).get("score", 0),
             "content": build_content_section(content_data),
         }
     )
@@ -112,9 +108,7 @@ def build_report_document(
         {
             "type": "ai_visibility",
             "title": "AI Visibility",
-            "score": scores.get("component_scores", {})
-            .get("ai_visibility", {})
-            .get("score", 0),
+            "score": scores.get("component_scores", {}).get("ai_visibility", {}).get("score", 0),
             "content": build_ai_visibility_section(ai_data),
         }
     )
@@ -273,9 +267,7 @@ def build_ai_visibility_section(data: dict[str, Any]) -> dict[str, Any]:
     return section
 
 
-def build_action_plan(
-    audit_results: dict[str, Any], scores: dict[str, Any]
-) -> dict[str, Any]:
+def build_action_plan(audit_results: dict[str, Any], scores: dict[str, Any]) -> dict[str, Any]:
     """Build action plan section content."""
     plan = {"quick_wins": [], "strategic_initiatives": [], "prioritized_tasks": []}
 
@@ -501,11 +493,7 @@ def generate_pdf(
                 )
 
             elif section_type == "executive_summary":
-                story.extend(
-                    create_section_header(
-                        "Executive Summary", brand_colors=brand_colors
-                    )
-                )
+                story.extend(create_section_header("Executive Summary", brand_colors=brand_colors))
 
                 headline = escape(content.get("headline", ""))
                 if headline:
@@ -536,17 +524,13 @@ def generate_pdf(
                 # Recommendations
                 recs = content.get("recommendations", [])
                 if recs:
-                    story.append(
-                        Paragraph("<b>Recommendations</b>", styles["Heading3"])
-                    )
+                    story.append(Paragraph("<b>Recommendations</b>", styles["Heading3"]))
                     story.extend(create_recommendations_list(recs, brand_colors))
 
                 story.append(PageBreak())
 
             elif section_type == "action_plan":
-                story.extend(
-                    create_section_header("Action Plan", brand_colors=brand_colors)
-                )
+                story.extend(create_section_header("Action Plan", brand_colors=brand_colors))
 
                 # Quick wins
                 quick_wins = content.get("quick_wins", [])
@@ -558,25 +542,19 @@ def generate_pdf(
                 # Prioritized tasks
                 tasks = content.get("prioritized_tasks", [])
                 if tasks:
-                    story.append(
-                        Paragraph("<b>Prioritized Tasks</b>", styles["Heading3"])
-                    )
+                    story.append(Paragraph("<b>Prioritized Tasks</b>", styles["Heading3"]))
                     story.extend(create_recommendations_list(tasks[:10], brand_colors))
 
                 story.append(PageBreak())
 
             elif section_type == "appendix":
-                story.extend(
-                    create_section_header("Appendix", brand_colors=brand_colors)
-                )
+                story.extend(create_section_header("Appendix", brand_colors=brand_colors))
 
                 methodology = content.get("methodology", "")
                 if methodology:
                     story.append(Paragraph("<b>Methodology</b>", styles["Heading3"]))
                     story.append(
-                        Paragraph(
-                            escape(methodology).replace("\n", "<br/>"), styles["Normal"]
-                        )
+                        Paragraph(escape(methodology).replace("\n", "<br/>"), styles["Normal"])
                     )
 
         doc.build(story)
@@ -640,9 +618,7 @@ def generate_markdown(sections: list[dict[str, Any]], output_path: str) -> bool:
                 lines.append("### Priority Actions")
                 lines.append("")
                 for action in content.get("top_actions", []):
-                    lines.append(
-                        f"- [{action.get('type', '')}] {action.get('action', '')}"
-                    )
+                    lines.append(f"- [{action.get('type', '')}] {action.get('action', '')}")
                 lines.append("")
                 lines.append("---")
                 lines.append("")

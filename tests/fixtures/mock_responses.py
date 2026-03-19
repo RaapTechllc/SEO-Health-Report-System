@@ -278,17 +278,15 @@ def build_html_page(
     schema_script = ""
     if schema:
         import json
-        schema_script = f'''
+
+        schema_script = f"""
 <script type="application/ld+json">
 {json.dumps(schema, indent=2)}
-</script>'''
+</script>"""
 
     links_html = ""
     if internal_links:
-        links_html = "\n".join([
-            f'<a href="{link}">Link to {link}</a>'
-            for link in internal_links
-        ])
+        links_html = "\n".join([f'<a href="{link}">Link to {link}</a>' for link in internal_links])
 
     h1_content = h1 or title
     body = body_content or f"<p>This is test content for {title}.</p>"

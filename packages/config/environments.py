@@ -54,8 +54,7 @@ class Environment(str, Enum):
         except ValueError:
             valid = [e.value for e in cls] + list(aliases.keys())
             raise ValueError(
-                f"Invalid environment '{value}'. "
-                f"Valid values: {', '.join(sorted(set(valid)))}"
+                f"Invalid environment '{value}'. Valid values: {', '.join(sorted(set(valid)))}"
             )
 
     @property

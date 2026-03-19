@@ -35,6 +35,7 @@ def mock_dashboard_user_no_tenant():
 def client():
     """Create test client with mocked dependencies."""
     from apps.api.main import app
+
     return TestClient(app)
 
 
@@ -89,7 +90,7 @@ class TestAuditCreationValidation:
                 "trade_type": "Plumber",
                 "tier": "basic",
             },
-            follow_redirects=False
+            follow_redirects=False,
         )
         assert response.status_code in [302, 401, 403]
 
@@ -130,7 +131,10 @@ class TestAuditCreationValidation:
             },
         )
         assert response.status_code == 422
-        assert b"Company name is required" in response.content or b"company" in response.content.lower()
+        assert (
+            b"Company name is required" in response.content
+            or b"company" in response.content.lower()
+        )
 
     def test_create_audit_validates_missing_trade_type(self, auth_client):
         response = auth_client.post(
@@ -180,6 +184,7 @@ class TestAuditCreationSuccess:
     @pytest.mark.skip(reason="Requires DB schema update for trade_type column")
     def test_create_audit_success_redirects(self, auth_client):
         import apps.dashboard.routes as routes_module
+
         original_enqueue = routes_module.enqueue_audit_job
         original_quota = routes_module.QuotaService
 
@@ -201,7 +206,7 @@ class TestAuditCreationSuccess:
                     "trade_type": "Plumber",
                     "tier": "basic",
                 },
-                follow_redirects=False
+                follow_redirects=False,
             )
 
             assert response.status_code == 302
@@ -238,8 +243,10 @@ class TestAuditCreationSuccess:
         ]
 
         for input_str, expected_count in test_cases:
-            areas = [a.strip() for a in re.split(r'[;,]', input_str) if a.strip()]
-            assert len(areas) == expected_count, f"Expected {expected_count} areas from '{input_str}', got {len(areas)}: {areas}"
+            areas = [a.strip() for a in re.split(r"[;,]", input_str) if a.strip()]
+            assert len(areas) == expected_count, (
+                f"Expected {expected_count} areas from '{input_str}', got {len(areas)}: {areas}"
+            )
 
 
 class TestAuditCreationQuotas:
@@ -249,12 +256,7 @@ class TestAuditCreationQuotas:
         """Unit test for QuotaExceededError."""
         from packages.seo_health_report.quotas.service import QuotaExceededError
 
-        error = QuotaExceededError(
-            "Monthly audit limit reached (10)",
-            "monthly_audits",
-            10,
-            10
-        )
+        error = QuotaExceededError("Monthly audit limit reached (10)", "monthly_audits", 10, 10)
 
         assert error.quota_type == "monthly_audits"
         assert error.limit == 10
@@ -270,10 +272,7 @@ class TestAuditCreationQuotas:
 
         mock_service = MagicMock()
         mock_service.enforce_quota.side_effect = QuotaExceededError(
-            "Monthly audit limit reached (10)",
-            "monthly_audits",
-            10,
-            10
+            "Monthly audit limit reached (10)", "monthly_audits", 10, 10
         )
 
         routes_module.QuotaService = lambda db: mock_service
@@ -302,10 +301,7 @@ class TestAuditCreationQuotas:
 
         mock_service = MagicMock()
         mock_service.enforce_quota.side_effect = QuotaExceededError(
-            "Concurrent audit limit reached (2)",
-            "concurrent_audits",
-            2,
-            2
+            "Concurrent audit limit reached (2)", "concurrent_audits", 2, 2
         )
 
         routes_module.QuotaService = lambda db: mock_service
@@ -328,6 +324,7 @@ class TestAuditCreationQuotas:
     @pytest.mark.skip(reason="Requires DB schema update")
     def test_create_audit_without_tenant_skips_quota(self, auth_client_no_tenant):
         import apps.dashboard.routes as routes_module
+
         original_enqueue = routes_module.enqueue_audit_job
 
         def mock_enqueue(*args, **kwargs):
@@ -343,7 +340,7 @@ class TestAuditCreationQuotas:
                     "trade_type": "Plumber",
                     "tier": "basic",
                 },
-                follow_redirects=False
+                follow_redirects=False,
             )
 
             assert response.status_code == 302
@@ -372,6 +369,7 @@ class TestAuditCreationJobQueue:
     @pytest.mark.skip(reason="Requires DB schema update")
     def test_create_audit_handles_duplicate(self, auth_client):
         import apps.dashboard.routes as routes_module
+
         original_enqueue = routes_module.enqueue_audit_job
 
         def mock_enqueue(*args, **kwargs):
@@ -387,7 +385,7 @@ class TestAuditCreationJobQueue:
                     "trade_type": "Plumber",
                     "tier": "basic",
                 },
-                follow_redirects=False
+                follow_redirects=False,
             )
 
             assert response.status_code == 302
@@ -398,6 +396,7 @@ class TestAuditCreationJobQueue:
     @pytest.mark.skip(reason="Requires DB schema update")
     def test_create_audit_handles_queue_error(self, auth_client):
         import apps.dashboard.routes as routes_module
+
         original_enqueue = routes_module.enqueue_audit_job
 
         def mock_enqueue(*args, **kwargs):
@@ -416,7 +415,9 @@ class TestAuditCreationJobQueue:
             )
 
             assert response.status_code == 500
-            assert b"Failed to start audit" in response.content or b"error" in response.content.lower()
+            assert (
+                b"Failed to start audit" in response.content or b"error" in response.content.lower()
+            )
         finally:
             routes_module.enqueue_audit_job = original_enqueue
 

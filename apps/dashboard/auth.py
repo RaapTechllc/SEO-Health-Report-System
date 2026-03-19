@@ -89,10 +89,7 @@ def clear_session_cookie(response: Response) -> None:
     )
 
 
-def get_current_dashboard_user(
-    request: Request,
-    db: Session = Depends(get_db)
-) -> Optional[dict]:
+def get_current_dashboard_user(request: Request, db: Session = Depends(get_db)) -> Optional[dict]:
     """Get current user from session cookie. Returns None if not authenticated."""
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     if not session_id:
@@ -115,10 +112,7 @@ def get_current_dashboard_user(
     }
 
 
-def require_dashboard_auth(
-    request: Request,
-    db: Session = Depends(get_db)
-) -> dict:
+def require_dashboard_auth(request: Request, db: Session = Depends(get_db)) -> dict:
     """Dependency that requires dashboard authentication. Raises 401 if not authenticated."""
     user = get_current_dashboard_user(request, db)
     if not user:
@@ -134,7 +128,8 @@ def cleanup_expired_sessions() -> int:
     """Remove expired sessions. Returns count of removed sessions."""
     now = datetime.now(timezone.utc)
     expired = [
-        sid for sid, session in _sessions.items()
+        sid
+        for sid, session in _sessions.items()
         if datetime.fromisoformat(session["expires_at"]) < now
     ]
     for sid in expired:

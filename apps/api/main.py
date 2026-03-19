@@ -52,6 +52,7 @@ from rate_limiter import get_rate_limit_status
 # Import dashboard router
 try:
     from apps.dashboard.routes import router as dashboard_router
+
     DASHBOARD_AVAILABLE = True
 except ImportError:
     DASHBOARD_AVAILABLE = False
@@ -60,6 +61,7 @@ except ImportError:
 # Import webhooks router
 try:
     from apps.api.routers.webhooks import router as webhooks_router
+
     WEBHOOKS_AVAILABLE = True
 except ImportError:
     WEBHOOKS_AVAILABLE = False
@@ -68,6 +70,7 @@ except ImportError:
 # Import branding router
 try:
     from apps.api.routers.branding import router as branding_router
+
     BRANDING_AVAILABLE = True
 except ImportError:
     BRANDING_AVAILABLE = False
@@ -76,6 +79,7 @@ except ImportError:
 # Import competitors router
 try:
     from apps.api.routers.competitors import router as competitors_router
+
     COMPETITORS_AVAILABLE = True
 except ImportError:
     COMPETITORS_AVAILABLE = False
@@ -84,6 +88,7 @@ except ImportError:
 # Import auth router
 try:
     from apps.api.routers.auth_routes import router as auth_router
+
     AUTH_ROUTER_AVAILABLE = True
 except ImportError:
     AUTH_ROUTER_AVAILABLE = False
@@ -92,6 +97,7 @@ except ImportError:
 # Import payments router
 try:
     from apps.api.routers.payments import router as payments_router
+
     PAYMENTS_AVAILABLE = True
 except ImportError:
     PAYMENTS_AVAILABLE = False
@@ -100,6 +106,7 @@ except ImportError:
 # Import admin router
 try:
     from apps.admin.routes import router as admin_router
+
     ADMIN_AVAILABLE = True
 except ImportError:
     ADMIN_AVAILABLE = False
@@ -108,6 +115,7 @@ except ImportError:
 # Import audits router
 try:
     from apps.api.routers.audits import router as audits_router
+
     AUDITS_AVAILABLE = True
 except ImportError:
     AUDITS_AVAILABLE = False
@@ -143,15 +151,17 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitHeadersMiddleware, default_tier="default", enabled=True)
 # CORS origins: configurable via env var, fallback to localhost for dev
 _default_origins = [
-    "http://localhost:5173", 
-    "http://localhost:5174", 
+    "http://localhost:5173",
+    "http://localhost:5174",
     "http://localhost:3000",
-    "http://127.0.0.1:5173", 
+    "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
 ]
 _cors_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-CORS_ORIGINS = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else _default_origins
+CORS_ORIGINS = (
+    [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else _default_origins
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -166,7 +176,11 @@ if DASHBOARD_AVAILABLE:
     app.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
     dashboard_static_dir = Path(__file__).parent.parent / "dashboard" / "static"
     if dashboard_static_dir.exists():
-        app.mount("/dashboard/static", StaticFiles(directory=str(dashboard_static_dir)), name="dashboard_static")
+        app.mount(
+            "/dashboard/static",
+            StaticFiles(directory=str(dashboard_static_dir)),
+            name="dashboard_static",
+        )
         logger.info("Dashboard static files mounted at /dashboard/static")
     shared_css_dir = Path(__file__).parent.parent / "shared-styles" / "dist"
     if shared_css_dir.exists():
@@ -212,12 +226,8 @@ if PAYMENTS_AVAILABLE:
 
 # --- Health ---
 
-@app.get(
-    "/",
-    tags=["system"],
-    summary="API root",
-    description="Get API info and version."
-)
+
+@app.get("/", tags=["system"], summary="API root", description="Get API info and version.")
 async def root():
     return {"message": "SEO Health Report API", "version": "2.0.0"}
 
@@ -235,17 +245,17 @@ async def root():
                     "examples": {
                         "healthy": {
                             "summary": "Healthy",
-                            "value": {"status": "healthy", "database": "connected"}
+                            "value": {"status": "healthy", "database": "connected"},
                         },
                         "degraded": {
                             "summary": "Degraded",
-                            "value": {"status": "degraded", "database": "disconnected"}
-                        }
+                            "value": {"status": "degraded", "database": "disconnected"},
+                        },
                     }
                 }
-            }
+            },
         }
-    }
+    },
 )
 async def health(db: Session = Depends(get_db)):
     try:
@@ -265,23 +275,19 @@ async def health(db: Session = Depends(get_db)):
             "description": "Rate limit status",
             "content": {
                 "application/json": {
-                    "example": {
-                        "limit": 100,
-                        "remaining": 95,
-                        "reset": 1705320000
-                    }
+                    "example": {"limit": 100, "remaining": 95, "reset": 1705320000}
                 }
-            }
+            },
         }
-    }
+    },
 )
 async def rate_limit_status(request: Request):
     """Get current rate limit status for client."""
     return get_rate_limit_status(request)
 
 
-
 # --- URL Validation ---
+
 
 @app.post(
     "/validate-url",
@@ -298,13 +304,13 @@ async def rate_limit_status(request: Request):
                             "original": "example.com",
                             "corrected": "https://www.example.com",
                             "isValid": True,
-                            "corrections": ["Added HTTPS protocol", "Added www subdomain"]
+                            "corrections": ["Added HTTPS protocol", "Added www subdomain"],
                         }
                     }
                 }
-            }
+            },
         }
-    }
+    },
 )
 async def validate_url(request: dict):
     """Validate and correct URL format."""
@@ -321,9 +327,17 @@ async def validate_url(request: dict):
 
     is_valid = url.startswith(("http://", "https://")) and "." in url
 
-    return {"validation": {"original": request.get("url", ""), "corrected": url, "isValid": is_valid, "corrections": corrections}}
+    return {
+        "validation": {
+            "original": request.get("url", ""),
+            "corrected": url,
+            "isValid": is_valid,
+            "corrections": corrections,
+        }
+    }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

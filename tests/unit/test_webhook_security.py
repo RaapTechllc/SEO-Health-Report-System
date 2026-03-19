@@ -83,26 +83,32 @@ class TestSecretGeneration:
 class TestPrivateIPDetection:
     """Tests for private IP detection."""
 
-    @pytest.mark.parametrize("ip", [
-        "10.0.0.1",
-        "10.255.255.255",
-        "172.16.0.1",
-        "172.31.255.255",
-        "192.168.0.1",
-        "192.168.255.255",
-        "127.0.0.1",
-        "127.0.0.2",
-        "169.254.169.254",  # AWS metadata
-    ])
+    @pytest.mark.parametrize(
+        "ip",
+        [
+            "10.0.0.1",
+            "10.255.255.255",
+            "172.16.0.1",
+            "172.31.255.255",
+            "192.168.0.1",
+            "192.168.255.255",
+            "127.0.0.1",
+            "127.0.0.2",
+            "169.254.169.254",  # AWS metadata
+        ],
+    )
     def test_private_ipv4_detected(self, ip):
         assert is_private_ip(ip) is True
 
-    @pytest.mark.parametrize("ip", [
-        "8.8.8.8",
-        "1.1.1.1",
-        "93.184.216.34",
-        "203.0.113.50",
-    ])
+    @pytest.mark.parametrize(
+        "ip",
+        [
+            "8.8.8.8",
+            "1.1.1.1",
+            "93.184.216.34",
+            "203.0.113.50",
+        ],
+    )
     def test_public_ipv4_allowed(self, ip):
         assert is_private_ip(ip) is False
 

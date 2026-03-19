@@ -14,6 +14,7 @@ from urllib.parse import urljoin, urlparse
 @dataclass
 class InternalLink:
     """An internal link found on the site."""
+
     source_url: str
     target_url: str
     anchor_text: str
@@ -24,7 +25,8 @@ def fetch_page(url: str, timeout: int = 30) -> Optional[str]:
     """Fetch HTML content from URL."""
     try:
         import requests
-        headers = {'User-Agent': 'SEO-Health-Report-Bot/1.0'}
+
+        headers = {"User-Agent": "SEO-Health-Report-Bot/1.0"}
         response = requests.get(url, headers=headers, timeout=timeout)
         response.raise_for_status()
         return response.text
@@ -32,11 +34,7 @@ def fetch_page(url: str, timeout: int = 30) -> Optional[str]:
         return None
 
 
-def extract_internal_links(
-    html: str,
-    page_url: str,
-    base_url: str
-) -> list[InternalLink]:
+def extract_internal_links(html: str, page_url: str, base_url: str) -> list[InternalLink]:
     """
     Extract all internal links from a page.
 
@@ -59,9 +57,7 @@ def extract_internal_links(
     # Check if link is in navigation
     nav_section = ""
     nav_match = re.search(
-        r'<(?:nav|header)[^>]*>.*?</(?:nav|header)>',
-        html,
-        re.IGNORECASE | re.DOTALL
+        r"<(?:nav|header)[^>]*>.*?</(?:nav|header)>", html, re.IGNORECASE | re.DOTALL
     )
     if nav_match:
         nav_section = nav_match.group(0).lower()
@@ -74,31 +70,29 @@ def extract_internal_links(
         # Check if internal
         if parsed.netloc == base_domain:
             # Clean anchor text
-            anchor_clean = re.sub(r'<[^>]+>', '', anchor)
-            anchor_clean = re.sub(r'\s+', ' ', anchor_clean).strip()
+            anchor_clean = re.sub(r"<[^>]+>", "", anchor)
+            anchor_clean = re.sub(r"\s+", " ", anchor_clean).strip()
 
             # Check if in navigation
             is_nav = href.lower() in nav_section
 
             # Normalize URL (remove fragments, trailing slashes)
             normalized = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-            normalized = normalized.rstrip('/')
+            normalized = normalized.rstrip("/")
 
-            links.append(InternalLink(
-                source_url=page_url,
-                target_url=normalized,
-                anchor_text=anchor_clean[:100],  # Limit length
-                is_navigation=is_nav
-            ))
+            links.append(
+                InternalLink(
+                    source_url=page_url,
+                    target_url=normalized,
+                    anchor_text=anchor_clean[:100],  # Limit length
+                    is_navigation=is_nav,
+                )
+            )
 
     return links
 
 
-def find_orphan_pages(
-    all_pages: set[str],
-    linked_pages: set[str],
-    base_url: str
-) -> list[str]:
+def find_orphan_pages(all_pages: set[str], linked_pages: set[str], base_url: str) -> list[str]:
     """
     Find pages that have no internal links pointing to them.
 
@@ -116,7 +110,7 @@ def find_orphan_pages(
         if page not in linked_pages:
             # Don't count homepage as orphan
             parsed = urlparse(page)
-            if parsed.path not in ['', '/', '/index.html', '/index.php']:
+            if parsed.path not in ["", "/", "/index.html", "/index.php"]:
                 orphans.append(page)
 
     return orphans
@@ -138,12 +132,19 @@ def analyze_anchor_text(links: list[InternalLink]) -> dict[str, Any]:
         "empty_anchors": 0,
         "generic_anchors": 0,
         "anchor_distribution": {},
-        "issues": []
+        "issues": [],
     }
 
     generic_phrases = [
-        'click here', 'read more', 'learn more', 'here', 'this',
-        'link', 'more', 'continue', 'see more'
+        "click here",
+        "read more",
+        "learn more",
+        "here",
+        "this",
+        "link",
+        "more",
+        "continue",
+        "see more",
     ]
 
     anchor_counts = defaultdict(int)
@@ -166,35 +167,40 @@ def analyze_anchor_text(links: list[InternalLink]) -> dict[str, Any]:
 
     # Issues
     if result["empty_anchors"] > len(links) * 0.1:
-        result["issues"].append({
-            "severity": "medium",
-            "description": f"{result['empty_anchors']} links have empty anchor text",
-            "recommendation": "Add descriptive anchor text to image links"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "description": f"{result['empty_anchors']} links have empty anchor text",
+                "recommendation": "Add descriptive anchor text to image links",
+            }
+        )
 
     if result["generic_anchors"] > len(links) * 0.2:
-        result["issues"].append({
-            "severity": "low",
-            "description": f"{result['generic_anchors']} links use generic anchor text",
-            "recommendation": "Use descriptive, keyword-rich anchor text"
-        })
+        result["issues"].append(
+            {
+                "severity": "low",
+                "description": f"{result['generic_anchors']} links use generic anchor text",
+                "recommendation": "Use descriptive, keyword-rich anchor text",
+            }
+        )
 
     # Check for over-optimization (same anchor used too much)
     if sorted_anchors:
         top_anchor, top_count = sorted_anchors[0]
-        if top_count > len(links) * 0.3 and top_anchor not in ['', 'home']:
-            result["issues"].append({
-                "severity": "low",
-                "description": f"Anchor '{top_anchor}' used {top_count} times (over-optimization risk)",
-                "recommendation": "Vary anchor text for natural link profile"
-            })
+        if top_count > len(links) * 0.3 and top_anchor not in ["", "home"]:
+            result["issues"].append(
+                {
+                    "severity": "low",
+                    "description": f"Anchor '{top_anchor}' used {top_count} times (over-optimization risk)",
+                    "recommendation": "Vary anchor text for natural link profile",
+                }
+            )
 
     return result
 
 
 def calculate_link_equity_distribution(
-    links: list[InternalLink],
-    all_pages: set[str]
+    links: list[InternalLink], all_pages: set[str]
 ) -> dict[str, Any]:
     """
     Calculate how link equity flows through the site.
@@ -212,7 +218,7 @@ def calculate_link_equity_distribution(
         "outgoing_links": {},
         "high_authority_pages": [],
         "low_authority_pages": [],
-        "issues": []
+        "issues": [],
     }
 
     incoming = defaultdict(int)
@@ -231,34 +237,28 @@ def calculate_link_equity_distribution(
 
         for page, count in incoming.items():
             if count >= avg_incoming * 2:
-                result["high_authority_pages"].append({
-                    "url": page,
-                    "incoming_links": count
-                })
+                result["high_authority_pages"].append({"url": page, "incoming_links": count})
             elif count <= 1:
-                result["low_authority_pages"].append({
-                    "url": page,
-                    "incoming_links": count
-                })
+                result["low_authority_pages"].append({"url": page, "incoming_links": count})
 
         result["high_authority_pages"].sort(key=lambda x: x["incoming_links"], reverse=True)
         result["low_authority_pages"] = result["low_authority_pages"][:10]
 
     # Check for issues
     if result["low_authority_pages"]:
-        result["issues"].append({
-            "severity": "medium",
-            "description": f"{len(result['low_authority_pages'])} pages have very few internal links",
-            "recommendation": "Add more internal links to important pages"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "description": f"{len(result['low_authority_pages'])} pages have very few internal links",
+                "recommendation": "Add more internal links to important pages",
+            }
+        )
 
     return result
 
 
 def calculate_click_depth(
-    base_url: str,
-    links: list[InternalLink],
-    max_depth: int = 5
+    base_url: str, links: list[InternalLink], max_depth: int = 5
 ) -> dict[str, Any]:
     """
     Calculate click depth (how many clicks from homepage to reach each page).
@@ -275,7 +275,7 @@ def calculate_click_depth(
         "depth_distribution": defaultdict(list),
         "unreachable_pages": [],
         "deep_pages": [],  # Pages >3 clicks deep
-        "issues": []
+        "issues": [],
     }
 
     # Build adjacency list
@@ -288,7 +288,7 @@ def calculate_click_depth(
         all_pages.add(link.target_url)
 
     # BFS from homepage
-    normalized_base = base_url.rstrip('/')
+    normalized_base = base_url.rstrip("/")
     visited = {normalized_base: 0}
     queue = [normalized_base]
 
@@ -320,26 +320,27 @@ def calculate_click_depth(
 
     # Issues
     if result["unreachable_pages"]:
-        result["issues"].append({
-            "severity": "high",
-            "description": f"{len(result['unreachable_pages'])} pages not reachable from homepage",
-            "recommendation": "Add internal links to make all pages accessible"
-        })
+        result["issues"].append(
+            {
+                "severity": "high",
+                "description": f"{len(result['unreachable_pages'])} pages not reachable from homepage",
+                "recommendation": "Add internal links to make all pages accessible",
+            }
+        )
 
     if len(result["deep_pages"]) > len(all_pages) * 0.2:
-        result["issues"].append({
-            "severity": "medium",
-            "description": f"{len(result['deep_pages'])} pages are more than 3 clicks from homepage",
-            "recommendation": "Flatten site architecture or add shortcuts to deep content"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "description": f"{len(result['deep_pages'])} pages are more than 3 clicks from homepage",
+                "recommendation": "Flatten site architecture or add shortcuts to deep content",
+            }
+        )
 
     return result
 
 
-def analyze_internal_links(
-    url: str,
-    crawl_depth: int = 30
-) -> dict[str, Any]:
+def analyze_internal_links(url: str, crawl_depth: int = 30) -> dict[str, Any]:
     """
     Complete internal linking analysis.
 
@@ -360,7 +361,7 @@ def analyze_internal_links(
         "equity_distribution": {},
         "click_depth": {},
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     # Crawl site to collect links
@@ -396,14 +397,18 @@ def analyze_internal_links(
 
     result["pages_crawled"] = len(crawled_pages)
     result["total_links"] = len(all_links)
-    result["findings"].append(f"Crawled {len(crawled_pages)} pages, found {len(all_links)} internal links")
+    result["findings"].append(
+        f"Crawled {len(crawled_pages)} pages, found {len(all_links)} internal links"
+    )
 
     if not all_links:
-        result["issues"].append({
-            "severity": "high",
-            "description": "No internal links found",
-            "recommendation": "Add internal links to connect your content"
-        })
+        result["issues"].append(
+            {
+                "severity": "high",
+                "description": "No internal links found",
+                "recommendation": "Add internal links to connect your content",
+            }
+        )
         result["score"] = 0
         return result
 
@@ -413,18 +418,22 @@ def analyze_internal_links(
 
     if result["orphan_pages"]:
         result["findings"].append(f"Found {len(result['orphan_pages'])} orphan pages")
-        result["issues"].append({
-            "severity": "medium",
-            "description": f"{len(result['orphan_pages'])} pages have no internal links pointing to them",
-            "recommendation": "Add internal links to orphan pages"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "description": f"{len(result['orphan_pages'])} pages have no internal links pointing to them",
+                "recommendation": "Add internal links to orphan pages",
+            }
+        )
 
     # Analyze anchor text
     result["anchor_analysis"] = analyze_anchor_text(all_links)
     result["issues"].extend(result["anchor_analysis"].get("issues", []))
 
     # Analyze link equity distribution
-    result["equity_distribution"] = calculate_link_equity_distribution(all_links, all_discovered_pages)
+    result["equity_distribution"] = calculate_link_equity_distribution(
+        all_links, all_discovered_pages
+    )
     result["issues"].extend(result["equity_distribution"].get("issues", []))
 
     # Calculate click depth
@@ -435,14 +444,20 @@ def analyze_internal_links(
     score = 10
 
     # Orphan pages penalty
-    orphan_ratio = len(result["orphan_pages"]) / len(all_discovered_pages) if all_discovered_pages else 0
+    orphan_ratio = (
+        len(result["orphan_pages"]) / len(all_discovered_pages) if all_discovered_pages else 0
+    )
     if orphan_ratio > 0.3:
         score -= 4
     elif orphan_ratio > 0.1:
         score -= 2
 
     # Click depth penalty
-    deep_ratio = len(result["click_depth"].get("deep_pages", [])) / len(crawled_pages) if crawled_pages else 0
+    deep_ratio = (
+        len(result["click_depth"].get("deep_pages", [])) / len(crawled_pages)
+        if crawled_pages
+        else 0
+    )
     if deep_ratio > 0.3:
         score -= 2
     elif deep_ratio > 0.1:
@@ -464,11 +479,11 @@ def analyze_internal_links(
 
 
 __all__ = [
-    'InternalLink',
-    'extract_internal_links',
-    'find_orphan_pages',
-    'analyze_anchor_text',
-    'calculate_link_equity_distribution',
-    'calculate_click_depth',
-    'analyze_internal_links'
+    "InternalLink",
+    "extract_internal_links",
+    "find_orphan_pages",
+    "analyze_anchor_text",
+    "calculate_link_equity_distribution",
+    "calculate_click_depth",
+    "analyze_internal_links",
 ]

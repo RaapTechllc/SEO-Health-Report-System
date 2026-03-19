@@ -36,6 +36,7 @@ def mock_auth_user_no_tenant():
 def client():
     """Create test client with mocked dependencies."""
     from apps.api.main import app
+
     return TestClient(app)
 
 
@@ -55,10 +56,9 @@ class TestCreateWebhook:
     """Tests for POST /webhooks endpoint."""
 
     def test_create_webhook_requires_auth(self, client):
-        response = client.post("/webhooks", json={
-            "url": "https://example.com/webhook",
-            "events": ["audit.completed"]
-        })
+        response = client.post(
+            "/webhooks", json={"url": "https://example.com/webhook", "events": ["audit.completed"]}
+        )
         assert response.status_code == 401
 
     def test_create_webhook_requires_tenant(self, mock_auth_user_no_tenant):
@@ -70,10 +70,7 @@ class TestCreateWebhook:
 
         response = client.post(
             "/webhooks",
-            json={
-                "url": "https://example.com/webhook",
-                "events": ["audit.completed"]
-            },
+            json={"url": "https://example.com/webhook", "events": ["audit.completed"]},
         )
         app.dependency_overrides.clear()
         assert response.status_code == 400
@@ -81,30 +78,21 @@ class TestCreateWebhook:
     def test_create_webhook_validates_url(self, auth_client):
         response = auth_client.post(
             "/webhooks",
-            json={
-                "url": "not-a-url",
-                "events": ["audit.completed"]
-            },
+            json={"url": "not-a-url", "events": ["audit.completed"]},
         )
         assert response.status_code == 422
 
     def test_create_webhook_validates_events(self, auth_client):
         response = auth_client.post(
             "/webhooks",
-            json={
-                "url": "https://example.com/webhook",
-                "events": ["invalid.event"]
-            },
+            json={"url": "https://example.com/webhook", "events": ["invalid.event"]},
         )
         assert response.status_code == 422
 
     def test_create_webhook_requires_events(self, auth_client):
         response = auth_client.post(
             "/webhooks",
-            json={
-                "url": "https://example.com/webhook",
-                "events": []
-            },
+            json={"url": "https://example.com/webhook", "events": []},
         )
         assert response.status_code == 422
 

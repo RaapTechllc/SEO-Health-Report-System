@@ -52,11 +52,16 @@ def _redact_error(error_message: str) -> str:
     """Redact sensitive data from error messages."""
     try:
         from packages.seo_health_report.scripts.redaction import redact_sensitive
+
         return redact_sensitive(error_message)
     except ImportError:
         import re
+
         patterns = [
-            (r"(?i)(api[_-]?key|token|secret|password|auth)['\"]?\s*[:=]\s*['\"]?[\w\-\.]+", "[REDACTED]"),
+            (
+                r"(?i)(api[_-]?key|token|secret|password|auth)['\"]?\s*[:=]\s*['\"]?[\w\-\.]+",
+                "[REDACTED]",
+            ),
         ]
         result = error_message
         for pattern, replacement in patterns:
@@ -106,10 +111,14 @@ async def worker_loop(worker_id: str) -> None:
                 if job.attempt < job.max_attempts:
                     backoff = calculate_backoff(job.attempt)
                     await mark_job_queued_async(job.job_id, backoff)
-                    logger.info(f"Job {job.job_id} requeued for retry in {backoff}s (attempt {job.attempt}/{job.max_attempts})")
+                    logger.info(
+                        f"Job {job.job_id} requeued for retry in {backoff}s (attempt {job.attempt}/{job.max_attempts})"
+                    )
                 else:
                     await mark_job_failed_async(job.job_id, error_msg)
-                    logger.error(f"Job {job.job_id} failed after {job.max_attempts} attempts: {error_msg}")
+                    logger.error(
+                        f"Job {job.job_id} failed after {job.max_attempts} attempts: {error_msg}"
+                    )
 
             except PermanentError as e:
                 error_msg = _redact_error(str(e))

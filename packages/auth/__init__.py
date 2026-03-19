@@ -77,12 +77,7 @@ def decode_token(token: str) -> Optional[dict]:
 def create_user(db: Session, email: str, password: str, role: str = "user") -> User:
     """Create a new user."""
     user_id = str(uuid.uuid4())
-    user = User(
-        id=user_id,
-        email=email.lower(),
-        password_hash=hash_password(password),
-        role=role
-    )
+    user = User(id=user_id, email=email.lower(), password_hash=hash_password(password), role=role)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -108,10 +103,7 @@ def get_user_by_id(db: Session, user_id: str) -> Optional[User]:
 
 def get_user_by_id_and_tenant(db: Session, user_id: str, tenant_id: str) -> Optional[User]:
     """Get a user by ID within a specific tenant scope."""
-    return db.query(User).filter(
-        User.id == user_id,
-        User.tenant_id == tenant_id
-    ).first()
+    return db.query(User).filter(User.id == user_id, User.tenant_id == tenant_id).first()
 
 
 def get_users_by_tenant(db: Session, tenant_id: str) -> list[User]:
@@ -120,8 +112,7 @@ def get_users_by_tenant(db: Session, tenant_id: str) -> list[User]:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)  # noqa: B008
 ) -> Optional[User]:
     """Get current user from JWT token. Returns None if no token."""
     if not credentials:
@@ -139,8 +130,7 @@ async def get_current_user(
 
 
 async def require_auth(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)  # noqa: B008
 ) -> User:
     """Require authentication. Raises 401 if not authenticated."""
     if not credentials:
@@ -157,7 +147,7 @@ async def require_auth(
     return user
 
 
-async def require_admin(user: User = Depends(require_auth)) -> User:
+async def require_admin(user: User = Depends(require_auth)) -> User:  # noqa: B008
     """Require admin role."""
     if user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")

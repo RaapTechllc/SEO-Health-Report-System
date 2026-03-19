@@ -21,6 +21,7 @@ app.include_router(router, prefix="/dashboard")
 
 class MockTenant:
     """Mock tenant for testing."""
+
     def __init__(self, id="tenant_123", name="Test Tenant"):
         self.id = id
         self.name = name
@@ -28,7 +29,10 @@ class MockTenant:
 
 class MockUser:
     """Mock user for testing."""
-    def __init__(self, id="user_123", email="test@example.com", tenant_id="tenant_123", role="user"):
+
+    def __init__(
+        self, id="user_123", email="test@example.com", tenant_id="tenant_123", role="user"
+    ):
         self.id = id
         self.email = email
         self.tenant_id = tenant_id
@@ -166,10 +170,7 @@ class TestTenantRoutesIntegration:
 
         app.dependency_overrides[get_db] = mock_get_db
 
-        response = client.get(
-            "/dashboard/tenants",
-            cookies={SESSION_COOKIE_NAME: session_id}
-        )
+        response = client.get("/dashboard/tenants", cookies={SESSION_COOKIE_NAME: session_id})
 
         assert response.status_code == 200
         data = response.json()
@@ -178,10 +179,7 @@ class TestTenantRoutesIntegration:
         assert data["current_tenant_id"] == "tenant_123"
 
     def test_switch_tenant_requires_auth(self, client):
-        response = client.post(
-            "/dashboard/switch-tenant",
-            json={"tenant_id": "tenant_123"}
-        )
+        response = client.post("/dashboard/switch-tenant", json={"tenant_id": "tenant_123"})
         assert response.status_code == 401
 
     def test_switch_tenant_denies_unauthorized_tenant(self, client):
@@ -203,7 +201,7 @@ class TestTenantRoutesIntegration:
         response = client.post(
             "/dashboard/switch-tenant",
             json={"tenant_id": "unauthorized_tenant"},
-            cookies={SESSION_COOKIE_NAME: session_id}
+            cookies={SESSION_COOKIE_NAME: session_id},
         )
 
         assert response.status_code == 403
@@ -229,7 +227,7 @@ class TestTenantRoutesIntegration:
         response = client.post(
             "/dashboard/switch-tenant",
             json={"tenant_id": "tenant_123"},
-            cookies={SESSION_COOKIE_NAME: session_id}
+            cookies={SESSION_COOKIE_NAME: session_id},
         )
 
         assert response.status_code == 200
@@ -270,10 +268,7 @@ class TestTenantDisplayInNavbar:
         app.dependency_overrides[get_db] = mock_get_db
 
         with patch("apps.dashboard.routes.get_quota_for_user", return_value=None):
-            response = client.get(
-                "/dashboard/audits",
-                cookies={SESSION_COOKIE_NAME: session_id}
-            )
+            response = client.get("/dashboard/audits", cookies={SESSION_COOKIE_NAME: session_id})
 
         assert response.status_code == 200
         assert "Acme Corp" in response.text or "tenant" in response.text.lower()

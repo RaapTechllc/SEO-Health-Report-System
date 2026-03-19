@@ -31,7 +31,7 @@ def test_core_components():
         total_mentions=50,
         share_percentage=20.0,
         rank=2,
-        competitors={"BMW": 15, "Mercedes": 12}
+        competitors={"BMW": 15, "Mercedes": 12},
     )
     assert sov.share_percentage == 20.0
     print("Share of voice calculations working")
@@ -43,7 +43,7 @@ def test_core_components():
         title="Low AI Visibility",
         description="Brand mentioned in only 40% of responses",
         recommendation="Optimize content for AI consumption",
-        impact="Increase brand visibility"
+        impact="Increase brand visibility",
     )
     assert insight.priority == "high"
     print("Insight generation working")
@@ -65,8 +65,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         import sys
+
         sys.exit(1)
 
     print("\n" + "=" * 40)

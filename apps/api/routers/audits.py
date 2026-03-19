@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 # Import webhook service for audit completion events
 try:
     from packages.seo_health_report.webhooks import WebhookEvent, WebhookService
+
     WEBHOOKS_SERVICE_AVAILABLE = True
 except ImportError:
     WEBHOOKS_SERVICE_AVAILABLE = False
@@ -69,8 +70,10 @@ VALID_TIERS = list(TIER_MAPPING.keys())
 
 # --- Models ---
 
+
 class AuditRequest(BaseModel):
     """Request model for starting a new SEO audit."""
+
     url: str
     company_name: str
     keywords: list[str] = []
@@ -101,6 +104,7 @@ class AuditRequest(BaseModel):
 
 class AuditResponse(BaseModel):
     """Response model for audit creation."""
+
     audit_id: str
     status: str
     url: str
@@ -111,6 +115,7 @@ class AuditResponse(BaseModel):
 
 
 # --- Helper Functions ---
+
 
 async def fire_audit_webhook(
     db: Session,
@@ -158,7 +163,9 @@ async def fire_audit_webhook(
         )
 
         if delivery_ids:
-            logger.info(f"Fired {event.value} webhook for audit {audit_id}: {len(delivery_ids)} deliveries")
+            logger.info(
+                f"Fired {event.value} webhook for audit {audit_id}: {len(delivery_ids)} deliveries"
+            )
 
         await service.close()
     except Exception as e:
@@ -171,7 +178,7 @@ def enqueue_audit_job(
     tenant_id: str,
     url: str,
     options: dict,
-    job_type: str = "hello_audit"
+    job_type: str = "hello_audit",
 ) -> str:
     """Create job record for async processing."""
     job_id = str(uuid.uuid4())
@@ -179,29 +186,25 @@ def enqueue_audit_job(
 
     existing = db.execute(
         text("SELECT audit_id FROM audit_jobs WHERE idempotency_key = :key"),
-        {"key": idempotency_key}
+        {"key": idempotency_key},
     ).fetchone()
 
     if existing:
         return existing[0]
 
     db.execute(
-        text('''
+        text("""
             INSERT INTO audit_jobs
             (job_id, tenant_id, audit_id, status, idempotency_key, payload_json, queued_at)
             VALUES (:job_id, :tenant_id, :audit_id, 'queued', :idempotency_key, :payload, CURRENT_TIMESTAMP)
-        '''),
+        """),
         {
             "job_id": job_id,
             "tenant_id": tenant_id or "default",
             "audit_id": audit_id,
             "idempotency_key": idempotency_key,
-            "payload": json.dumps({
-                "url": url,
-                "job_type": job_type,
-                **options
-            })
-        }
+            "payload": json.dumps({"url": url, "job_type": job_type, **options}),
+        },
     )
     db.commit()
     return audit_id
@@ -214,10 +217,11 @@ async def run_audit_task(
     keywords: list[str],
     competitors: list[str],
     tier: str,
-    tenant_id: Optional[str] = None
+    tenant_id: Optional[str] = None,
 ):
     """Background task to run the audit. LEGACY: kept for tests, prefer job queue."""
     import time
+
     start_time = time.perf_counter()
 
     metrics.inc_gauge("active_audits")
@@ -227,9 +231,11 @@ async def run_audit_task(
     audit_data = {}
     try:
         result = await run_full_audit(
-            target_url=url, company_name=company_name,
-            primary_keywords=keywords, competitor_urls=competitors,
-            tier=tier
+            target_url=url,
+            company_name=company_name,
+            primary_keywords=keywords,
+            competitor_urls=competitors,
+            tier=tier,
         )
 
         scores = calculate_composite_score(result)
@@ -290,7 +296,11 @@ async def run_audit_task(
         # Fire webhook event
         if WEBHOOKS_SERVICE_AVAILABLE and tenant_id and audit_data:
             try:
-                event = WebhookEvent.AUDIT_COMPLETED if status == "completed" else WebhookEvent.AUDIT_FAILED
+                event = (
+                    WebhookEvent.AUDIT_COMPLETED
+                    if status == "completed"
+                    else WebhookEvent.AUDIT_FAILED
+                )
                 await fire_audit_webhook(db, audit_id, tenant_id, event, audit_data)
             except Exception as e:
                 logger.error(f"Failed to fire webhook for audit {audit_id}: {e}")
@@ -300,6 +310,7 @@ async def run_audit_task(
 
 # --- Routes ---
 
+
 @router.post(
     "/audit",
     response_model=AuditResponse,
@@ -308,16 +319,12 @@ async def run_audit_task(
     responses={
         200: {
             "description": "Audit queued successfully",
-            "content": {
-                "application/json": {
-                    "example": AUDIT_RESPONSE_EXAMPLE
-                }
-            }
+            "content": {"application/json": {"example": AUDIT_RESPONSE_EXAMPLE}},
         },
         400: ERROR_RESPONSES[400],
         422: ERROR_RESPONSES[422],
         429: ERROR_RESPONSES[429],
-    }
+    },
 )
 async def start_audit(
     request: AuditRequest,
@@ -362,10 +369,7 @@ async def start_audit(
     # result_audit_id = enqueue_audit_job(...)
 
     return AuditResponse(
-        audit_id=audit_id,
-        status="queued",
-        url=request.url,
-        company_name=request.company_name
+        audit_id=audit_id, status="queued", url=request.url, company_name=request.company_name
     )
 
 
@@ -376,14 +380,10 @@ async def start_audit(
     responses={
         200: {
             "description": "Audit status",
-            "content": {
-                "application/json": {
-                    "example": AUDIT_STATUS_EXAMPLE
-                }
-            }
+            "content": {"application/json": {"example": AUDIT_STATUS_EXAMPLE}},
         },
         404: ERROR_RESPONSES[404],
-    }
+    },
 )
 async def get_audit(audit_id: str, db: Session = Depends(get_db)):
     """Get audit status and results."""
@@ -400,7 +400,7 @@ async def get_audit(audit_id: str, db: Session = Depends(get_db)):
         "overall_score": audit.overall_score,
         "grade": audit.grade,
         "created_at": audit.created_at.isoformat() if audit.created_at else None,
-        "completed_at": audit.completed_at.isoformat() if audit.completed_at else None
+        "completed_at": audit.completed_at.isoformat() if audit.completed_at else None,
     }
 
 
@@ -411,14 +411,10 @@ async def get_audit(audit_id: str, db: Session = Depends(get_db)):
     responses={
         200: {
             "description": "Full audit data",
-            "content": {
-                "application/json": {
-                    "example": AUDIT_FULL_EXAMPLE
-                }
-            }
+            "content": {"application/json": {"example": AUDIT_FULL_EXAMPLE}},
         },
         404: ERROR_RESPONSES[404],
-    }
+    },
 )
 async def get_full_audit(audit_id: str, db: Session = Depends(get_db)):
     """Get full audit data including result and report URLs."""
@@ -443,9 +439,9 @@ async def get_full_audit(audit_id: str, db: Session = Depends(get_db)):
         response["result"] = audit.result
 
     # Add report URLs
-    if hasattr(audit, 'report_html_path') and audit.report_html_path:
+    if hasattr(audit, "report_html_path") and audit.report_html_path:
         response["report_html_url"] = f"/audits/{audit_id}/report/html"
-    if hasattr(audit, 'report_pdf_path') and audit.report_pdf_path:
+    if hasattr(audit, "report_pdf_path") and audit.report_pdf_path:
         response["report_pdf_url"] = f"/audits/{audit_id}/report/pdf"
 
     return response
@@ -463,25 +459,35 @@ async def get_full_audit(audit_id: str, db: Session = Depends(get_db)):
                     "example": {
                         "audit_id": "audit_abc123def456",
                         "events": [
-                            {"event_type": "started", "message": "Audit started", "progress_pct": 0, "timestamp": "2024-01-15T10:30:00Z"},
-                            {"event_type": "crawling", "message": "Crawling pages...", "progress_pct": 25, "timestamp": "2024-01-15T10:30:30Z"}
-                        ]
+                            {
+                                "event_type": "started",
+                                "message": "Audit started",
+                                "progress_pct": 0,
+                                "timestamp": "2024-01-15T10:30:00Z",
+                            },
+                            {
+                                "event_type": "crawling",
+                                "message": "Crawling pages...",
+                                "progress_pct": 25,
+                                "timestamp": "2024-01-15T10:30:30Z",
+                            },
+                        ],
                     }
                 }
-            }
+            },
         },
-    }
+    },
 )
 async def get_audit_events(audit_id: str, db: Session = Depends(get_db)):
     """Get progress events for an audit."""
     events = db.execute(
-        text('''
+        text("""
             SELECT event_type, message, progress_pct, created_at
             FROM audit_progress_events
             WHERE audit_id = :audit_id
             ORDER BY created_at
-        '''),
-        {"audit_id": audit_id}
+        """),
+        {"audit_id": audit_id},
     ).fetchall()
 
     return {
@@ -491,10 +497,10 @@ async def get_audit_events(audit_id: str, db: Session = Depends(get_db)):
                 "event_type": e[0],
                 "message": e[1],
                 "progress_pct": e[2],
-                "timestamp": e[3].isoformat() if e[3] else None
+                "timestamp": e[3].isoformat() if e[3] else None,
             }
             for e in events
-        ]
+        ],
     }
 
 
@@ -512,19 +518,40 @@ async def get_audit_events(audit_id: str, db: Session = Depends(get_db)):
                         "overall_status": "running",
                         "overall_progress_pct": 45,
                         "modules": [
-                            {"module_name": "technical", "status": "completed", "progress_pct": 100, "started_at": "2025-01-18T10:00:00", "completed_at": "2025-01-18T10:01:30", "error_message": None},
-                            {"module_name": "content", "status": "running", "progress_pct": 35, "started_at": "2025-01-18T10:01:30", "completed_at": None, "error_message": None},
-                            {"module_name": "ai", "status": "pending", "progress_pct": 0, "started_at": None, "completed_at": None, "error_message": None}
+                            {
+                                "module_name": "technical",
+                                "status": "completed",
+                                "progress_pct": 100,
+                                "started_at": "2025-01-18T10:00:00",
+                                "completed_at": "2025-01-18T10:01:30",
+                                "error_message": None,
+                            },
+                            {
+                                "module_name": "content",
+                                "status": "running",
+                                "progress_pct": 35,
+                                "started_at": "2025-01-18T10:01:30",
+                                "completed_at": None,
+                                "error_message": None,
+                            },
+                            {
+                                "module_name": "ai",
+                                "status": "pending",
+                                "progress_pct": 0,
+                                "started_at": None,
+                                "completed_at": None,
+                                "error_message": None,
+                            },
                         ],
                         "started_at": "2025-01-18T10:00:00",
                         "estimated_completion": "2025-01-18T10:05:00",
-                        "elapsed_seconds": 120
+                        "elapsed_seconds": 120,
                     }
                 }
-            }
+            },
         },
         404: ERROR_RESPONSES[404],
-    }
+    },
 )
 async def get_audit_progress_endpoint(audit_id: str, db: Session = Depends(get_db)):
     """Get optimized progress data for UI polling."""
@@ -542,24 +569,20 @@ async def get_audit_progress_endpoint(audit_id: str, db: Session = Depends(get_d
         200: {"description": "Report file"},
         400: ERROR_RESPONSES[400],
         404: ERROR_RESPONSES[404],
-    }
+    },
 )
-async def get_audit_report_by_format(
-    audit_id: str,
-    format: str,
-    db: Session = Depends(get_db)
-):
+async def get_audit_report_by_format(audit_id: str, format: str, db: Session = Depends(get_db)):
     """Download audit report in specified format."""
     audit = db.query(Audit).filter(Audit.id == audit_id).first()
     if not audit:
         raise HTTPException(status_code=404, detail="Audit not found")
 
     if format == "html":
-        path = getattr(audit, 'report_html_path', None)
+        path = getattr(audit, "report_html_path", None)
         media_type = "text/html"
         filename = f"SEO_Report_{audit_id}.html"
     elif format == "pdf":
-        path = getattr(audit, 'report_pdf_path', None)
+        path = getattr(audit, "report_pdf_path", None)
         media_type = "application/pdf"
         filename = f"SEO_Report_{audit_id}.pdf"
     else:
@@ -579,7 +602,7 @@ async def get_audit_report_by_format(
         200: {"description": "PDF file"},
         400: ERROR_RESPONSES[400],
         404: ERROR_RESPONSES[404],
-    }
+    },
 )
 async def get_audit_pdf(audit_id: str, db: Session = Depends(get_db)):
     """Generate and return PDF report."""
@@ -596,9 +619,12 @@ async def get_audit_pdf(audit_id: str, db: Session = Depends(get_db)):
     pdf_path = json_path.replace(".json", "_PREMIUM.pdf")
     if not os.path.exists(pdf_path):
         from packages.seo_health_report.premium_report import generate_premium_report
+
         generate_premium_report(json_path, pdf_path)
 
-    return FileResponse(pdf_path, media_type="application/pdf", filename=f"SEO_Report_{audit_id}.pdf")
+    return FileResponse(
+        pdf_path, media_type="application/pdf", filename=f"SEO_Report_{audit_id}.pdf"
+    )
 
 
 @router.get(
@@ -608,15 +634,9 @@ async def get_audit_pdf(audit_id: str, db: Session = Depends(get_db)):
     responses={
         200: {
             "description": "List of audits",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "audits": [AUDIT_STATUS_EXAMPLE]
-                    }
-                }
-            }
+            "content": {"application/json": {"example": {"audits": [AUDIT_STATUS_EXAMPLE]}}},
         }
-    }
+    },
 )
 async def list_audits(
     skip: int = 0,
@@ -635,12 +655,19 @@ async def list_audits(
         .all()
     )
     return {
-        "audits": [{
-            "audit_id": a.id, "status": a.status, "url": a.url,
-            "company_name": a.company_name, "overall_score": a.overall_score,
-            "grade": a.grade, "tier": a.tier,
-            "created_at": a.created_at.isoformat() if a.created_at else None
-        } for a in audits],
+        "audits": [
+            {
+                "audit_id": a.id,
+                "status": a.status,
+                "url": a.url,
+                "company_name": a.company_name,
+                "overall_score": a.overall_score,
+                "grade": a.grade,
+                "tier": a.tier,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+            }
+            for a in audits
+        ],
         "skip": skip,
         "limit": limit,
     }

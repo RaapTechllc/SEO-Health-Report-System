@@ -420,9 +420,7 @@ class TestBlockedRangesCoverage:
     def test_blocked_ranges_structure(self):
         """Verify blocked ranges are valid IP networks."""
         for network in BLOCKED_RANGES:
-            assert isinstance(
-                network, (ipaddress.IPv4Network, ipaddress.IPv6Network)
-            )
+            assert isinstance(network, (ipaddress.IPv4Network, ipaddress.IPv6Network))
 
     @pytest.mark.parametrize(
         "ip,should_block",

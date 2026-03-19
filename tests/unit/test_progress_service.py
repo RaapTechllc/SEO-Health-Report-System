@@ -1,4 +1,5 @@
 """Tests for progress tracking service."""
+
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
@@ -108,9 +109,7 @@ class TestGetAuditProgress:
         started = datetime(2025, 1, 18, 10, 0, 0)
         completed = datetime(2025, 1, 18, 10, 5, 0)
 
-        db.execute.return_value.fetchone.return_value = (
-            "completed", "pro", started, completed
-        )
+        db.execute.return_value.fetchone.return_value = ("completed", "pro", started, completed)
         db.execute.return_value.fetchall.return_value = []
 
         result = get_audit_progress(db, "aud_123")

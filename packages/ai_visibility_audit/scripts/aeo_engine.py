@@ -27,16 +27,18 @@ from .query_ai_systems import (
 
 class AEOScore(Enum):
     """AEO score categories matching HubSpot methodology."""
+
     EXCELLENT = "A"  # 90-100
-    GOOD = "B"       # 80-89
-    FAIR = "C"       # 70-79
-    POOR = "D"       # 60-69
-    CRITICAL = "F"   # 0-59
+    GOOD = "B"  # 80-89
+    FAIR = "C"  # 70-79
+    POOR = "D"  # 60-69
+    CRITICAL = "F"  # 0-59
 
 
 @dataclass
 class ShareOfVoice:
     """Share of voice metrics for competitive analysis."""
+
     brand_mentions: int
     total_mentions: int
     share_percentage: float
@@ -47,6 +49,7 @@ class ShareOfVoice:
 @dataclass
 class AEOInsight:
     """Categorized insight from AEO analysis."""
+
     category: str  # "visibility", "accuracy", "sentiment", "competitive"
     priority: str  # "critical", "high", "medium", "low"
     title: str
@@ -58,6 +61,7 @@ class AEOInsight:
 @dataclass
 class AEOResult:
     """Complete AEO analysis result."""
+
     overall_score: int
     grade: AEOScore
     component_scores: dict[str, dict[str, Any]]
@@ -94,7 +98,7 @@ class AEOEngine:
         competitors: Optional[list[str]] = None,
         ground_truth: Optional[dict[str, Any]] = None,
         custom_queries: Optional[list[str]] = None,
-        ai_systems: Optional[list[str]] = None
+        ai_systems: Optional[list[str]] = None,
     ) -> AEOResult:
         """
         Run complete AEO analysis for a brand.
@@ -120,7 +124,7 @@ class AEOEngine:
             brand_name=brand_name,
             products_services=products_services,
             competitors=competitors,
-            custom_queries=custom_queries
+            custom_queries=custom_queries,
         )
 
         # Query all AI systems
@@ -128,7 +132,7 @@ class AEOEngine:
             queries=queries,
             brand_name=brand_name,
             systems=ai_systems,
-            rate_limit_ms=self.rate_limit_ms
+            rate_limit_ms=self.rate_limit_ms,
         )
 
         # Count API calls made
@@ -144,9 +148,7 @@ class AEOEngine:
         competitive_analysis = analyze_competitor_comparison(responses, brand_name, competitors)
 
         # Calculate share of voice
-        share_of_voice = self._calculate_share_of_voice(
-            responses, brand_name, competitors
-        )
+        share_of_voice = self._calculate_share_of_voice(responses, brand_name, competitors)
 
         # Generate component scores
         component_scores = {
@@ -157,8 +159,8 @@ class AEOEngine:
                 "score": self._calculate_competitive_score(competitive_analysis),
                 "max": 15,
                 "findings": competitive_analysis["findings"],
-                "details": competitive_analysis["details"]
-            }
+                "details": competitive_analysis["details"],
+            },
         }
 
         # Calculate overall score (weighted)
@@ -183,14 +185,11 @@ class AEOEngine:
             insights=insights,
             query_performance=query_performance,
             execution_time_ms=execution_time,
-            api_calls_made=self.api_calls_made
+            api_calls_made=self.api_calls_made,
         )
 
     def _calculate_share_of_voice(
-        self,
-        responses: dict[str, list[AIResponse]],
-        brand_name: str,
-        competitors: list[str]
+        self, responses: dict[str, list[AIResponse]], brand_name: str, competitors: list[str]
     ) -> ShareOfVoice:
         """Calculate share of voice metrics."""
         mention_counts = {brand_name: 0}
@@ -226,7 +225,7 @@ class AEOEngine:
         sorted_counts = sorted(mention_counts.items(), key=lambda x: x[1], reverse=True)
         rank = next(
             (i + 1 for i, (name, _) in enumerate(sorted_counts) if name == brand_name),
-            len(sorted_counts)
+            len(sorted_counts),
         )
 
         return ShareOfVoice(
@@ -234,7 +233,7 @@ class AEOEngine:
             total_mentions=total_mentions,
             share_percentage=share_percentage,
             rank=rank,
-            competitors={k: v for k, v in mention_counts.items() if k != brand_name}
+            competitors={k: v for k, v in mention_counts.items() if k != brand_name},
         )
 
     def _calculate_competitive_score(self, competitive_analysis: dict[str, Any]) -> int:
@@ -248,20 +247,20 @@ class AEOEngine:
         elif rank <= total_competitors * 0.25:
             return 12  # Top quartile
         elif rank <= total_competitors * 0.5:
-            return 9   # Top half
+            return 9  # Top half
         elif rank <= total_competitors * 0.75:
-            return 6   # Third quartile
+            return 6  # Third quartile
         else:
-            return 3   # Bottom quartile
+            return 3  # Bottom quartile
 
     def _calculate_overall_score(self, component_scores: dict[str, dict[str, Any]]) -> int:
         """Calculate weighted overall score matching HubSpot methodology."""
         # Weights based on HubSpot AEO importance
         weights = {
-            "ai_presence": 0.35,      # Most important - visibility
-            "response_accuracy": 0.25, # Critical for trust
-            "sentiment": 0.20,        # Brand perception
-            "competitive_position": 0.20  # Market position
+            "ai_presence": 0.35,  # Most important - visibility
+            "response_accuracy": 0.25,  # Critical for trust
+            "sentiment": 0.20,  # Brand perception
+            "competitive_position": 0.20,  # Market position
         }
 
         weighted_score = 0
@@ -296,7 +295,7 @@ class AEOEngine:
         share_of_voice: ShareOfVoice,
         responses: dict[str, list[AIResponse]],
         brand_name: str,
-        competitors: list[str]
+        competitors: list[str],
     ) -> list[AEOInsight]:
         """Generate prioritized insights and recommendations."""
         insights = []
@@ -304,52 +303,60 @@ class AEOEngine:
         # AI Presence insights
         presence_score = component_scores["ai_presence"]["score"]
         if presence_score < 15:
-            insights.append(AEOInsight(
-                category="visibility",
-                priority="critical" if presence_score < 10 else "high",
-                title="Low AI Visibility",
-                description=f"Brand mentioned in only {presence_score/25*100:.0f}% of AI responses",
-                recommendation="Optimize content for AI consumption with structured data and clear brand mentions",
-                impact="Increase brand visibility in AI-powered search results"
-            ))
+            insights.append(
+                AEOInsight(
+                    category="visibility",
+                    priority="critical" if presence_score < 10 else "high",
+                    title="Low AI Visibility",
+                    description=f"Brand mentioned in only {presence_score / 25 * 100:.0f}% of AI responses",
+                    recommendation="Optimize content for AI consumption with structured data and clear brand mentions",
+                    impact="Increase brand visibility in AI-powered search results",
+                )
+            )
 
         # Accuracy insights
         accuracy_issues = component_scores["response_accuracy"].get("issues", [])
         if accuracy_issues:
             critical_issues = [i for i in accuracy_issues if i["severity"] == "critical"]
             if critical_issues:
-                insights.append(AEOInsight(
-                    category="accuracy",
-                    priority="critical",
-                    title="Critical Accuracy Issues",
-                    description=f"AI systems spreading {len(critical_issues)} critical inaccuracies about your brand",
-                    recommendation="Create authoritative content addressing these inaccuracies and submit corrections",
-                    impact="Prevent misinformation from damaging brand reputation"
-                ))
+                insights.append(
+                    AEOInsight(
+                        category="accuracy",
+                        priority="critical",
+                        title="Critical Accuracy Issues",
+                        description=f"AI systems spreading {len(critical_issues)} critical inaccuracies about your brand",
+                        recommendation="Create authoritative content addressing these inaccuracies and submit corrections",
+                        impact="Prevent misinformation from damaging brand reputation",
+                    )
+                )
 
         # Sentiment insights
         sentiment_score = component_scores["sentiment"]["score"]
         if sentiment_score < 5:
-            insights.append(AEOInsight(
-                category="sentiment",
-                priority="high",
-                title="Negative Sentiment Detected",
-                description="AI responses show predominantly negative sentiment about your brand",
-                recommendation="Address negative issues and create positive content to improve brand perception",
-                impact="Improve brand reputation in AI-generated responses"
-            ))
+            insights.append(
+                AEOInsight(
+                    category="sentiment",
+                    priority="high",
+                    title="Negative Sentiment Detected",
+                    description="AI responses show predominantly negative sentiment about your brand",
+                    recommendation="Address negative issues and create positive content to improve brand perception",
+                    impact="Improve brand reputation in AI-generated responses",
+                )
+            )
 
         # Competitive insights
         if share_of_voice.rank > 3:
             top_competitor = max(share_of_voice.competitors.items(), key=lambda x: x[1])
-            insights.append(AEOInsight(
-                category="competitive",
-                priority="medium",
-                title="Low Competitive Visibility",
-                description=f"Ranking #{share_of_voice.rank} in AI mentions. {top_competitor[0]} leads with {top_competitor[1]} mentions",
-                recommendation="Increase content volume and optimize for competitor comparison queries",
-                impact="Improve competitive positioning in AI responses"
-            ))
+            insights.append(
+                AEOInsight(
+                    category="competitive",
+                    priority="medium",
+                    title="Low Competitive Visibility",
+                    description=f"Ranking #{share_of_voice.rank} in AI mentions. {top_competitor[0]} leads with {top_competitor[1]} mentions",
+                    recommendation="Increase content volume and optimize for competitor comparison queries",
+                    impact="Improve competitive positioning in AI responses",
+                )
+            )
 
         # Query performance insights
         failed_systems = []
@@ -361,14 +368,16 @@ class AEOEngine:
                 failed_systems.append(system)
 
         if failed_systems:
-            insights.append(AEOInsight(
-                category="technical",
-                priority="medium",
-                title="API Integration Issues",
-                description=f"High error rates with {', '.join(failed_systems)} APIs",
-                recommendation="Check API keys and rate limits for affected systems",
-                impact="Ensure comprehensive AI visibility monitoring"
-            ))
+            insights.append(
+                AEOInsight(
+                    category="technical",
+                    priority="medium",
+                    title="API Integration Issues",
+                    description=f"High error rates with {', '.join(failed_systems)} APIs",
+                    recommendation="Check API keys and rate limits for affected systems",
+                    impact="Ensure comprehensive AI visibility monitoring",
+                )
+            )
 
         # Sort by priority
         priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
@@ -377,9 +386,7 @@ class AEOEngine:
         return insights
 
     def _analyze_query_performance(
-        self,
-        responses: dict[str, list[AIResponse]],
-        queries: list[TestQuery]
+        self, responses: dict[str, list[AIResponse]], queries: list[TestQuery]
     ) -> dict[str, Any]:
         """Analyze query performance across systems and categories."""
         performance = {
@@ -388,7 +395,7 @@ class AEOEngine:
             "failed_queries": 0,
             "avg_response_time_ms": 0,
             "system_performance": {},
-            "category_performance": {}
+            "category_performance": {},
         }
 
         total_time = 0
@@ -404,8 +411,10 @@ class AEOEngine:
             performance["system_performance"][system] = {
                 "successful": successful,
                 "failed": failed,
-                "success_rate": successful / (successful + failed) if (successful + failed) > 0 else 0,
-                "avg_response_time_ms": int(avg_time)
+                "success_rate": successful / (successful + failed)
+                if (successful + failed) > 0
+                else 0,
+                "avg_response_time_ms": int(avg_time),
             }
 
             total_time += sum(r.response_time_ms for r in system_responses if not r.error)
@@ -415,7 +424,9 @@ class AEOEngine:
         performance["failed_queries"] = sum(
             sum(1 for r in sys_resps if r.error) for sys_resps in responses.values()
         )
-        performance["avg_response_time_ms"] = int(total_time / successful_count) if successful_count > 0 else 0
+        performance["avg_response_time_ms"] = (
+            int(total_time / successful_count) if successful_count > 0 else 0
+        )
 
         # Category performance
         category_stats = {}
@@ -428,12 +439,14 @@ class AEOEngine:
             # Count successful responses for this query
             for system_responses in responses.values():
                 matching_responses = [r for r in system_responses if r.query == query.query]
-                category_stats[cat]["successful"] += sum(1 for r in matching_responses if not r.error)
+                category_stats[cat]["successful"] += sum(
+                    1 for r in matching_responses if not r.error
+                )
 
         for cat, stats in category_stats.items():
             performance["category_performance"][cat] = {
                 "success_rate": stats["successful"] / stats["total"] if stats["total"] > 0 else 0,
-                "total_queries": stats["total"] // len(responses)  # Adjust for multiple systems
+                "total_queries": stats["total"] // len(responses),  # Adjust for multiple systems
             }
 
         return performance
@@ -446,7 +459,7 @@ def run_aeo_analysis_sync(
     ground_truth: Optional[dict[str, Any]] = None,
     custom_queries: Optional[list[str]] = None,
     ai_systems: Optional[list[str]] = None,
-    rate_limit_ms: int = 1000
+    rate_limit_ms: int = 1000,
 ) -> AEOResult:
     """
     Synchronous wrapper for AEO analysis.
@@ -464,14 +477,16 @@ def run_aeo_analysis_sync(
         Complete AEOResult
     """
     engine = AEOEngine(rate_limit_ms=rate_limit_ms)
-    return asyncio.run(engine.analyze_brand(
-        brand_name=brand_name,
-        products_services=products_services,
-        competitors=competitors,
-        ground_truth=ground_truth,
-        custom_queries=custom_queries,
-        ai_systems=ai_systems
-    ))
+    return asyncio.run(
+        engine.analyze_brand(
+            brand_name=brand_name,
+            products_services=products_services,
+            competitors=competitors,
+            ground_truth=ground_truth,
+            custom_queries=custom_queries,
+            ai_systems=ai_systems,
+        )
+    )
 
 
 __all__ = [
@@ -480,5 +495,5 @@ __all__ = [
     "AEOInsight",
     "AEOResult",
     "AEOEngine",
-    "run_aeo_analysis_sync"
+    "run_aeo_analysis_sync",
 ]

@@ -25,6 +25,7 @@ def mock_dashboard_user():
 def client():
     """Create test client with mocked dependencies."""
     from apps.api.main import app
+
     return TestClient(app)
 
 
@@ -52,10 +53,7 @@ class TestQuotaExceededReturns429:
 
         mock_service = MagicMock()
         mock_service.enforce_quota.side_effect = QuotaExceededError(
-            "Monthly audit limit reached (10)",
-            "monthly_audits",
-            10,
-            10
+            "Monthly audit limit reached (10)", "monthly_audits", 10, 10
         )
 
         routes_module.QuotaService = lambda db: mock_service
@@ -79,12 +77,7 @@ class TestQuotaExceededReturns429:
         """QuotaExceededError contains quota type and limits."""
         from packages.seo_health_report.quotas.service import QuotaExceededError
 
-        error = QuotaExceededError(
-            "Monthly audit limit reached (10)",
-            "monthly_audits",
-            10,
-            10
-        )
+        error = QuotaExceededError("Monthly audit limit reached (10)", "monthly_audits", 10, 10)
 
         assert error.quota_type == "monthly_audits"
         assert error.limit == 10
@@ -104,10 +97,7 @@ class TestConcurrentLimitBlocksNewAudits:
 
         mock_service = MagicMock()
         mock_service.enforce_quota.side_effect = QuotaExceededError(
-            "Concurrent audit limit reached (2)",
-            "concurrent_audits",
-            2,
-            2
+            "Concurrent audit limit reached (2)", "concurrent_audits", 2, 2
         )
 
         routes_module.QuotaService = lambda db: mock_service
@@ -154,7 +144,7 @@ class TestConcurrentLimitBlocksNewAudits:
             max_concurrent_audits=2,
         )
 
-        with patch.object(service, '_get_concurrent_audit_count', return_value=2):
+        with patch.object(service, "_get_concurrent_audit_count", return_value=2):
             status = service.check_quota("tenant_123")
             assert status.concurrent_audits == 2
             assert not status.can_start_audit
@@ -192,7 +182,7 @@ class TestMonthlyResetWorks:
         service = QuotaService(mock_db)
 
         billing_start = datetime(2025, 1, 15, tzinfo=timezone.utc)
-        with patch('packages.seo_health_report.quotas.service.datetime') as mock_datetime:
+        with patch("packages.seo_health_report.quotas.service.datetime") as mock_datetime:
             mock_datetime.now.return_value = datetime(2025, 1, 20, tzinfo=timezone.utc)
             mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
 
@@ -210,7 +200,7 @@ class TestMonthlyResetWorks:
 
         billing_start = datetime(2024, 12, 15, tzinfo=timezone.utc)
 
-        with patch('packages.seo_health_report.quotas.service.datetime') as mock_datetime:
+        with patch("packages.seo_health_report.quotas.service.datetime") as mock_datetime:
             mock_datetime.now.return_value = datetime(2024, 12, 20, tzinfo=timezone.utc)
             mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
 
@@ -310,7 +300,7 @@ class TestUnlimitedQuota:
 
         service = QuotaService(mock_db)
 
-        with patch.object(service, '_get_concurrent_audit_count', return_value=0):
+        with patch.object(service, "_get_concurrent_audit_count", return_value=0):
             status = service.check_quota("tenant_123")
 
             assert status.monthly_audits_remaining == -1
@@ -337,7 +327,7 @@ class TestQuotaServiceEnforcement:
 
         service = QuotaService(mock_db)
 
-        with patch.object(service, '_get_concurrent_audit_count', return_value=0):
+        with patch.object(service, "_get_concurrent_audit_count", return_value=0):
             with pytest.raises(QuotaExceededError) as exc_info:
                 service.enforce_quota("tenant_123")
 
@@ -361,7 +351,7 @@ class TestQuotaServiceEnforcement:
 
         service = QuotaService(mock_db)
 
-        with patch.object(service, '_get_concurrent_audit_count', return_value=2):
+        with patch.object(service, "_get_concurrent_audit_count", return_value=2):
             with pytest.raises(QuotaExceededError) as exc_info:
                 service.enforce_quota("tenant_123")
 
@@ -385,7 +375,7 @@ class TestQuotaServiceEnforcement:
 
         service = QuotaService(mock_db)
 
-        with patch.object(service, '_get_concurrent_audit_count', return_value=1):
+        with patch.object(service, "_get_concurrent_audit_count", return_value=1):
             status = service.enforce_quota("tenant_123")
 
             assert isinstance(status, QuotaStatus)

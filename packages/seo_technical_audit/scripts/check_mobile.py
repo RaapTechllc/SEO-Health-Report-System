@@ -17,6 +17,7 @@ class MobileIssue:
     description: str
     recommendation: str
 
+
 def check_viewport_tag(html: str) -> dict[str, Any]:
     """
     Check if the viewport meta tag is present and correctly configured.
@@ -32,44 +33,49 @@ def check_viewport_tag(html: str) -> dict[str, Any]:
 
     if not match:
         # Critical for mobile
-        issues.append(MobileIssue(
-            severity="critical",
-            description="No viewport meta tag found",
-            recommendation="Add <meta name='viewport' content='width=device-width, initial-scale=1'> to the <head>"
-        ))
+        issues.append(
+            MobileIssue(
+                severity="critical",
+                description="No viewport meta tag found",
+                recommendation="Add <meta name='viewport' content='width=device-width, initial-scale=1'> to the <head>",
+            )
+        )
         return {"valid": False, "content": None, "issues": issues}
 
     content = match.group(1).lower()
 
     # Check for width=device-width
     if "width=device-width" not in content:
-        issues.append(MobileIssue(
-            severity="high",
-            description="Viewport does not set width=device-width",
-            recommendation="Include width=device-width in viewport content"
-        ))
+        issues.append(
+            MobileIssue(
+                severity="high",
+                description="Viewport does not set width=device-width",
+                recommendation="Include width=device-width in viewport content",
+            )
+        )
 
     # Check for initial-scale
     if "initial-scale=1" not in content and "initial-scale=1.0" not in content:
-        issues.append(MobileIssue(
-            severity="medium",
-            description="Viewport does not set initial-scale=1",
-            recommendation="Include initial-scale=1 in viewport content"
-        ))
+        issues.append(
+            MobileIssue(
+                severity="medium",
+                description="Viewport does not set initial-scale=1",
+                recommendation="Include initial-scale=1 in viewport content",
+            )
+        )
 
     # Check for user-scalable=no (accessibility issue)
     if "user-scalable=no" in content or "user-scalable=0" in content:
-        issues.append(MobileIssue(
-            severity="medium",
-            description="Viewport prevents user zooming (user-scalable=no)",
-            recommendation="Allow users to zoom for better accessibility"
-        ))
+        issues.append(
+            MobileIssue(
+                severity="medium",
+                description="Viewport prevents user zooming (user-scalable=no)",
+                recommendation="Allow users to zoom for better accessibility",
+            )
+        )
 
-    return {
-        "valid": len(issues) == 0,
-        "content": content,
-        "issues": issues
-    }
+    return {"valid": len(issues) == 0, "content": content, "issues": issues}
+
 
 def analyze_mobile_config(url: str) -> dict[str, Any]:
     """
@@ -79,20 +85,16 @@ def analyze_mobile_config(url: str) -> dict[str, Any]:
     """
     html = fetch_url(url)
 
-    result = {
-        "score": 0,
-        "max": 10,
-        "has_viewport": False,
-        "issues": [],
-        "findings": []
-    }
+    result = {"score": 0, "max": 10, "has_viewport": False, "issues": [], "findings": []}
 
     if not html:
-        result["issues"].append({
-            "severity": "high",
-            "description": "Could not fetch page for mobile analysis",
-            "recommendation": "Verify URL accessibility"
-        })
+        result["issues"].append(
+            {
+                "severity": "high",
+                "description": "Could not fetch page for mobile analysis",
+                "recommendation": "Verify URL accessibility",
+            }
+        )
         return result
 
     # Check Viewport
@@ -100,12 +102,14 @@ def analyze_mobile_config(url: str) -> dict[str, Any]:
     result["has_viewport"] = viewport_check["valid"]
 
     for issue in viewport_check["issues"]:
-        result["issues"].append({
-            "severity": issue.severity,
-            "category": "mobile",
-            "description": issue.description,
-            "recommendation": issue.recommendation
-        })
+        result["issues"].append(
+            {
+                "severity": issue.severity,
+                "category": "mobile",
+                "description": issue.description,
+                "recommendation": issue.recommendation,
+            }
+        )
 
     # Calculate Score
     score = 10

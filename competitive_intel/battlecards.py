@@ -14,10 +14,15 @@ class BattlecardGenerator:
 
         try:
             # Get talking points from gap analysis
-            prospect_report = {'overall_score': analysis.comparison_matrix['prospect_score']}
-            competitor_reports = {url: {'overall_score': score} for url, score in analysis.comparison_matrix['competitor_scores'].items()}
+            prospect_report = {"overall_score": analysis.comparison_matrix["prospect_score"]}
+            competitor_reports = {
+                url: {"overall_score": score}
+                for url, score in analysis.comparison_matrix["competitor_scores"].items()
+            }
 
-            talking_points = gap_analyzer.analyze_competitive_gaps(prospect_report, competitor_reports)
+            talking_points = gap_analyzer.analyze_competitive_gaps(
+                prospect_report, competitor_reports
+            )
 
             # Organize talking points by category
             strengths = [tp for tp in talking_points if tp.category == "strength"]
@@ -29,9 +34,9 @@ class BattlecardGenerator:
             battlecard = {
                 "prospect_info": {
                     "url": analysis.prospect_url,
-                    "overall_score": analysis.comparison_matrix['prospect_score'],
+                    "overall_score": analysis.comparison_matrix["prospect_score"],
                     "win_probability": analysis.win_probability,
-                    "analysis_date": analysis.analysis_date.isoformat()
+                    "analysis_date": analysis.analysis_date.isoformat(),
                 },
                 "executive_summary": self._generate_executive_summary(analysis),
                 "key_messages": self._generate_key_messages(analysis),
@@ -39,12 +44,12 @@ class BattlecardGenerator:
                     "strengths": [self._format_talking_point(tp) for tp in strengths],
                     "weaknesses": [self._format_talking_point(tp) for tp in weaknesses],
                     "opportunities": [self._format_talking_point(tp) for tp in opportunities],
-                    "threats": [self._format_talking_point(tp) for tp in threats]
+                    "threats": [self._format_talking_point(tp) for tp in threats],
                 },
                 "ai_visibility_focus": self._generate_ai_visibility_section(analysis),
                 "objection_handling": self._generate_objection_handling(analysis),
                 "next_steps": self._generate_next_steps(analysis),
-                "supporting_data": self._generate_supporting_data(analysis)
+                "supporting_data": self._generate_supporting_data(analysis),
             }
 
             self.logger.info(f"Generated battlecard for {analysis.prospect_url}")
@@ -57,7 +62,7 @@ class BattlecardGenerator:
     def _generate_executive_summary(self, analysis: CompetitiveAnalysis) -> str:
         """Generate executive summary for the battlecard."""
 
-        prospect_score = analysis.comparison_matrix['prospect_score']
+        prospect_score = analysis.comparison_matrix["prospect_score"]
         win_prob = analysis.win_probability
 
         if win_prob >= 0.7:
@@ -91,15 +96,23 @@ RECOMMENDATION: Focus on AI search optimization as primary differentiator while 
 
         # AI visibility message (our differentiator)
         if analysis.ai_visibility_gaps:
-            messages.append("🤖 AI Search Opportunity: While competitors focus on traditional SEO, you can capture the growing AI search market (ChatGPT, Claude, Perplexity)")
+            messages.append(
+                "🤖 AI Search Opportunity: While competitors focus on traditional SEO, you can capture the growing AI search market (ChatGPT, Claude, Perplexity)"
+            )
 
         # Win probability message
         if analysis.win_probability >= 0.7:
-            messages.append("📈 Strong Position: You're well-positioned to outperform competitors with focused optimization")
+            messages.append(
+                "📈 Strong Position: You're well-positioned to outperform competitors with focused optimization"
+            )
         elif analysis.win_probability >= 0.5:
-            messages.append("⚖️ Competitive Balance: Strategic improvements can tip the scales in your favor")
+            messages.append(
+                "⚖️ Competitive Balance: Strategic improvements can tip the scales in your favor"
+            )
         else:
-            messages.append("🎯 High Upside: Significant opportunity to gain competitive advantage through systematic optimization")
+            messages.append(
+                "🎯 High Upside: Significant opportunity to gain competitive advantage through systematic optimization"
+            )
 
         # Differentiator messages
         for diff in analysis.key_differentiators[:2]:  # Top 2 differentiators
@@ -119,14 +132,14 @@ RECOMMENDATION: Focus on AI search optimization as primary differentiator while 
                 "First-mover advantage in AI search optimization",
                 "Capture traffic competitors are missing",
                 "Future-proof your SEO strategy",
-                "Differentiate from traditional SEO agencies"
+                "Differentiate from traditional SEO agencies",
             ],
             "implementation": [
                 "Optimize content structure for AI extraction",
                 "Implement AI-friendly schema markup",
                 "Monitor brand mentions in AI responses",
-                "Track citation rates across AI platforms"
-            ]
+                "Track citation rates across AI platforms",
+            ],
         }
 
     def _generate_objection_handling(self, analysis: CompetitiveAnalysis) -> list[dict[str, str]]:
@@ -135,26 +148,34 @@ RECOMMENDATION: Focus on AI search optimization as primary differentiator while 
         objections = []
 
         # Common objections
-        objections.append({
-            "objection": "We're already working with an SEO agency",
-            "response": f"Traditional agencies focus on yesterday's SEO. Our AI search optimization captures traffic they're missing. With {len(analysis.ai_visibility_gaps)} AI gaps identified, you're leaving money on the table."
-        })
+        objections.append(
+            {
+                "objection": "We're already working with an SEO agency",
+                "response": f"Traditional agencies focus on yesterday's SEO. Our AI search optimization captures traffic they're missing. With {len(analysis.ai_visibility_gaps)} AI gaps identified, you're leaving money on the table.",
+            }
+        )
 
-        objections.append({
-            "objection": "SEO takes too long to see results",
-            "response": f"AI search optimization shows faster results because there's less competition. Plus, with a {analysis.win_probability:.0%} win probability, we're confident in delivering measurable improvements within 90 days."
-        })
+        objections.append(
+            {
+                "objection": "SEO takes too long to see results",
+                "response": f"AI search optimization shows faster results because there's less competition. Plus, with a {analysis.win_probability:.0%} win probability, we're confident in delivering measurable improvements within 90 days.",
+            }
+        )
 
-        objections.append({
-            "objection": "We don't have budget for SEO right now",
-            "response": "AI search represents the biggest SEO opportunity in a decade. The cost of waiting is losing market share to competitors who act first. Our ROI projections show 3-6x return in the first year."
-        })
+        objections.append(
+            {
+                "objection": "We don't have budget for SEO right now",
+                "response": "AI search represents the biggest SEO opportunity in a decade. The cost of waiting is losing market share to competitors who act first. Our ROI projections show 3-6x return in the first year.",
+            }
+        )
 
         if analysis.win_probability < 0.5:
-            objections.append({
-                "objection": "Our SEO seems to be doing fine",
-                "response": f"Your current score of {analysis.comparison_matrix['prospect_score']}/100 suggests significant room for improvement. Competitors are gaining ground while you maintain status quo."
-            })
+            objections.append(
+                {
+                    "objection": "Our SEO seems to be doing fine",
+                    "response": f"Your current score of {analysis.comparison_matrix['prospect_score']}/100 suggests significant room for improvement. Competitors are gaining ground while you maintain status quo.",
+                }
+            )
 
         return objections
 
@@ -164,23 +185,29 @@ RECOMMENDATION: Focus on AI search optimization as primary differentiator while 
         steps = []
 
         if analysis.win_probability >= 0.7:
-            steps.extend([
-                "Schedule AI search optimization strategy session",
-                "Conduct detailed competitive monitoring setup",
-                "Begin implementation of high-impact improvements"
-            ])
+            steps.extend(
+                [
+                    "Schedule AI search optimization strategy session",
+                    "Conduct detailed competitive monitoring setup",
+                    "Begin implementation of high-impact improvements",
+                ]
+            )
         elif analysis.win_probability >= 0.5:
-            steps.extend([
-                "Deep-dive analysis of top competitive gaps",
-                "Prioritize quick wins for immediate impact",
-                "Develop 90-day competitive advantage plan"
-            ])
+            steps.extend(
+                [
+                    "Deep-dive analysis of top competitive gaps",
+                    "Prioritize quick wins for immediate impact",
+                    "Develop 90-day competitive advantage plan",
+                ]
+            )
         else:
-            steps.extend([
-                "Comprehensive SEO foundation audit",
-                "Competitive threat assessment and response plan",
-                "Emergency optimization to prevent further losses"
-            ])
+            steps.extend(
+                [
+                    "Comprehensive SEO foundation audit",
+                    "Competitive threat assessment and response plan",
+                    "Emergency optimization to prevent further losses",
+                ]
+            )
 
         # Always include AI focus
         steps.append("Implement AI search visibility tracking and optimization")
@@ -191,15 +218,15 @@ RECOMMENDATION: Focus on AI search optimization as primary differentiator while 
         """Generate supporting data and statistics."""
 
         return {
-            "competitive_scores": analysis.comparison_matrix['competitor_scores'],
+            "competitive_scores": analysis.comparison_matrix["competitor_scores"],
             "analysis_date": analysis.analysis_date.isoformat(),
             "methodology": "Comprehensive SEO health analysis including technical, content, and AI visibility factors",
             "confidence_level": "High - based on 100+ ranking factors and competitive benchmarking",
             "market_data": {
                 "ai_search_growth": "40% annual growth in AI search queries",
                 "traditional_seo_saturation": "95% of businesses focus only on traditional SEO",
-                "ai_optimization_adoption": "<5% of businesses optimize for AI search"
-            }
+                "ai_optimization_adoption": "<5% of businesses optimize for AI search",
+            },
         }
 
     def _format_talking_point(self, talking_point: TalkingPoint) -> dict[str, Any]:
@@ -209,8 +236,9 @@ RECOMMENDATION: Focus on AI search optimization as primary differentiator while 
             "title": talking_point.title,
             "description": talking_point.description,
             "supporting_data": talking_point.supporting_data,
-            "confidence": f"{talking_point.confidence:.0%}"
+            "confidence": f"{talking_point.confidence:.0%}",
         }
+
 
 # Global battlecard generator
 battlecard_generator = BattlecardGenerator()

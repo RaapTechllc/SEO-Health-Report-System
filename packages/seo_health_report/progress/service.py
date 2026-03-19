@@ -1,4 +1,5 @@
 """Progress tracking service with time estimation."""
+
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Optional
@@ -56,7 +57,9 @@ class AuditProgress:
             "overall_progress_pct": self.overall_progress_pct,
             "modules": [m.to_dict() for m in self.modules],
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "estimated_completion": self.estimated_completion.isoformat() if self.estimated_completion else None,
+            "estimated_completion": self.estimated_completion.isoformat()
+            if self.estimated_completion
+            else None,
             "elapsed_seconds": self.elapsed_seconds,
         }
 
@@ -116,7 +119,7 @@ def get_audit_progress(db: Session, audit_id: str) -> Optional[AuditProgress]:
             FROM audits
             WHERE id = :audit_id
         """),
-        {"audit_id": audit_id}
+        {"audit_id": audit_id},
     ).fetchone()
 
     if not audit_row:
@@ -131,7 +134,7 @@ def get_audit_progress(db: Session, audit_id: str) -> Optional[AuditProgress]:
             WHERE audit_id = :audit_id
             ORDER BY created_at
         """),
-        {"audit_id": audit_id}
+        {"audit_id": audit_id},
     ).fetchall()
 
     modules_dict = _parse_module_events(events)
@@ -149,7 +152,9 @@ def get_audit_progress(db: Session, audit_id: str) -> Optional[AuditProgress]:
         completed_count = sum(1 for m in modules if m.status == "completed")
         running_pcts = [m.progress_pct for m in modules if m.status == "running"]
         running_contrib = sum(running_pcts) / len(MODULE_NAMES) if running_pcts else 0
-        overall_pct = int((completed_count * 100 / len(MODULE_NAMES)) + running_contrib / len(MODULE_NAMES))
+        overall_pct = int(
+            (completed_count * 100 / len(MODULE_NAMES)) + running_contrib / len(MODULE_NAMES)
+        )
         overall_pct = min(overall_pct, 99)
 
     elapsed = 0
@@ -162,6 +167,7 @@ def get_audit_progress(db: Session, audit_id: str) -> Optional[AuditProgress]:
             estimated_total = estimate_completion_time(tier or "basic", 10)
             remaining = max(0, estimated_total - elapsed)
             from datetime import timedelta
+
             estimated_completion = now + timedelta(seconds=remaining)
 
     return AuditProgress(

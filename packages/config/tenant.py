@@ -33,11 +33,13 @@ class TenantConfig:
     custom_thresholds: Optional[dict[str, int]] = None
 
     # Feature flags
-    features_enabled: list[str] = field(default_factory=lambda: [
-        "technical_audit",
-        "content_audit",
-        "ai_visibility",
-    ])
+    features_enabled: list[str] = field(
+        default_factory=lambda: [
+            "technical_audit",
+            "content_audit",
+            "ai_visibility",
+        ]
+    )
 
     # API limits
     max_audits_per_day: int = 10
@@ -194,11 +196,14 @@ class TenantConfig:
             company_name=data.get("company_name"),
             custom_weights=data.get("custom_weights"),
             custom_thresholds=data.get("custom_thresholds"),
-            features_enabled=data.get("features_enabled", [
-                "technical_audit",
-                "content_audit",
-                "ai_visibility",
-            ]),
+            features_enabled=data.get(
+                "features_enabled",
+                [
+                    "technical_audit",
+                    "content_audit",
+                    "ai_visibility",
+                ],
+            ),
             max_audits_per_day=data.get("max_audits_per_day", 10),
             max_pages_per_audit=data.get("max_pages_per_audit", 100),
             max_competitors=data.get("max_competitors", 5),

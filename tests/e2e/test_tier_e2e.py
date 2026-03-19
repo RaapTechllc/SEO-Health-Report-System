@@ -10,13 +10,11 @@ Tests the complete audit flow across all tiers (LOW, MEDIUM, HIGH) with:
 These tests validate that the system can rival $10K-$30K/year SEO analytics services.
 """
 
-import json
 import os
 import sys
-import time
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -30,24 +28,25 @@ os.environ["RATE_LIMIT_AUDITS_PER_DAY"] = "1000"
 
 # Mock stripe before imports
 mock_stripe = MagicMock()
-mock_stripe.checkout.Session.create = MagicMock(return_value=MagicMock(
-    id="cs_test_123",
-    url="https://checkout.stripe.com/test"
-))
-sys.modules['stripe'] = mock_stripe
+mock_stripe.checkout.Session.create = MagicMock(
+    return_value=MagicMock(id="cs_test_123", url="https://checkout.stripe.com/test")
+)
+sys.modules["stripe"] = mock_stripe
 
 from fastapi.testclient import TestClient
 
 
 def _init_test_db():
     """Initialize test database with all required tables."""
-    from database import Base, engine, init_db
     from sqlalchemy import text
-    
+
+    from database import engine, init_db
+
     init_db()
-    
+
     with engine.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_jobs (
                 job_id TEXT PRIMARY KEY,
                 tenant_id TEXT DEFAULT 'default',
@@ -60,7 +59,8 @@ def _init_test_db():
                 completed_at TIMESTAMP,
                 error_message TEXT
             )
-        """))
+        """)
+        )
         conn.commit()
 
 
@@ -68,6 +68,7 @@ def _reset_rate_limiters():
     """Clear rate limiter counters."""
     try:
         import rate_limiter
+
         rate_limiter._request_counts.clear()
         rate_limiter._audit_counts.clear()
         rate_limiter._endpoint_counts.clear()
@@ -88,12 +89,14 @@ class TestTierCostTracking:
         _init_test_db()
         _reset_rate_limiters()
         from apps.api.main import app
+
         return TestClient(app)
 
     @pytest.fixture
     def db_session(self):
         """Get a database session for direct queries."""
         from database import SessionLocal
+
         db = SessionLocal()
         yield db
         db.close()
@@ -162,13 +165,13 @@ class TestTierCostTracking:
         LOW tier audit: verify cost events are created with budget models.
         Expected models: gpt-5-nano, gemini-1.5-flash, claude-4-haiku
         """
+        from database import Audit, CostEvent
         from packages.seo_health_report.tier_config import load_tier_config
-        from database import CostEvent, Audit
-        
+
         load_tier_config("low")
-        
+
         audit_id = f"audit_low_{uuid.uuid4().hex[:8]}"
-        
+
         # Create audit record
         audit = Audit(
             id=audit_id,
@@ -179,10 +182,10 @@ class TestTierCostTracking:
         )
         db_session.add(audit)
         db_session.commit()
-        
+
         # Simulate cost events that would be created during audit
         from packages.core.cost_tracker import record_cost_event
-        
+
         # AI Visibility calls (simulated)
         record_cost_event(
             db=db_session,
@@ -194,7 +197,7 @@ class TestTierCostTracking:
             completion_tokens=200,
             phase="ai_visibility",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -205,7 +208,7 @@ class TestTierCostTracking:
             completion_tokens=250,
             phase="ai_visibility",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -216,28 +219,29 @@ class TestTierCostTracking:
             completion_tokens=150,
             phase="technical_analysis",
         )
-        
+
         # Verify cost events
-        events = db_session.query(CostEvent).filter(
-            CostEvent.audit_id == audit_id
-        ).all()
-        
+        events = db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).all()
+
         assert len(events) >= 3, f"Expected at least 3 cost events, got {len(events)}"
-        
+
         # Verify LOW tier models used
         models_used = {e.model for e in events}
         assert "gpt-5-nano" in models_used, "LOW tier should use gpt-5-nano"
-        
+
         # Verify tier recorded correctly
         for event in events:
             assert event.tier == "low", f"Event tier should be 'low', got {event.tier}"
-        
+
         # Verify cost is within LOW tier budget
         from packages.core.cost_tracker import get_audit_cost_summary
+
         summary = get_audit_cost_summary(db_session, audit_id)
-        
-        assert summary["total_cost_usd"] < 0.05, f"LOW tier cost should be < $0.05, got ${summary['total_cost_usd']}"
-        
+
+        assert summary["total_cost_usd"] < 0.05, (
+            f"LOW tier cost should be < $0.05, got ${summary['total_cost_usd']}"
+        )
+
         # Cleanup
         db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).delete()
         db_session.query(Audit).filter(Audit.id == audit_id).delete()
@@ -248,14 +252,14 @@ class TestTierCostTracking:
         HIGH tier audit: verify premium models are used and cost is higher.
         Expected models: gpt-5, claude-sonnet-4-5, gemini-3.0-pro
         """
+        from database import Audit, CostEvent
+        from packages.core.cost_tracker import get_audit_cost_summary, record_cost_event
         from packages.seo_health_report.tier_config import load_tier_config
-        from database import CostEvent, Audit
-        from packages.core.cost_tracker import record_cost_event, get_audit_cost_summary
-        
+
         load_tier_config("high")
-        
+
         audit_id = f"audit_high_{uuid.uuid4().hex[:8]}"
-        
+
         # Create audit record
         audit = Audit(
             id=audit_id,
@@ -266,7 +270,7 @@ class TestTierCostTracking:
         )
         db_session.add(audit)
         db_session.commit()
-        
+
         # Simulate HIGH tier cost events
         record_cost_event(
             db=db_session,
@@ -278,7 +282,7 @@ class TestTierCostTracking:
             completion_tokens=400,
             phase="ai_visibility",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -289,7 +293,7 @@ class TestTierCostTracking:
             completion_tokens=500,
             phase="market_intelligence",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -300,7 +304,7 @@ class TestTierCostTracking:
             completion_tokens=350,
             phase="competitor_analysis",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -309,7 +313,7 @@ class TestTierCostTracking:
             model="imagen-4.0-ultra-generate-001",
             phase="report_visuals",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -320,26 +324,26 @@ class TestTierCostTracking:
             completion_tokens=300,
             phase="social_sentiment",
         )
-        
+
         # Verify HIGH tier models
-        events = db_session.query(CostEvent).filter(
-            CostEvent.audit_id == audit_id
-        ).all()
-        
+        events = db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).all()
+
         assert len(events) >= 5, f"HIGH tier should have more events, got {len(events)}"
-        
+
         models_used = {e.model for e in events}
         premium_models = {"gpt-5", "claude-sonnet-4-5-20250929", "gemini-3.0-pro", "grok-4-1"}
         assert len(models_used & premium_models) >= 3, "HIGH tier should use premium models"
-        
+
         # Verify tier recorded correctly
         for event in events:
             assert event.tier == "high", f"Event tier should be 'high', got {event.tier}"
-        
+
         # Verify cost is higher than LOW tier budget
         summary = get_audit_cost_summary(db_session, audit_id)
-        assert summary["total_cost_usd"] > 0.05, f"HIGH tier cost should be > $0.05, got ${summary['total_cost_usd']}"
-        
+        assert summary["total_cost_usd"] > 0.05, (
+            f"HIGH tier cost should be > $0.05, got ${summary['total_cost_usd']}"
+        )
+
         # Cleanup
         db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).delete()
         db_session.query(Audit).filter(Audit.id == audit_id).delete()
@@ -350,14 +354,14 @@ class TestTierCostTracking:
         Verify that switching tiers in the same process uses correct models.
         This catches environment caching bugs.
         """
-        from packages.seo_health_report.tier_config import load_tier_config
-        from database import CostEvent, Audit
+        from database import Audit, CostEvent
         from packages.core.cost_tracker import record_cost_event
-        
+        from packages.seo_health_report.tier_config import load_tier_config
+
         # Create LOW tier audit
         load_tier_config("low")
         low_audit_id = f"audit_switch_low_{uuid.uuid4().hex[:8]}"
-        
+
         low_audit = Audit(
             id=low_audit_id,
             url="https://test.com",
@@ -367,7 +371,7 @@ class TestTierCostTracking:
         )
         db_session.add(low_audit)
         db_session.commit()
-        
+
         record_cost_event(
             db=db_session,
             audit_id=low_audit_id,
@@ -378,11 +382,11 @@ class TestTierCostTracking:
             completion_tokens=50,
             phase="test",
         )
-        
+
         # Switch to HIGH tier
         load_tier_config("high")
         high_audit_id = f"audit_switch_high_{uuid.uuid4().hex[:8]}"
-        
+
         high_audit = Audit(
             id=high_audit_id,
             url="https://test.com",
@@ -392,7 +396,7 @@ class TestTierCostTracking:
         )
         db_session.add(high_audit)
         db_session.commit()
-        
+
         record_cost_event(
             db=db_session,
             audit_id=high_audit_id,
@@ -403,20 +407,18 @@ class TestTierCostTracking:
             completion_tokens=50,
             phase="test",
         )
-        
+
         # Verify different tiers recorded
-        low_event = db_session.query(CostEvent).filter(
-            CostEvent.audit_id == low_audit_id
-        ).first()
-        high_event = db_session.query(CostEvent).filter(
-            CostEvent.audit_id == high_audit_id
-        ).first()
-        
+        low_event = db_session.query(CostEvent).filter(CostEvent.audit_id == low_audit_id).first()
+        high_event = db_session.query(CostEvent).filter(CostEvent.audit_id == high_audit_id).first()
+
         assert low_event.tier == "low", "LOW tier event should record 'low'"
         assert high_event.tier == "high", "HIGH tier event should record 'high'"
-        
+
         # Cleanup
-        db_session.query(CostEvent).filter(CostEvent.audit_id.in_([low_audit_id, high_audit_id])).delete()
+        db_session.query(CostEvent).filter(
+            CostEvent.audit_id.in_([low_audit_id, high_audit_id])
+        ).delete()
         db_session.query(Audit).filter(Audit.id.in_([low_audit_id, high_audit_id])).delete()
         db_session.commit()
 
@@ -425,11 +427,11 @@ class TestTierCostTracking:
         Verify cost tracking works when some providers are unavailable.
         Should have events for working providers, none for skipped ones.
         """
-        from database import CostEvent, Audit
-        from packages.core.cost_tracker import record_cost_event, get_audit_cost_summary
-        
+        from database import Audit, CostEvent
+        from packages.core.cost_tracker import get_audit_cost_summary, record_cost_event
+
         audit_id = f"audit_degrade_{uuid.uuid4().hex[:8]}"
-        
+
         audit = Audit(
             id=audit_id,
             url="https://test.com",
@@ -439,7 +441,7 @@ class TestTierCostTracking:
         )
         db_session.add(audit)
         db_session.commit()
-        
+
         # Record events for working providers
         record_cost_event(
             db=db_session,
@@ -451,7 +453,7 @@ class TestTierCostTracking:
             completion_tokens=200,
             phase="ai_visibility",
         )
-        
+
         record_cost_event(
             db=db_session,
             audit_id=audit_id,
@@ -462,21 +464,21 @@ class TestTierCostTracking:
             completion_tokens=150,
             phase="technical",
         )
-        
+
         # Don't record for "missing" providers (xai, perplexity)
         # In real scenario, these would be skipped due to missing API keys
-        
+
         # Verify partial cost tracking
         summary = get_audit_cost_summary(db_session, audit_id)
-        
+
         assert summary["event_count"] == 2, "Should have 2 events for working providers"
         assert "openai" in summary["by_provider"], "OpenAI should be tracked"
         assert "google" in summary["by_provider"], "Google should be tracked"
         assert "xai" not in summary["by_provider"], "xAI should not be tracked (skipped)"
-        
+
         # Verify audit can still complete with partial data
         assert summary["total_cost_usd"] > 0, "Should have non-zero cost from working providers"
-        
+
         # Cleanup
         db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).delete()
         db_session.query(Audit).filter(Audit.id == audit_id).delete()
@@ -531,7 +533,7 @@ class TestReportQualityGates:
                 },
             ],
         }
-        
+
         # Required top-level sections
         required_sections = [
             "url",
@@ -541,10 +543,10 @@ class TestReportQualityGates:
             "executive_summary",
             "audits",
         ]
-        
+
         for section in required_sections:
             assert section in mock_result, f"Missing required section: {section}"
-        
+
         # Required audit subsections
         required_audits = ["technical", "content", "ai_visibility"]
         for audit_type in required_audits:
@@ -565,7 +567,7 @@ class TestReportQualityGates:
             "Add LocalBusiness schema with NAP (Name, Address, Phone)",
             "Create dedicated service pages for each service area: Seattle, Portland, Tacoma",
         ]
-        
+
         # Bad recommendations (vague - should be rejected)
         bad_recommendations = [
             "Improve your SEO",
@@ -574,7 +576,7 @@ class TestReportQualityGates:
             "Fix technical issues",
             "Optimize for search engines",
         ]
-        
+
         # Vague phrase detection
         vague_phrases = [
             "improve your",
@@ -584,17 +586,17 @@ class TestReportQualityGates:
             "optimize for",
             "better seo",
         ]
-        
+
         def is_actionable(rec: str) -> bool:
             rec_lower = rec.lower()
             for phrase in vague_phrases:
                 if phrase in rec_lower and len(rec.split()) < 8:
                     return False
             return True
-        
+
         for rec in good_recommendations:
             assert is_actionable(rec), f"Good recommendation flagged as vague: {rec}"
-        
+
         for rec in bad_recommendations:
             assert not is_actionable(rec), f"Vague recommendation not caught: {rec}"
 
@@ -607,7 +609,7 @@ class TestReportQualityGates:
             "D": (60, 69),
             "F": (0, 59),
         }
-        
+
         test_cases = [
             (95, "A"),
             (85, "B"),
@@ -617,11 +619,13 @@ class TestReportQualityGates:
             (90, "A"),  # Edge case: exactly 90
             (80, "B"),  # Edge case: exactly 80
         ]
-        
+
         for score, expected_grade in test_cases:
             for grade, (min_score, max_score) in grade_rubric.items():
                 if min_score <= score <= max_score:
-                    assert grade == expected_grade, f"Score {score} should be grade {expected_grade}, not {grade}"
+                    assert grade == expected_grade, (
+                        f"Score {score} should be grade {expected_grade}, not {grade}"
+                    )
                     break
 
     def test_trade_business_relevance(self):
@@ -640,7 +644,7 @@ class TestReportQualityGates:
             "nap",
             "call tracking",
         ]
-        
+
         mock_recommendations = [
             "Create dedicated service area pages for Seattle, Portland, and Tacoma",
             "Claim and optimize your Google Business Profile (GBP) listing",
@@ -649,13 +653,13 @@ class TestReportQualityGates:
             "Build local citations on industry directories (HomeAdvisor, Angi)",
             "Encourage customer reviews on Google and Yelp",
         ]
-        
+
         # At least 60% of trade terms should appear in recommendations
         combined_text = " ".join(mock_recommendations).lower()
         matched_terms = sum(1 for term in trade_terms if term in combined_text)
         match_rate = matched_terms / len(trade_terms)
-        
-        assert match_rate >= 0.5, f"Only {match_rate*100:.0f}% trade terms found, need >= 50%"
+
+        assert match_rate >= 0.5, f"Only {match_rate * 100:.0f}% trade terms found, need >= 50%"
 
     def test_no_robotic_ai_phrases(self):
         """
@@ -674,40 +678,40 @@ class TestReportQualityGates:
             "in today's digital landscape",
             "in conclusion",
             "leverage",  # overused
-            "synergy",   # corporate speak
+            "synergy",  # corporate speak
             "robust solution",
         ]
-        
+
         # Good executive summary
         good_summary = """
-        Example Plumbing Co demonstrates strong technical SEO fundamentals with an 
-        overall score of 82/100 (Grade B). The website loads quickly (2.1s) and is 
-        properly mobile-optimized. Key opportunities include adding structured data 
+        Example Plumbing Co demonstrates strong technical SEO fundamentals with an
+        overall score of 82/100 (Grade B). The website loads quickly (2.1s) and is
+        properly mobile-optimized. Key opportunities include adding structured data
         for local search and improving AI visibility through better content organization.
-        
+
         Top 3 priorities for the next 14 days:
         1. Add LocalBusiness schema markup
         2. Create service area pages for Seattle, Bellevue, and Tacoma
         3. Optimize Google Business Profile with photos and service categories
         """
-        
+
         # Bad summary (contains AI phrases)
         bad_summary = """
-        It's important to note that in today's digital landscape, Example Plumbing Co 
-        needs to leverage robust solutions to delve into their SEO strategy. As an AI 
-        analyzing this data, I can see that the website demonstrates synergy between 
+        It's important to note that in today's digital landscape, Example Plumbing Co
+        needs to leverage robust solutions to delve into their SEO strategy. As an AI
+        analyzing this data, I can see that the website demonstrates synergy between
         technical and content factors. In conclusion, improvements are recommended.
         """
-        
+
         def has_banned_phrases(text: str) -> list[str]:
             text_lower = text.lower()
             return [phrase for phrase in banned_phrases if phrase in text_lower]
-        
+
         good_banned = has_banned_phrases(good_summary)
         bad_banned = has_banned_phrases(bad_summary)
-        
+
         assert len(good_banned) == 0, f"Good summary contains banned phrases: {good_banned}"
-        assert len(bad_banned) >= 5, f"Bad summary should trigger multiple banned phrases"
+        assert len(bad_banned) >= 5, "Bad summary should trigger multiple banned phrases"
 
 
 class TestCostCeiling:
@@ -716,6 +720,7 @@ class TestCostCeiling:
     @pytest.fixture
     def db_session(self):
         from database import SessionLocal
+
         _init_test_db()
         db = SessionLocal()
         yield db
@@ -724,10 +729,10 @@ class TestCostCeiling:
     def test_cost_ceiling_not_exceeded_low_tier(self, db_session):
         """Verify LOW tier stays under cost ceiling."""
         from database import Audit
-        from packages.core.cost_tracker import record_cost_event, check_cost_ceiling
-        
+        from packages.core.cost_tracker import check_cost_ceiling, record_cost_event
+
         audit_id = f"ceiling_low_{uuid.uuid4().hex[:8]}"
-        
+
         audit = Audit(
             id=audit_id,
             url="https://test.com",
@@ -737,7 +742,7 @@ class TestCostCeiling:
         )
         db_session.add(audit)
         db_session.commit()
-        
+
         # Record typical LOW tier costs
         record_cost_event(
             db=db_session,
@@ -749,13 +754,16 @@ class TestCostCeiling:
             completion_tokens=500,
             phase="analysis",
         )
-        
+
         exceeded, current, ceiling = check_cost_ceiling(db_session, audit_id, "low")
-        
-        assert not exceeded, f"LOW tier should not exceed ceiling. Current: ${current:.4f}, Ceiling: ${ceiling:.4f}"
-        
+
+        assert not exceeded, (
+            f"LOW tier should not exceed ceiling. Current: ${current:.4f}, Ceiling: ${ceiling:.4f}"
+        )
+
         # Cleanup
         from database import CostEvent
+
         db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).delete()
         db_session.query(Audit).filter(Audit.id == audit_id).delete()
         db_session.commit()
@@ -763,10 +771,10 @@ class TestCostCeiling:
     def test_cost_ceiling_triggers_on_excessive_calls(self, db_session):
         """Verify cost ceiling triggers when too many calls are made."""
         from database import Audit, CostEvent
-        from packages.core.cost_tracker import record_cost_event, check_cost_ceiling
-        
+        from packages.core.cost_tracker import check_cost_ceiling, record_cost_event
+
         audit_id = f"ceiling_excess_{uuid.uuid4().hex[:8]}"
-        
+
         audit = Audit(
             id=audit_id,
             url="https://test.com",
@@ -776,7 +784,7 @@ class TestCostCeiling:
         )
         db_session.add(audit)
         db_session.commit()
-        
+
         # Simulate excessive calls that would blow the budget
         for i in range(50):
             record_cost_event(
@@ -789,11 +797,13 @@ class TestCostCeiling:
                 completion_tokens=2000,
                 phase=f"call_{i}",
             )
-        
+
         exceeded, current, ceiling = check_cost_ceiling(db_session, audit_id, "low")
-        
-        assert exceeded, f"Should exceed LOW ceiling with 50 expensive calls. Current: ${current:.4f}"
-        
+
+        assert exceeded, (
+            f"Should exceed LOW ceiling with 50 expensive calls. Current: ${current:.4f}"
+        )
+
         # Cleanup
         db_session.query(CostEvent).filter(CostEvent.audit_id == audit_id).delete()
         db_session.query(Audit).filter(Audit.id == audit_id).delete()

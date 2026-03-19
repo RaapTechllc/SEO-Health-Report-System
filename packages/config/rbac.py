@@ -12,6 +12,7 @@ from fastapi import Depends, HTTPException, status
 
 class Role(str, Enum):
     """User roles within a tenant."""
+
     ADMIN = "admin"
     OWNER = "owner"
     MEMBER = "member"
@@ -20,6 +21,7 @@ class Role(str, Enum):
 
 class Permission(str, Enum):
     """Granular permissions for actions."""
+
     CREATE_AUDIT = "create_audit"
     VIEW_AUDIT = "view_audit"
     DELETE_AUDIT = "delete_audit"
@@ -103,7 +105,7 @@ def require_permission(permission: Permission | str) -> Callable:
         if not has_permission(user.role, perm):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Permission denied: {perm.value} required"
+                detail=f"Permission denied: {perm.value} required",
             )
         return user
 

@@ -7,6 +7,7 @@ class ReportTier(Enum):
     PRO = "pro"
     ENTERPRISE = "enterprise"
 
+
 @dataclass
 class TierRecommendation:
     recommended_tier: ReportTier
@@ -15,6 +16,7 @@ class TierRecommendation:
     site_complexity_score: int  # 0-100
     estimated_report_time: int  # minutes
     pricing_suggestion: dict[str, int]
+
 
 @dataclass
 class ReportConfig:
@@ -26,6 +28,7 @@ class ReportConfig:
     ai_visibility_focus: bool
     estimated_time: int  # minutes
     target_price: int  # dollars
+
 
 @dataclass
 class SiteComplexity:

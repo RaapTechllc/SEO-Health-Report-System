@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Backlink:
     """A backlink pointing to the site."""
+
     source_url: str
     target_url: str
     anchor_text: str
@@ -30,9 +31,7 @@ class Backlink:
 
 
 def analyze_backlink_profile(
-    url: str,
-    api_key: Optional[str] = None,
-    api_provider: str = "moz"
+    url: str, api_key: Optional[str] = None, api_provider: str = "moz"
 ) -> dict[str, Any]:
     """
     Analyze backlink profile using external API.
@@ -54,14 +53,14 @@ def analyze_backlink_profile(
 
     for provider in providers:
         key = api_key if provider == api_provider else None
-        key = key or os.environ.get(f'{provider.upper()}_API_KEY')
+        key = key or os.environ.get(f"{provider.upper()}_API_KEY")
 
         if not key:
             continue
 
         try:
             if provider == "moz":
-                secret = os.environ.get('MOZ_API_SECRET', '')
+                secret = os.environ.get("MOZ_API_SECRET", "")
                 return _analyze_with_moz(url, key, secret)
             elif provider == "ahrefs":
                 return _analyze_with_ahrefs(url, key)
@@ -83,19 +82,21 @@ def analyze_backlink_profile(
         "anchor_distribution": {},
         "top_referring_domains": [],
         "toxic_links": [],
-        "issues": [{
-            "severity": "medium",
-            "category": "backlinks",
-            "description": "Backlink analysis unavailable — no API key configured",
-            "recommendation": (
-                "Set MOZ_API_KEY (recommended), AHREFS_API_KEY, or SEMRUSH_API_KEY "
-                "for real backlink data"
-            )
-        }],
+        "issues": [
+            {
+                "severity": "medium",
+                "category": "backlinks",
+                "description": "Backlink analysis unavailable — no API key configured",
+                "recommendation": (
+                    "Set MOZ_API_KEY (recommended), AHREFS_API_KEY, or SEMRUSH_API_KEY "
+                    "for real backlink data"
+                ),
+            }
+        ],
         "findings": [
             "Backlink data unavailable — API key required for accurate analysis",
-            "This component is excluded from scoring until real data is available"
-        ]
+            "This component is excluded from scoring until real data is available",
+        ],
     }
 
 
@@ -127,16 +128,14 @@ def _analyze_with_moz(url: str, access_id: str, secret_key: str) -> dict[str, An
 
     # Moz Links API v2 - URL Metrics
     api_url = "https://lsapi.seomoz.com/v2/url_metrics"
-    payload = {
-        "targets": [target]
-    }
+    payload = {"targets": [target]}
 
     response = requests.post(
         api_url,
         json=payload,
         auth=(access_id, secret_key),
         timeout=15,
-        headers={"Content-Type": "application/json"}
+        headers={"Content-Type": "application/json"},
     )
     response.raise_for_status()
     data = response.json()
@@ -153,12 +152,14 @@ def _analyze_with_moz(url: str, access_id: str, secret_key: str) -> dict[str, An
     external_links = metrics.get("external_pages_to_root_domain", 0)
 
     # Calculate score from real data
-    score = calculate_backlink_score({
-        "domain_authority": round(domain_authority),
-        "referring_domains": linking_root_domains,
-        "dofollow_ratio": 0.65,  # Moz doesn't break this out in basic endpoint
-        "toxic_count": 0
-    })
+    score = calculate_backlink_score(
+        {
+            "domain_authority": round(domain_authority),
+            "referring_domains": linking_root_domains,
+            "dofollow_ratio": 0.65,  # Moz doesn't break this out in basic endpoint
+            "toxic_count": 0,
+        }
+    )
 
     return {
         "score": score,
@@ -178,8 +179,8 @@ def _analyze_with_moz(url: str, access_id: str, secret_key: str) -> dict[str, An
             f"Domain Authority: {round(domain_authority)}/100 (Moz)",
             f"Page Authority: {round(page_authority)}/100",
             f"Referring Domains: {linking_root_domains:,}",
-            f"External Links: {external_links:,}"
-        ]
+            f"External Links: {external_links:,}",
+        ],
     }
 
 
@@ -204,7 +205,7 @@ def _analyze_with_ahrefs(url: str, api_key: str) -> dict[str, Any]:
         "from": "domain_rating",
         "target": target,
         "mode": "domain",
-        "output": "json"
+        "output": "json",
     }
 
     response = requests.get(api_url, params=params, timeout=15)
@@ -226,12 +227,14 @@ def _analyze_with_ahrefs(url: str, api_key: str) -> dict[str, Any]:
     dofollow = stats_data.get("backlinks_dofollow", 0)
     dofollow_ratio = dofollow / total_backlinks if total_backlinks > 0 else 0
 
-    score = calculate_backlink_score({
-        "domain_authority": round(domain_rating),
-        "referring_domains": referring_domains,
-        "dofollow_ratio": dofollow_ratio,
-        "toxic_count": 0
-    })
+    score = calculate_backlink_score(
+        {
+            "domain_authority": round(domain_rating),
+            "referring_domains": referring_domains,
+            "dofollow_ratio": dofollow_ratio,
+            "toxic_count": 0,
+        }
+    )
 
     return {
         "score": score,
@@ -250,8 +253,8 @@ def _analyze_with_ahrefs(url: str, api_key: str) -> dict[str, Any]:
             f"Domain Rating: {round(domain_rating)}/100 (Ahrefs)",
             f"Referring Domains: {referring_domains:,}",
             f"Total Backlinks: {total_backlinks:,}",
-            f"Dofollow Ratio: {dofollow_ratio:.0%}"
-        ]
+            f"Dofollow Ratio: {dofollow_ratio:.0%}",
+        ],
     }
 
 
@@ -276,7 +279,7 @@ def _analyze_with_semrush(url: str, api_key: str) -> dict[str, Any]:
         "type": "backlinks_overview",
         "target": target,
         "target_type": "root_domain",
-        "export_columns": "total,domains_num,urls_num,ips_num,follows_num,nofollows_num,score"
+        "export_columns": "total,domains_num,urls_num,ips_num,follows_num,nofollows_num,score",
     }
 
     response = requests.get(api_url, params=params, timeout=15)
@@ -297,12 +300,14 @@ def _analyze_with_semrush(url: str, api_key: str) -> dict[str, Any]:
     authority_score = int(metrics.get("score", 0))
     dofollow_ratio = follows / total_backlinks if total_backlinks > 0 else 0
 
-    score = calculate_backlink_score({
-        "domain_authority": authority_score,
-        "referring_domains": referring_domains,
-        "dofollow_ratio": dofollow_ratio,
-        "toxic_count": 0
-    })
+    score = calculate_backlink_score(
+        {
+            "domain_authority": authority_score,
+            "referring_domains": referring_domains,
+            "dofollow_ratio": dofollow_ratio,
+            "toxic_count": 0,
+        }
+    )
 
     return {
         "score": score,
@@ -321,8 +326,8 @@ def _analyze_with_semrush(url: str, api_key: str) -> dict[str, Any]:
             f"Authority Score: {authority_score}/100 (SEMrush)",
             f"Referring Domains: {referring_domains:,}",
             f"Total Backlinks: {total_backlinks:,}",
-            f"Dofollow Ratio: {dofollow_ratio:.0%}"
-        ]
+            f"Dofollow Ratio: {dofollow_ratio:.0%}",
+        ],
     }
 
 
@@ -336,19 +341,14 @@ def check_toxic_links(backlinks: list[Backlink]) -> dict[str, Any]:
     Returns:
         Dict with toxic link analysis
     """
-    result = {
-        "toxic_count": 0,
-        "suspicious_count": 0,
-        "toxic_links": [],
-        "issues": []
-    }
+    result = {"toxic_count": 0, "suspicious_count": 0, "toxic_links": [], "issues": []}
 
     toxic_indicators = [
-        r'(?:porn|xxx|adult|casino|gambling|viagra|cialis|pharma)',
-        r'(?:free-?(?:download|movies|music|software))',
-        r'(?:cheap-?(?:seo|backlinks|links))',
-        r'\.(?:xyz|top|gq|ml|cf|tk|ga)$',
-        r'(?:link-?farm|link-?network|pbn)',
+        r"(?:porn|xxx|adult|casino|gambling|viagra|cialis|pharma)",
+        r"(?:free-?(?:download|movies|music|software))",
+        r"(?:cheap-?(?:seo|backlinks|links))",
+        r"\.(?:xyz|top|gq|ml|cf|tk|ga)$",
+        r"(?:link-?farm|link-?network|pbn)",
     ]
 
     for backlink in backlinks:
@@ -368,30 +368,33 @@ def check_toxic_links(backlinks: list[Backlink]) -> dict[str, Any]:
 
         if is_toxic:
             result["toxic_count"] += 1
-            result["toxic_links"].append({
-                "url": backlink.source_url,
-                "reason": "Matches toxic pattern"
-            })
+            result["toxic_links"].append(
+                {"url": backlink.source_url, "reason": "Matches toxic pattern"}
+            )
         elif is_suspicious:
             result["suspicious_count"] += 1
 
     if result["toxic_count"] > 0:
-        result["issues"].append({
-            "severity": "high",
-            "category": "backlinks",
-            "description": f"Found {result['toxic_count']} potentially toxic backlinks",
-            "recommendation": "Review and disavow toxic backlinks in Google Search Console"
-        })
+        result["issues"].append(
+            {
+                "severity": "high",
+                "category": "backlinks",
+                "description": f"Found {result['toxic_count']} potentially toxic backlinks",
+                "recommendation": "Review and disavow toxic backlinks in Google Search Console",
+            }
+        )
 
     if backlinks and result["suspicious_count"] > len(backlinks) * 0.3:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "backlinks",
-            "description": (
-                f"High number of low-quality backlinks ({result['suspicious_count']})"
-            ),
-            "recommendation": "Focus on earning higher-quality backlinks"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "backlinks",
+                "description": (
+                    f"High number of low-quality backlinks ({result['suspicious_count']})"
+                ),
+                "recommendation": "Focus on earning higher-quality backlinks",
+            }
+        )
 
     return result
 
@@ -474,28 +477,30 @@ def estimate_backlink_health(url: str) -> dict[str, Any]:
         "data_source": "heuristic",
         "estimated": True,
         "findings": ["Backlink score estimated from on-page signals — add API key for real data"],
-        "issues": [{
-            "severity": "low",
-            "category": "backlinks",
-            "description": "Using heuristic backlink estimation (no API key)",
-            "recommendation": "Set MOZ_API_KEY for accurate backlink analysis"
-        }]
+        "issues": [
+            {
+                "severity": "low",
+                "category": "backlinks",
+                "description": "Using heuristic backlink estimation (no API key)",
+                "recommendation": "Set MOZ_API_KEY for accurate backlink analysis",
+            }
+        ],
     }
 
     try:
-        headers = {'User-Agent': 'SEO-Health-Report-Bot/1.0'}
+        headers = {"User-Agent": "SEO-Health-Report-Bot/1.0"}
         response = requests.get(url, headers=headers, timeout=10)
 
         html = response.text.lower()
         authority_signals = 0
 
-        if any(term in html for term in ['featured in', 'as seen in', 'press', 'media']):
+        if any(term in html for term in ["featured in", "as seen in", "press", "media"]):
             authority_signals += 1
-        if any(term in html for term in ['award', 'recognized', 'certified', 'accredited']):
+        if any(term in html for term in ["award", "recognized", "certified", "accredited"]):
             authority_signals += 1
-        if any(term in html for term in ['partner', 'trusted by', 'our clients']):
+        if any(term in html for term in ["partner", "trusted by", "our clients"]):
             authority_signals += 1
-        if any(term in html for term in ['testimonial', 'review', 'customers']):
+        if any(term in html for term in ["testimonial", "review", "customers"]):
             authority_signals += 1
 
         if authority_signals >= 3:
@@ -518,9 +523,9 @@ def estimate_backlink_health(url: str) -> dict[str, Any]:
 
 
 __all__ = [
-    'Backlink',
-    'analyze_backlink_profile',
-    'check_toxic_links',
-    'calculate_backlink_score',
-    'estimate_backlink_health'
+    "Backlink",
+    "analyze_backlink_profile",
+    "check_toxic_links",
+    "calculate_backlink_score",
+    "estimate_backlink_health",
 ]

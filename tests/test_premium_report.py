@@ -11,7 +11,8 @@ import sys
 # Add project root to path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
-sys.path.insert(0, os.path.join(project_root, 'seo-health-report', 'scripts'))
+sys.path.insert(0, os.path.join(project_root, "seo-health-report", "scripts"))
+
 
 def test_premium_report():
     """Test premium report generation with sample data."""
@@ -23,51 +24,79 @@ def test_premium_report():
         "component_scores": {
             "technical": {"score": 72, "weight": 0.30},
             "content": {"score": 81, "weight": 0.35},
-            "ai_visibility": {"score": 82, "weight": 0.35}
-        }
+            "ai_visibility": {"score": 82, "weight": 0.35},
+        },
     }
 
     sample_technical = {
         "score": 72,
         "grade": "C",
         "components": {
-            "crawlability": {"score": 18, "max": 20, "findings": ["Robots.txt found", "Sitemap present"]},
+            "crawlability": {
+                "score": 18,
+                "max": 20,
+                "findings": ["Robots.txt found", "Sitemap present"],
+            },
             "speed": {"score": 15, "max": 25, "findings": ["LCP: 2.8s", "FID: 120ms"]},
-            "security": {"score": 8, "max": 10, "findings": ["HTTPS enabled", "Security headers present"]},
-            "mobile": {"score": 12, "max": 15, "findings": ["Mobile-friendly", "Viewport configured"]},
-            "structured_data": {"score": 10, "max": 15, "findings": ["Basic schema present"]}
-        }
+            "security": {
+                "score": 8,
+                "max": 10,
+                "findings": ["HTTPS enabled", "Security headers present"],
+            },
+            "mobile": {
+                "score": 12,
+                "max": 15,
+                "findings": ["Mobile-friendly", "Viewport configured"],
+            },
+            "structured_data": {"score": 10, "max": 15, "findings": ["Basic schema present"]},
+        },
     }
 
     sample_content = {
         "score": 81,
         "grade": "B",
         "components": {
-            "content_quality": {"score": 20, "max": 25, "findings": ["Good content length", "Readable text"]},
-            "eeat": {"score": 16, "max": 20, "findings": ["Author pages present", "Contact info visible"]},
+            "content_quality": {
+                "score": 20,
+                "max": 25,
+                "findings": ["Good content length", "Readable text"],
+            },
+            "eeat": {
+                "score": 16,
+                "max": 20,
+                "findings": ["Author pages present", "Contact info visible"],
+            },
             "topical_authority": {"score": 12, "max": 15, "findings": ["Good keyword coverage"]},
             "backlinks": {"score": 11, "max": 15, "findings": ["Moderate link profile"]},
-            "internal_links": {"score": 8, "max": 10, "findings": ["Good internal structure"]}
-        }
+            "internal_links": {"score": 8, "max": 10, "findings": ["Good internal structure"]},
+        },
     }
 
     sample_ai = {
         "score": 82,
         "grade": "B",
         "components": {
-            "ai_presence": {"score": 20, "max": 25, "findings": ["Brand mentioned in 80% of queries"]},
+            "ai_presence": {
+                "score": 20,
+                "max": 25,
+                "findings": ["Brand mentioned in 80% of queries"],
+            },
             "accuracy": {"score": 16, "max": 20, "findings": ["Most information accurate"]},
             "parseability": {"score": 12, "max": 15, "findings": ["Clean HTML structure"]},
             "knowledge_graph": {"score": 10, "max": 15, "findings": ["Limited KG presence"]},
-            "citation_likelihood": {"score": 12, "max": 15, "findings": ["Some authoritative content"]},
-            "sentiment": {"score": 8, "max": 10, "findings": ["Positive brand sentiment"]}
-        }
+            "citation_likelihood": {
+                "score": 12,
+                "max": 15,
+                "findings": ["Some authoritative content"],
+            },
+            "sentiment": {"score": 8, "max": 10, "findings": ["Positive brand sentiment"]},
+        },
     }
 
     sample_results = {
         "company": "Test Company",
         "url": "https://testcompany.com",
-        "timestamp": "2026-01-12T11:51:09.769-06:00"
+        "timestamp": "2026-01-12T11:51:09.769-06:00",
     }
 
     try:
@@ -83,7 +112,7 @@ def test_premium_report():
             target_url="https://testcompany.com",
             agency_name="RaapTech",
             client_logo_path=None,  # No logo for test
-            agency_logo_path=None   # No logo for test
+            agency_logo_path=None,  # No logo for test
         )
 
         if output_path:
@@ -97,8 +126,10 @@ def test_premium_report():
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     print("🧪 Testing Premium Report Template...")

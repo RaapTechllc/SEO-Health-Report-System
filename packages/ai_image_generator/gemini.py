@@ -12,11 +12,17 @@ from .openai import generate_openai_image
 from .utils import GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL, OPENAI_IMAGE_MODEL
 
 
-def generate_gemini_summary(company_name: str, score: int, grade: str,
-                            tech_score: int, content_score: int, ai_score: int,
-                            industry: str) -> Optional[str]:
+def generate_gemini_summary(
+    company_name: str,
+    score: int,
+    grade: str,
+    tech_score: int,
+    content_score: int,
+    ai_score: int,
+    industry: str,
+) -> Optional[str]:
     """Generate executive summary using Gemini."""
-    api_key = os.environ.get('GOOGLE_GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+    api_key = os.environ.get("GOOGLE_GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         return None
 
@@ -36,25 +42,33 @@ Keep it professional and suitable for a C-level executive."""
 
     try:
         model = GEMINI_TEXT_MODEL
-        url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
-        response = httpx.post(url, json={
-            'contents': [{'parts': [{'text': prompt}]}],
-            'generationConfig': {'temperature': 0.7}
-        }, timeout=30)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        response = httpx.post(
+            url,
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.7},
+            },
+            timeout=30,
+        )
 
         if response.status_code == 200:
-            return response.json()['candidates'][0]['content']['parts'][0]['text']
+            return response.json()["candidates"][0]["content"]["parts"][0]["text"]
         else:
-            print(f"Gemini text API ({model}) returned {response.status_code}: {response.text[:200]}")
+            print(
+                f"Gemini text API ({model}) returned {response.status_code}: {response.text[:200]}"
+            )
     except Exception as e:
         print(f"Gemini summary generation failed: {e}")
 
     return None
 
 
-def generate_gemini_score_badge(score: int, grade: str, company_name: str, output_path: str) -> Optional[str]:
+def generate_gemini_score_badge(
+    score: int, grade: str, company_name: str, output_path: str
+) -> Optional[str]:
     """Generate a premium score badge using Gemini Imagen."""
-    api_key = os.environ.get('GOOGLE_GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+    api_key = os.environ.get("GOOGLE_GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         return None
 
@@ -86,42 +100,52 @@ DESIGN REQUIREMENTS:
 
         def decode_and_save(img_b64, path):
             if img_b64:
-                with open(path, 'wb') as f:
+                with open(path, "wb") as f:
                     f.write(base64.b64decode(img_b64))
                 print(f"[OK] Generated Gemini score badge using {model}")
                 return path
             return None
 
         if "gemini" in model.lower():
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
-            response = httpx.post(url, json={
-                'contents': [{'parts': [{'text': prompt}]}],
-                'generationConfig': {'response_mime_type': 'image/jpeg'}
-            }, timeout=60)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            response = httpx.post(
+                url,
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"response_mime_type": "image/jpeg"},
+                },
+                timeout=60,
+            )
 
             if response.status_code == 200:
                 data = response.json()
                 try:
-                    candidates = data.get('candidates', [])
+                    candidates = data.get("candidates", [])
                     if candidates:
-                        parts = candidates[0].get('content', {}).get('parts', [])
+                        parts = candidates[0].get("content", {}).get("parts", [])
                         for part in parts:
-                            if 'inline_data' in part:
-                                if decode_and_save(part['inline_data'].get('data'), output_path):
+                            if "inline_data" in part:
+                                if decode_and_save(part["inline_data"].get("data"), output_path):
                                     return output_path
                 except Exception:
                     pass
         else:
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:predict?key={api_key}'
-            response = httpx.post(url, json={
-                'instances': [{'prompt': prompt}],
-                'parameters': {'sampleCount': 1, 'aspectRatio': '1:1'}
-            }, timeout=60)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:predict?key={api_key}"
+            response = httpx.post(
+                url,
+                json={
+                    "instances": [{"prompt": prompt}],
+                    "parameters": {"sampleCount": 1, "aspectRatio": "1:1"},
+                },
+                timeout=60,
+            )
 
             if response.status_code == 200:
                 data = response.json()
-                if 'predictions' in data and data['predictions']:
-                    if decode_and_save(data['predictions'][0].get('bytesBase64Encoded'), output_path):
+                if "predictions" in data and data["predictions"]:
+                    if decode_and_save(
+                        data["predictions"][0].get("bytesBase64Encoded"), output_path
+                    ):
                         return output_path
 
         if response.status_code != 200:
@@ -133,9 +157,11 @@ DESIGN REQUIREMENTS:
     return generate_openai_image(prompt, output_path, "1024x1024")
 
 
-def generate_gemini_header_image(company_name: str, industry: str, output_path: str) -> Optional[str]:
+def generate_gemini_header_image(
+    company_name: str, industry: str, output_path: str
+) -> Optional[str]:
     """Generate a professional header banner using Gemini Imagen."""
-    api_key = os.environ.get('GOOGLE_GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+    api_key = os.environ.get("GOOGLE_GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         return None
 
@@ -157,42 +183,52 @@ DESIGN:
 
         def decode_and_save(img_b64, path):
             if img_b64:
-                with open(path, 'wb') as f:
+                with open(path, "wb") as f:
                     f.write(base64.b64decode(img_b64))
                 print(f"[OK] Generated Gemini header image using {model}")
                 return path
             return None
 
         if "gemini" in model.lower():
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
-            response = httpx.post(url, json={
-                'contents': [{'parts': [{'text': prompt}]}],
-                'generationConfig': {'response_mime_type': 'image/jpeg'}
-            }, timeout=60)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            response = httpx.post(
+                url,
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"response_mime_type": "image/jpeg"},
+                },
+                timeout=60,
+            )
 
             if response.status_code == 200:
                 data = response.json()
                 try:
-                    candidates = data.get('candidates', [])
+                    candidates = data.get("candidates", [])
                     if candidates:
-                        parts = candidates[0].get('content', {}).get('parts', [])
+                        parts = candidates[0].get("content", {}).get("parts", [])
                         for part in parts:
-                            if 'inline_data' in part:
-                                if decode_and_save(part['inline_data'].get('data'), output_path):
+                            if "inline_data" in part:
+                                if decode_and_save(part["inline_data"].get("data"), output_path):
                                     return output_path
                 except Exception:
                     pass
         else:
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:predict?key={api_key}'
-            response = httpx.post(url, json={
-                'instances': [{'prompt': prompt}],
-                'parameters': {'sampleCount': 1, 'aspectRatio': '16:9'}
-            }, timeout=60)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:predict?key={api_key}"
+            response = httpx.post(
+                url,
+                json={
+                    "instances": [{"prompt": prompt}],
+                    "parameters": {"sampleCount": 1, "aspectRatio": "16:9"},
+                },
+                timeout=60,
+            )
 
             if response.status_code == 200:
                 data = response.json()
-                if 'predictions' in data and data['predictions']:
-                    if decode_and_save(data['predictions'][0].get('bytesBase64Encoded'), output_path):
+                if "predictions" in data and data["predictions"]:
+                    if decode_and_save(
+                        data["predictions"][0].get("bytesBase64Encoded"), output_path
+                    ):
                         return output_path
 
         if response.status_code != 200:
@@ -206,7 +242,7 @@ DESIGN:
 
 def generate_gemini_logo(company_name: str, industry: str, output_path: str) -> Optional[str]:
     """Generate a minimal company logo using Gemini Imagen as fallback."""
-    api_key = os.environ.get('GOOGLE_GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+    api_key = os.environ.get("GOOGLE_GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         return None
 
@@ -235,7 +271,7 @@ def generate_gemini_logo(company_name: str, industry: str, output_path: str) -> 
                 img.verify()
 
                 img = PILImage.open(BytesIO(img_bytes))
-                img.save(path, 'PNG')
+                img.save(path, "PNG")
                 print(f"[OK] Generated Gemini logo using {model}")
                 return True
             except Exception as e:
@@ -243,35 +279,45 @@ def generate_gemini_logo(company_name: str, industry: str, output_path: str) -> 
                 return False
 
         if "gemini" in model.lower():
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
-            response = httpx.post(url, json={
-                'contents': [{'parts': [{'text': prompt}]}],
-                'generationConfig': {'response_mime_type': 'image/jpeg'}
-            }, timeout=60)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            response = httpx.post(
+                url,
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"response_mime_type": "image/jpeg"},
+                },
+                timeout=60,
+            )
 
             if response.status_code == 200:
                 data = response.json()
                 try:
-                    candidates = data.get('candidates', [])
+                    candidates = data.get("candidates", [])
                     if candidates:
-                        parts = candidates[0].get('content', {}).get('parts', [])
+                        parts = candidates[0].get("content", {}).get("parts", [])
                         for part in parts:
-                            if 'inline_data' in part:
-                                if save_b64_image(part['inline_data'].get('data'), output_path):
+                            if "inline_data" in part:
+                                if save_b64_image(part["inline_data"].get("data"), output_path):
                                     return output_path
                 except Exception:
                     pass
         else:
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:predict?key={api_key}'
-            response = httpx.post(url, json={
-                'instances': [{'prompt': prompt}],
-                'parameters': {'sampleCount': 1, 'aspectRatio': '1:1'}
-            }, timeout=60)
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:predict?key={api_key}"
+            response = httpx.post(
+                url,
+                json={
+                    "instances": [{"prompt": prompt}],
+                    "parameters": {"sampleCount": 1, "aspectRatio": "1:1"},
+                },
+                timeout=60,
+            )
 
             if response.status_code == 200:
                 data = response.json()
-                if 'predictions' in data and data['predictions']:
-                    if save_b64_image(data['predictions'][0].get('bytesBase64Encoded'), output_path):
+                if "predictions" in data and data["predictions"]:
+                    if save_b64_image(
+                        data["predictions"][0].get("bytesBase64Encoded"), output_path
+                    ):
                         return output_path
 
         if response.status_code != 200:

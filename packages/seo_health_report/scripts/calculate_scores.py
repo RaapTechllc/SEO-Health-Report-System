@@ -245,8 +245,7 @@ def calculate_benchmark_comparison(
         "overall": {
             "score": scores.get("overall_score", 0),
             "benchmark": benchmarks.get("overall", 70),
-            "vs_benchmark": scores.get("overall_score", 0)
-            - benchmarks.get("overall", 70),
+            "vs_benchmark": scores.get("overall_score", 0) - benchmarks.get("overall", 70),
         },
         "components": {},
     }

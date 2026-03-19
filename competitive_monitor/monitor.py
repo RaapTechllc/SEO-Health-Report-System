@@ -9,7 +9,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import ScoreSnapshot
 from scheduler import scheduler
-
 from storage import CompetitorStorage
 
 
@@ -24,9 +23,7 @@ class CompetitorMonitor:
 
         for competitor in competitors:
             scheduler.schedule_competitor(
-                competitor.id,
-                competitor.monitoring_frequency,
-                self._monitor_competitor_callback
+                competitor.id, competitor.monitoring_frequency, self._monitor_competitor_callback
             )
 
         scheduler.start()
@@ -52,7 +49,7 @@ class CompetitorMonitor:
 
             if report_result:
                 # Extract scores
-                new_score = report_result.get('overall_score', 0)
+                new_score = report_result.get("overall_score", 0)
 
                 # Update competitor score
                 self.storage.update_competitor_score(competitor_id, new_score)
@@ -60,12 +57,12 @@ class CompetitorMonitor:
                 # Create score snapshot
                 snapshot = ScoreSnapshot(
                     timestamp=datetime.now(),
-                    overall_score=report_result.get('overall_score', 0),
-                    technical_score=report_result.get('technical', {}).get('score', 0),
-                    content_score=report_result.get('content', {}).get('score', 0),
-                    ai_visibility_score=report_result.get('ai_visibility', {}).get('score', 0),
-                    grade=report_result.get('grade', 'F'),
-                    key_changes=self._identify_key_changes(competitor, report_result)
+                    overall_score=report_result.get("overall_score", 0),
+                    technical_score=report_result.get("technical", {}).get("score", 0),
+                    content_score=report_result.get("content", {}).get("score", 0),
+                    ai_visibility_score=report_result.get("ai_visibility", {}).get("score", 0),
+                    grade=report_result.get("grade", "F"),
+                    key_changes=self._identify_key_changes(competitor, report_result),
                 )
 
                 # Store snapshot
@@ -74,7 +71,9 @@ class CompetitorMonitor:
                 # Check for significant changes
                 self._check_score_changes(competitor, new_score)
 
-                self.logger.info(f"Updated {competitor.company_name}: {new_score}/100 ({snapshot.grade})")
+                self.logger.info(
+                    f"Updated {competitor.company_name}: {new_score}/100 ({snapshot.grade})"
+                )
             else:
                 self.logger.error(f"Failed to generate report for {competitor.company_name}")
 
@@ -102,9 +101,7 @@ class CompetitorMonitor:
 
                     # Run the report
                     result = seo_module.generate_report(
-                        target_url=url,
-                        company_name="Competitor Analysis",
-                        output_format="json"
+                        target_url=url, company_name="Competitor Analysis", output_format="json"
                     )
                     return result
                 else:
@@ -135,7 +132,7 @@ class CompetitorMonitor:
         changes = []
 
         # Compare with previous score
-        score_change = report_result.get('overall_score', 0) - competitor.current_score
+        score_change = report_result.get("overall_score", 0) - competitor.current_score
 
         if abs(score_change) >= competitor.alert_threshold:
             if score_change > 0:
@@ -144,8 +141,8 @@ class CompetitorMonitor:
                 changes.append(f"Score decreased by {abs(score_change)} points")
 
         # Add grade change if significant
-        current_grade = report_result.get('grade', 'F')
-        if hasattr(competitor, 'last_grade') and competitor.last_grade != current_grade:
+        current_grade = report_result.get("grade", "F")
+        if hasattr(competitor, "last_grade") and competitor.last_grade != current_grade:
             changes.append(f"Grade changed from {competitor.last_grade} to {current_grade}")
 
         return changes
@@ -164,11 +161,14 @@ class CompetitorMonitor:
                 previous_score=competitor.current_score,
                 current_score=new_score,
                 trigger_reason=f"Score change of {score_change} points exceeds threshold of {competitor.alert_threshold}",
-                alert_channels=["email", "log"]
+                alert_channels=["email", "log"],
             )
 
             self.storage.add_alert(alert)
-            self.logger.warning(f"ALERT: {competitor.company_name} score changed by {score_change} points")
+            self.logger.warning(
+                f"ALERT: {competitor.company_name} score changed by {score_change} points"
+            )
+
 
 # Global monitor instance
 monitor = CompetitorMonitor()

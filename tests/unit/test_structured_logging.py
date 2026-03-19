@@ -75,6 +75,7 @@ class TestJSONFormatter:
             raise ValueError("Test error")
         except ValueError:
             import sys
+
             exc_info = sys.exc_info()
 
         record = logging.LogRecord(
@@ -226,6 +227,7 @@ class TestGetLogger:
     def test_json_in_production(self):
         """Test JSON formatting in production environment."""
         from packages.seo_health_report.seo_logging import structured_logger
+
         structured_logger._is_json_mode = None
         structured_logger._loggers.clear()
 
@@ -237,6 +239,7 @@ class TestGetLogger:
     def test_text_in_development(self):
         """Test text formatting in development environment."""
         from packages.seo_health_report.seo_logging import structured_logger
+
         structured_logger._is_json_mode = None
 
         assert is_json_logging_enabled() is False
@@ -247,6 +250,7 @@ class TestGetLogger:
     def test_force_json_format(self):
         """Test forcing JSON format via LOG_FORMAT."""
         from packages.seo_health_report.seo_logging import structured_logger
+
         structured_logger._is_json_mode = None
 
         assert is_json_logging_enabled() is True

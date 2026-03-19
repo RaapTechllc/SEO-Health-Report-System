@@ -22,11 +22,10 @@ os.environ["RATE_LIMIT_REQUESTS_PER_MINUTE"] = "10000"
 os.environ["RATE_LIMIT_AUDITS_PER_DAY"] = "1000"
 
 mock_stripe = MagicMock()
-mock_stripe.checkout.Session.create = MagicMock(return_value=MagicMock(
-    id="cs_test_123",
-    url="https://checkout.stripe.com/test"
-))
-sys.modules['stripe'] = mock_stripe
+mock_stripe.checkout.Session.create = MagicMock(
+    return_value=MagicMock(id="cs_test_123", url="https://checkout.stripe.com/test")
+)
+sys.modules["stripe"] = mock_stripe
 
 from fastapi.testclient import TestClient
 
@@ -34,8 +33,10 @@ from fastapi.testclient import TestClient
 def _create_audit_jobs_table(engine):
     """Create audit_jobs table for testing (matches migration v002)."""
     from sqlalchemy import text
+
     with engine.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_jobs (
                 job_id TEXT PRIMARY KEY,
                 tenant_id TEXT NOT NULL DEFAULT 'default',
@@ -48,8 +49,10 @@ def _create_audit_jobs_table(engine):
                 finished_at TIMESTAMP,
                 error_message TEXT
             )
-        """))
-        conn.execute(text("""
+        """)
+        )
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_progress_events (
                 event_id TEXT PRIMARY KEY,
                 audit_id TEXT NOT NULL,
@@ -59,7 +62,8 @@ def _create_audit_jobs_table(engine):
                 message TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """))
+        """)
+        )
         conn.commit()
 
 
@@ -67,9 +71,11 @@ def _create_audit_jobs_table(engine):
 def app():
     """Get the FastAPI application instance with initialized database."""
     from database import engine, init_db
+
     init_db()
     _create_audit_jobs_table(engine)
     from apps.api.main import app as fastapi_app
+
     return fastapi_app
 
 
@@ -96,8 +102,7 @@ def test_password() -> str:
 def registered_user(client: TestClient, unique_email: str, test_password: str) -> dict[str, Any]:
     """Register a new user and return credentials with token."""
     response = client.post(
-        "/auth/register",
-        json={"email": unique_email, "password": test_password}
+        "/auth/register", json={"email": unique_email, "password": test_password}
     )
     assert response.status_code == 200, f"Registration failed: {response.text}"
     data = response.json()
@@ -175,8 +180,10 @@ def mock_audit_execution():
     }
 
     with patch("scripts.orchestrate.run_full_audit") as mock_run:
+
         async def async_mock(*args, **kwargs):
             return mock_result
+
         mock_run.side_effect = async_mock
         yield mock_run
 
@@ -228,8 +235,10 @@ def mock_audit_with_errors():
     }
 
     with patch("scripts.orchestrate.run_full_audit") as mock_run:
+
         async def async_mock(*args, **kwargs):
             return mock_result
+
         mock_run.side_effect = async_mock
         yield mock_run
 
@@ -238,6 +247,7 @@ def mock_audit_with_errors():
 def fixture_sites():
     """Get test fixture sites."""
     from tests.fixtures.sites import FIXTURE_SITES, get_fixture
+
     return {"all": FIXTURE_SITES, "get": get_fixture}
 
 
@@ -257,7 +267,7 @@ def mock_pagespeed():
                 "first-input-delay": {"numericValue": 50},
                 "cumulative-layout-shift": {"numericValue": 0.05},
                 "speed-index": {"numericValue": 2000},
-            }
+            },
         }
     }
 

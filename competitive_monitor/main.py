@@ -30,12 +30,10 @@ def setup_logging():
     """Setup logging configuration."""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler('competitive_monitor.log')
-        ]
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(), logging.FileHandler("competitive_monitor.log")],
     )
+
 
 def main():
     """Main entry point."""
@@ -56,6 +54,7 @@ def main():
 
         # Start API server
         import uvicorn
+
         print("🌐 API Server starting on http://localhost:8000")
         print("📊 Dashboard: http://localhost:8000/dashboard")
         print("📋 Docs: http://localhost:8000/docs")
@@ -69,6 +68,7 @@ def main():
     except Exception as e:
         logger.error(f"Startup failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

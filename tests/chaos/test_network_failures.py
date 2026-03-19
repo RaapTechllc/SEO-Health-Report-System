@@ -20,9 +20,7 @@ class TestDNSFailures:
     async def test_dns_resolution_failure_clear_error(self):
         """DNS failure should return clear error message."""
         with patch("socket.getaddrinfo") as mock_dns:
-            mock_dns.side_effect = socket.gaierror(
-                socket.EAI_NONAME, "Name or service not known"
-            )
+            mock_dns.side_effect = socket.gaierror(socket.EAI_NONAME, "Name or service not known")
 
             error_message = None
             try:
@@ -39,8 +37,7 @@ class TestDNSFailures:
             "url": "https://nonexistent.invalid",
             "status": "failed",
             "error_type": "dns_resolution",
-            "error_message": "Could not resolve domain name. "
-            "Please verify the URL is correct.",
+            "error_message": "Could not resolve domain name. Please verify the URL is correct.",
             "user_friendly_message": "We couldn't reach this website. "
             "The domain name doesn't appear to exist.",
         }
@@ -122,9 +119,7 @@ class TestSSLErrors:
     async def test_ssl_certificate_error_handling(self):
         """SSL certificate errors should be handled and reported."""
         with patch("ssl.SSLContext.wrap_socket") as mock_ssl:
-            mock_ssl.side_effect = ssl.SSLCertVerificationError(
-                "certificate verify failed"
-            )
+            mock_ssl.side_effect = ssl.SSLCertVerificationError("certificate verify failed")
 
             ssl_error = None
             try:

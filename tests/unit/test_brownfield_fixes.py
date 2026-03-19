@@ -1,14 +1,9 @@
 """Tests for brownfield cleanup fixes — covers P0-P2 items from spec."""
 
 import hashlib
-import ipaddress
 import os
-import uuid
-from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ────────────────────────────────────────────
 # P0: Auth endpoint enforcement
@@ -20,8 +15,9 @@ class TestAuthEndpointEnforcement:
 
     def test_start_audit_requires_auth(self):
         """POST /audit must depend on require_auth."""
-        from apps.api.routers.audits import start_audit
         import inspect
+
+        from apps.api.routers.audits import start_audit
 
         sig = inspect.signature(start_audit)
         param_names = list(sig.parameters.keys())
@@ -29,8 +25,9 @@ class TestAuthEndpointEnforcement:
 
     def test_list_audits_requires_auth(self):
         """GET /audits must depend on require_auth."""
-        from apps.api.routers.audits import list_audits
         import inspect
+
+        from apps.api.routers.audits import list_audits
 
         sig = inspect.signature(list_audits)
         param_names = list(sig.parameters.keys())
@@ -38,8 +35,9 @@ class TestAuthEndpointEnforcement:
 
     def test_add_competitor_requires_auth(self):
         """POST /competitors must depend on require_auth."""
-        from apps.api.routers.competitors import add_competitor
         import inspect
+
+        from apps.api.routers.competitors import add_competitor
 
         sig = inspect.signature(add_competitor)
         param_names = list(sig.parameters.keys())
@@ -47,8 +45,9 @@ class TestAuthEndpointEnforcement:
 
     def test_list_competitors_requires_auth(self):
         """GET /competitors must depend on require_auth."""
-        from apps.api.routers.competitors import list_competitors
         import inspect
+
+        from apps.api.routers.competitors import list_competitors
 
         sig = inspect.signature(list_competitors)
         param_names = list(sig.parameters.keys())
@@ -56,8 +55,9 @@ class TestAuthEndpointEnforcement:
 
     def test_delete_competitor_requires_auth(self):
         """DELETE /competitors/{id} must depend on require_auth."""
-        from apps.api.routers.competitors import delete_competitor
         import inspect
+
+        from apps.api.routers.competitors import delete_competitor
 
         sig = inspect.signature(delete_competitor)
         param_names = list(sig.parameters.keys())
@@ -173,32 +173,27 @@ class TestSSRFProtection:
     def test_consolidated_safe_fetch_exports(self):
         """Verify single consolidated module exports all needed symbols."""
         from packages.core.safe_fetch import (
-            FetchResult,
             SSRFError,
             SSRFProtectionError,
-            is_private_ip,
-            is_url_safe,
-            resolve_dns,
-            safe_fetch,
-            safe_get,
-            validate_ip,
-            validate_url,
         )
 
         assert SSRFError is SSRFProtectionError  # alias
 
     def test_scripts_safe_fetch_reexports(self):
         """Verify scripts/safe_fetch.py re-exports from core."""
+        from packages.core.safe_fetch import (
+            FetchResult as CoreFetchResult,
+        )
+        from packages.core.safe_fetch import (
+            SSRFError as CoreSSRFError,
+        )
+        from packages.core.safe_fetch import (
+            safe_fetch as core_safe_fetch,
+        )
         from packages.seo_health_report.scripts.safe_fetch import (
             FetchResult,
             SSRFError,
             safe_fetch,
-        )
-
-        from packages.core.safe_fetch import (
-            FetchResult as CoreFetchResult,
-            SSRFError as CoreSSRFError,
-            safe_fetch as core_safe_fetch,
         )
 
         assert FetchResult is CoreFetchResult
@@ -246,7 +241,9 @@ class TestMigrationChain:
             os.path.dirname(__file__), "..", "..", "infrastructure", "migrations", "versions"
         )
         migration_files = glob.glob(os.path.join(migrations_dir, "v007_*.py"))
-        assert len(migration_files) == 1, f"Expected 1 v007 migration, found {len(migration_files)}: {migration_files}"
+        assert len(migration_files) == 1, (
+            f"Expected 1 v007 migration, found {len(migration_files)}: {migration_files}"
+        )
 
     def test_v008_depends_on_v007(self):
         """v008_tenant_quotas should depend on v007_audit_trade_fields."""
@@ -270,8 +267,9 @@ class TestAuditTenantFiltering:
 
     def test_list_audits_has_pagination(self):
         """list_audits should accept skip and limit parameters."""
-        from apps.api.routers.audits import list_audits
         import inspect
+
+        from apps.api.routers.audits import list_audits
 
         sig = inspect.signature(list_audits)
         assert "skip" in sig.parameters
@@ -279,8 +277,9 @@ class TestAuditTenantFiltering:
 
     def test_list_audits_limit_capped(self):
         """limit param default is 20, max 100."""
-        from apps.api.routers.audits import list_audits
         import inspect
+
+        from apps.api.routers.audits import list_audits
 
         sig = inspect.signature(list_audits)
         assert sig.parameters["limit"].default == 20
@@ -307,7 +306,8 @@ class TestDatetimeConsistency:
     def test_database_models_use_timezone(self):
         """Database model defaults should use timezone.utc."""
         import inspect
-        from packages.database import Audit, User
+
+        from packages.database import Audit
 
         # Check source of the module for datetime.utcnow
         source = inspect.getsource(Audit)
@@ -323,17 +323,13 @@ class TestDockerComposeSecurity:
     """Verify no hardcoded secrets in compose files."""
 
     def test_no_hardcoded_jwt_secret(self):
-        compose_path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "docker-compose.yml"
-        )
+        compose_path = os.path.join(os.path.dirname(__file__), "..", "..", "docker-compose.yml")
         with open(compose_path) as f:
             content = f.read()
         assert "dev-secret-key-minimum-32-characters-long" not in content
 
     def test_no_hardcoded_postgres_password(self):
-        compose_path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "docker-compose.yml"
-        )
+        compose_path = os.path.join(os.path.dirname(__file__), "..", "..", "docker-compose.yml")
         with open(compose_path) as f:
             content = f.read()
         assert "seopassword" not in content
@@ -349,9 +345,7 @@ class TestCORSRestriction:
 
     def test_cors_methods_restricted(self):
         """apps/api/main.py should not have allow_methods=['*']."""
-        main_path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "apps", "api", "main.py"
-        )
+        main_path = os.path.join(os.path.dirname(__file__), "..", "..", "apps", "api", "main.py")
         with open(main_path) as f:
             content = f.read()
         assert 'allow_methods=["*"]' not in content

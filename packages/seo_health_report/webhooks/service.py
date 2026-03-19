@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class WebhookEvent(str, Enum):
     """Supported webhook event types."""
+
     AUDIT_COMPLETED = "audit.completed"
     AUDIT_FAILED = "audit.failed"
     AUDIT_STARTED = "audit.started"
@@ -141,10 +142,14 @@ class WebhookService:
         """Get webhook by ID (scoped to tenant)."""
         from database import Webhook
 
-        webhook = self.db.query(Webhook).filter(
-            Webhook.id == webhook_id,
-            Webhook.tenant_id == tenant_id,
-        ).first()
+        webhook = (
+            self.db.query(Webhook)
+            .filter(
+                Webhook.id == webhook_id,
+                Webhook.tenant_id == tenant_id,
+            )
+            .first()
+        )
 
         if not webhook:
             return None
@@ -162,9 +167,14 @@ class WebhookService:
         """List all webhooks for a tenant."""
         from database import Webhook
 
-        webhooks = self.db.query(Webhook).filter(
-            Webhook.tenant_id == tenant_id,
-        ).order_by(Webhook.created_at.desc()).all()
+        webhooks = (
+            self.db.query(Webhook)
+            .filter(
+                Webhook.tenant_id == tenant_id,
+            )
+            .order_by(Webhook.created_at.desc())
+            .all()
+        )
 
         return [
             {
@@ -181,10 +191,14 @@ class WebhookService:
         """Delete a webhook (scoped to tenant)."""
         from database import Webhook
 
-        webhook = self.db.query(Webhook).filter(
-            Webhook.id == webhook_id,
-            Webhook.tenant_id == tenant_id,
-        ).first()
+        webhook = (
+            self.db.query(Webhook)
+            .filter(
+                Webhook.id == webhook_id,
+                Webhook.tenant_id == tenant_id,
+            )
+            .first()
+        )
 
         if not webhook:
             return False
@@ -205,17 +219,27 @@ class WebhookService:
         from database import Webhook, WebhookDelivery
 
         # Verify webhook belongs to tenant
-        webhook = self.db.query(Webhook).filter(
-            Webhook.id == webhook_id,
-            Webhook.tenant_id == tenant_id,
-        ).first()
+        webhook = (
+            self.db.query(Webhook)
+            .filter(
+                Webhook.id == webhook_id,
+                Webhook.tenant_id == tenant_id,
+            )
+            .first()
+        )
 
         if not webhook:
             return []
 
-        deliveries = self.db.query(WebhookDelivery).filter(
-            WebhookDelivery.webhook_id == webhook_id,
-        ).order_by(WebhookDelivery.created_at.desc()).limit(limit).all()
+        deliveries = (
+            self.db.query(WebhookDelivery)
+            .filter(
+                WebhookDelivery.webhook_id == webhook_id,
+            )
+            .order_by(WebhookDelivery.created_at.desc())
+            .limit(limit)
+            .all()
+        )
 
         return [
             {
@@ -250,10 +274,14 @@ class WebhookService:
         """
         from database import Webhook
 
-        webhooks = self.db.query(Webhook).filter(
-            Webhook.tenant_id == tenant_id,
-            Webhook.is_active,
-        ).all()
+        webhooks = (
+            self.db.query(Webhook)
+            .filter(
+                Webhook.tenant_id == tenant_id,
+                Webhook.is_active,
+            )
+            .all()
+        )
 
         delivery_ids = []
 
@@ -384,16 +412,25 @@ class WebhookService:
         """
         from database import Webhook, WebhookDelivery
 
-        pending = self.db.query(WebhookDelivery).filter(
-            WebhookDelivery.status == "pending",
-            WebhookDelivery.next_retry_at <= datetime.now(timezone.utc),
-        ).limit(100).all()
+        pending = (
+            self.db.query(WebhookDelivery)
+            .filter(
+                WebhookDelivery.status == "pending",
+                WebhookDelivery.next_retry_at <= datetime.now(timezone.utc),
+            )
+            .limit(100)
+            .all()
+        )
 
         count = 0
         for delivery in pending:
-            webhook = self.db.query(Webhook).filter(
-                Webhook.id == delivery.webhook_id,
-            ).first()
+            webhook = (
+                self.db.query(Webhook)
+                .filter(
+                    Webhook.id == delivery.webhook_id,
+                )
+                .first()
+            )
 
             if webhook and webhook.is_active:
                 await self._deliver(delivery, webhook)
@@ -405,10 +442,14 @@ class WebhookService:
         """Send a test event to verify webhook configuration."""
         from database import Webhook
 
-        webhook = self.db.query(Webhook).filter(
-            Webhook.id == webhook_id,
-            Webhook.tenant_id == tenant_id,
-        ).first()
+        webhook = (
+            self.db.query(Webhook)
+            .filter(
+                Webhook.id == webhook_id,
+                Webhook.tenant_id == tenant_id,
+            )
+            .first()
+        )
 
         if not webhook:
             raise ValueError("Webhook not found")
@@ -425,9 +466,14 @@ class WebhookService:
         )
 
         from database import WebhookDelivery
-        delivery = self.db.query(WebhookDelivery).filter(
-            WebhookDelivery.id == delivery_id,
-        ).first()
+
+        delivery = (
+            self.db.query(WebhookDelivery)
+            .filter(
+                WebhookDelivery.id == delivery_id,
+            )
+            .first()
+        )
 
         return {
             "delivery_id": delivery_id,

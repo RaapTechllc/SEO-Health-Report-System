@@ -43,16 +43,22 @@ class TestFixtureSiteDefinitions:
             assert fixture.company_name, f"{name}: company_name is required"
             assert fixture.trade_type, f"{name}: trade_type is required"
             assert fixture.description, f"{name}: description is required"
-            assert isinstance(fixture.expected_issues, list), f"{name}: expected_issues must be a list"
-            assert len(fixture.expected_score_range) == 2, f"{name}: expected_score_range must be (min, max)"
+            assert isinstance(fixture.expected_issues, list), (
+                f"{name}: expected_issues must be a list"
+            )
+            assert len(fixture.expected_score_range) == 2, (
+                f"{name}: expected_score_range must be (min, max)"
+            )
 
     def test_all_fixtures_have_valid_urls(self):
         """All fixture URLs must be properly formatted."""
         for name, fixture in FIXTURE_SITES.items():
-            assert fixture.url.startswith(("http://", "https://")), \
+            assert fixture.url.startswith(("http://", "https://")), (
                 f"{name}: URL must start with http:// or https://"
-            assert ".test" in fixture.url or "example" in fixture.url, \
+            )
+            assert ".test" in fixture.url or "example" in fixture.url, (
                 f"{name}: URL should use .test TLD or example domain"
+            )
 
     def test_all_fixtures_have_valid_score_ranges(self):
         """Score ranges must be valid (min <= max, within 0-100)."""
@@ -402,12 +408,12 @@ class TestExpectedResultsFiles:
                 data = json.load(f)
 
             fixture_name = data.get("fixture_name")
-            assert fixture_name in FIXTURE_SITES, \
+            assert fixture_name in FIXTURE_SITES, (
                 f"{json_file.name}: fixture_name '{fixture_name}' not found in FIXTURE_SITES"
+            )
 
             fixture = FIXTURE_SITES[fixture_name]
-            assert data["url"] == fixture.url, \
-                f"{json_file.name}: URL mismatch with fixture"
+            assert data["url"] == fixture.url, f"{json_file.name}: URL mismatch with fixture"
 
 
 class TestMockResponseDataclass:

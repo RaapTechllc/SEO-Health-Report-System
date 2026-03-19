@@ -19,7 +19,7 @@ def test_query_generation():
         brand_name="Tesla",
         products_services=["Electric Vehicles", "Solar Panels", "Energy Storage"],
         competitors=["BMW", "Mercedes", "Ford"],
-        custom_queries=["What makes Tesla unique?"]
+        custom_queries=["What makes Tesla unique?"],
     )
 
     print(f"Generated {len(queries)} test queries")
@@ -66,13 +66,9 @@ def test_aeo_analysis():
             brand_name="Tesla",
             products_services=["Electric Vehicles"],
             competitors=["BMW"],
-            ground_truth={
-                "founded": "2003",
-                "founder": "Elon Musk",
-                "headquarters": "Austin"
-            },
+            ground_truth={"founded": "2003", "founder": "Elon Musk", "headquarters": "Austin"},
             ai_systems=["claude"] if "ANTHROPIC_API_KEY" in available_keys else None,
-            rate_limit_ms=2000  # Slower for testing
+            rate_limit_ms=2000,  # Slower for testing
         )
 
         print("\nAEO Analysis Results:")
@@ -99,6 +95,7 @@ def test_aeo_analysis():
     except Exception as e:
         print(f"[ERROR] AEO analysis failed: {e}")
         import traceback
+
         traceback.print_exc()
 
 

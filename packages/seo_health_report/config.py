@@ -32,9 +32,7 @@ class Config:
         default_factory=lambda: int(os.environ.get("SEO_HEALTH_API_TIMEOUT", "30"))
     )
     anthropic_model: str = field(
-        default_factory=lambda: os.environ.get(
-            "ANTHROPIC_MODEL", "claude-sonnet-4-5"
-        )
+        default_factory=lambda: os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
     )
 
     # Cache Configuration
@@ -45,9 +43,7 @@ class Config:
         )
     )
     cache_ttl_pagespeed: int = field(
-        default_factory=lambda: int(
-            os.environ.get("SEO_HEALTH_CACHE_TTL_PAGESPEED", "86400")
-        )
+        default_factory=lambda: int(os.environ.get("SEO_HEALTH_CACHE_TTL_PAGESPEED", "86400"))
     )
     cache_ttl_ai_response: int = field(
         default_factory=lambda: int(os.environ.get("SEO_HEALTH_CACHE_TTL_AI", "604800"))
@@ -64,9 +60,7 @@ class Config:
         )
     )
     pagespeed_strategy: str = field(
-        default_factory=lambda: os.environ.get(
-            "SEO_HEALTH_PAGESPEED_STRATEGY", "mobile"
-        )
+        default_factory=lambda: os.environ.get("SEO_HEALTH_PAGESPEED_STRATEGY", "mobile")
     )
     pagespeed_categories: list = field(
         default_factory=lambda: [
@@ -79,14 +73,10 @@ class Config:
 
     # Scoring Configuration
     score_weight_technical: float = field(
-        default_factory=lambda: float(
-            os.environ.get("SEO_HEALTH_WEIGHT_TECHNICAL", "0.30")
-        )
+        default_factory=lambda: float(os.environ.get("SEO_HEALTH_WEIGHT_TECHNICAL", "0.30"))
     )
     score_weight_content: float = field(
-        default_factory=lambda: float(
-            os.environ.get("SEO_HEALTH_WEIGHT_CONTENT", "0.35")
-        )
+        default_factory=lambda: float(os.environ.get("SEO_HEALTH_WEIGHT_CONTENT", "0.35"))
     )
     score_weight_ai: float = field(
         default_factory=lambda: float(os.environ.get("SEO_HEALTH_WEIGHT_AI", "0.35"))
@@ -107,11 +97,13 @@ class Config:
     )
 
     # AI Systems Priority Configuration (Top 3 Systems)
-    ai_systems_priority: list[str] = field(default_factory=lambda: [
-        "claude",      # Google AI search proxy (Bard/Gemini)
-        "openai",      # OpenAI search (ChatGPT)
-        "perplexity"   # Perplexity AI search
-    ])
+    ai_systems_priority: list[str] = field(
+        default_factory=lambda: [
+            "claude",  # Google AI search proxy (Bard/Gemini)
+            "openai",  # OpenAI search (ChatGPT)
+            "perplexity",  # Perplexity AI search
+        ]
+    )
     ai_query_timeout: int = field(
         default_factory=lambda: int(os.environ.get("SEO_HEALTH_AI_TIMEOUT", "30"))
     )
@@ -151,21 +143,13 @@ class Config:
     output_format: str = field(
         default_factory=lambda: os.environ.get("SEO_HEALTH_OUTPUT_FORMAT", "docx")
     )
-    output_dir: str = field(
-        default_factory=lambda: os.environ.get("SEO_HEALTH_OUTPUT_DIR", ".")
-    )
+    output_dir: str = field(default_factory=lambda: os.environ.get("SEO_HEALTH_OUTPUT_DIR", "."))
 
     # Logging Configuration
-    log_level: str = field(
-        default_factory=lambda: os.environ.get("SEO_HEALTH_LOG_LEVEL", "INFO")
-    )
-    log_dir: str = field(
-        default_factory=lambda: os.environ.get("SEO_HEALTH_LOG_DIR", "logs")
-    )
+    log_level: str = field(default_factory=lambda: os.environ.get("SEO_HEALTH_LOG_LEVEL", "INFO"))
+    log_dir: str = field(default_factory=lambda: os.environ.get("SEO_HEALTH_LOG_DIR", "logs"))
     log_file: str = field(
-        default_factory=lambda: os.environ.get(
-            "SEO_HEALTH_LOG_FILE", "seo-health-report.log"
-        )
+        default_factory=lambda: os.environ.get("SEO_HEALTH_LOG_FILE", "seo-health-report.log")
     )
     log_max_bytes: int = field(
         default_factory=lambda: int(
@@ -178,9 +162,7 @@ class Config:
 
     # Content Analysis Configuration
     min_content_length: int = field(
-        default_factory=lambda: int(
-            os.environ.get("SEO_HEALTH_MIN_CONTENT_LENGTH", "300")
-        )
+        default_factory=lambda: int(os.environ.get("SEO_HEALTH_MIN_CONTENT_LENGTH", "300"))
     )
     max_title_length: int = field(
         default_factory=lambda: int(os.environ.get("SEO_HEALTH_MAX_TITLE_LENGTH", "60"))
@@ -201,20 +183,14 @@ class Config:
 
         # Validate API keys
         if not os.environ.get("ANTHROPIC_API_KEY"):
-            warnings.append(
-                "ANTHROPIC_API_KEY not set - AI visibility audit will be limited"
-            )
+            warnings.append("ANTHROPIC_API_KEY not set - AI visibility audit will be limited")
 
         # Validate scoring weights sum to 1
         total_weight = (
-            self.score_weight_technical
-            + self.score_weight_content
-            + self.score_weight_ai
+            self.score_weight_technical + self.score_weight_content + self.score_weight_ai
         )
         if abs(total_weight - 1.0) > 0.01:
-            errors.append(
-                f"Scoring weights must sum to 1.0 (currently: {total_weight:.2f})"
-            )
+            errors.append(f"Scoring weights must sum to 1.0 (currently: {total_weight:.2f})")
 
         # Validate grade thresholds
         if not (
@@ -224,9 +200,7 @@ class Config:
             > self.grade_d_threshold
             > 0
         ):
-            errors.append(
-                "Grade thresholds must be in descending order: A > B > C > D > 0"
-            )
+            errors.append("Grade thresholds must be in descending order: A > B > C > D > 0")
 
         # Validate timeout values
         if self.api_timeout <= 0:
@@ -252,9 +226,7 @@ class Config:
 
         return {"errors": errors, "warnings": warnings}
 
-    def get_color(
-        self, color_name: str, default: Optional[str] = None
-    ) -> Optional[str]:
+    def get_color(self, color_name: str, default: Optional[str] = None) -> Optional[str]:
         """
         Get a brand color by name.
 

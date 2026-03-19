@@ -65,9 +65,9 @@ class BrandingService:
         """
         from database import TenantBranding
 
-        branding = self.db.query(TenantBranding).filter(
-            TenantBranding.tenant_id == tenant_id
-        ).first()
+        branding = (
+            self.db.query(TenantBranding).filter(TenantBranding.tenant_id == tenant_id).first()
+        )
 
         if not branding:
             return {
@@ -116,14 +116,18 @@ class BrandingService:
 
         # Validate colors
         if primary_color and not validate_hex_color(primary_color):
-            raise ValueError(f"Invalid primary_color format: {primary_color}. Use hex format like #1E3A8A")
+            raise ValueError(
+                f"Invalid primary_color format: {primary_color}. Use hex format like #1E3A8A"
+            )
         if secondary_color and not validate_hex_color(secondary_color):
-            raise ValueError(f"Invalid secondary_color format: {secondary_color}. Use hex format like #3B82F6")
+            raise ValueError(
+                f"Invalid secondary_color format: {secondary_color}. Use hex format like #3B82F6"
+            )
 
         # Get or create branding
-        branding = self.db.query(TenantBranding).filter(
-            TenantBranding.tenant_id == tenant_id
-        ).first()
+        branding = (
+            self.db.query(TenantBranding).filter(TenantBranding.tenant_id == tenant_id).first()
+        )
 
         if not branding:
             branding = TenantBranding(
@@ -161,9 +165,9 @@ class BrandingService:
         """
         from database import TenantBranding
 
-        branding = self.db.query(TenantBranding).filter(
-            TenantBranding.tenant_id == tenant_id
-        ).first()
+        branding = (
+            self.db.query(TenantBranding).filter(TenantBranding.tenant_id == tenant_id).first()
+        )
 
         if not branding:
             return False

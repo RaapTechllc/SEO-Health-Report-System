@@ -22,7 +22,7 @@ def generate_enterprise_report(
     business_metrics: dict = None,
     agency_name: str = "RaapTech",
     client_logo_path: Optional[str] = None,
-    agency_logo_path: Optional[str] = None
+    agency_logo_path: Optional[str] = None,
 ):
     """Generate enterprise-grade report matching $2,000-$10,000/month standards."""
     try:
@@ -51,7 +51,7 @@ def generate_enterprise_report(
             run.add_picture(client_logo_path, width=Inches(3.5))
 
         # Executive Dashboard Title
-        title = doc.add_heading('SEO PERFORMANCE DASHBOARD', 0)
+        title = doc.add_heading("SEO PERFORMANCE DASHBOARD", 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         title_run = title.runs[0]
         title_run.font.size = Pt(28)
@@ -61,23 +61,23 @@ def generate_enterprise_report(
         subtitle = doc.add_paragraph()
         subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
         subtitle.space_before = Pt(12)
-        run = subtitle.add_run(f'{company_name} | {datetime.now().strftime("%B %Y")}')
+        run = subtitle.add_run(f"{company_name} | {datetime.now().strftime('%B %Y')}")
         run.font.size = Pt(16)
         run.font.color.rgb = RGBColor(43, 108, 176)
 
         # === KEY PERFORMANCE INDICATORS ===
-        doc.add_heading('📊 Key Performance Indicators', level=1)
+        doc.add_heading("📊 Key Performance Indicators", level=1)
 
         # KPI Table
         kpi_table = doc.add_table(rows=3, cols=4)
-        kpi_table.style = 'Table Grid'
+        kpi_table.style = "Table Grid"
 
         # KPI Headers
         kpi_headers = kpi_table.rows[0].cells
-        kpi_headers[0].text = 'Metric'
-        kpi_headers[1].text = 'Current Score'
-        kpi_headers[2].text = 'Industry Avg'
-        kpi_headers[3].text = 'Competitive Position'
+        kpi_headers[0].text = "Metric"
+        kpi_headers[1].text = "Current Score"
+        kpi_headers[2].text = "Industry Avg"
+        kpi_headers[3].text = "Competitive Position"
 
         # Make headers bold
         for cell in kpi_headers:
@@ -86,16 +86,21 @@ def generate_enterprise_report(
                     run.bold = True
                     run.font.color.rgb = RGBColor(255, 255, 255)
             # Set header background color
-            cell._element.get_or_add_tcPr().append(
-                OxmlElement('w:shd')).set(qn('w:fill'), '1a365d')
+            cell._element.get_or_add_tcPr().append(OxmlElement("w:shd")).set(qn("w:fill"), "1a365d")
 
         # KPI Data
-        overall_score = overall.get('overall_score', 0)
-        competitive_position = "Leading" if overall_score >= 80 else "Competitive" if overall_score >= 60 else "Improving"
+        overall_score = overall.get("overall_score", 0)
+        competitive_position = (
+            "Leading"
+            if overall_score >= 80
+            else "Competitive"
+            if overall_score >= 60
+            else "Improving"
+        )
 
         kpi_data = [
-            ('Overall SEO Health', f"{overall_score}/100", '49/100', competitive_position),
-            ('AI Visibility Score', f"{ai.get('score', 0)}/100", '25/100', '🏆 Market Leader')
+            ("Overall SEO Health", f"{overall_score}/100", "49/100", competitive_position),
+            ("AI Visibility Score", f"{ai.get('score', 0)}/100", "25/100", "🏆 Market Leader"),
         ]
 
         for i, (metric, current, industry, position) in enumerate(kpi_data, 1):
@@ -112,18 +117,28 @@ def generate_enterprise_report(
                         run.font.color.rgb = RGBColor(34, 139, 34)
 
         # === BUSINESS IMPACT SUMMARY ===
-        doc.add_heading('💰 Business Impact Summary', level=1)
+        doc.add_heading("💰 Business Impact Summary", level=1)
 
         # Business metrics (if provided)
         if business_metrics:
             impact_para = doc.add_paragraph()
-            impact_para.add_run("Estimated Business Impact (Based on Industry Benchmarks):\n").bold = True
-            impact_para.add_run(f"• Organic Traffic Potential: +{business_metrics.get('traffic_increase', '25')}%\n")
-            impact_para.add_run(f"• Revenue Opportunity: ${business_metrics.get('revenue_opportunity', '15,000')}/month\n")
-            impact_para.add_run(f"• Competitive Advantage: {business_metrics.get('competitive_advantage', 'Strong AI visibility positioning')}\n\n")
+            impact_para.add_run(
+                "Estimated Business Impact (Based on Industry Benchmarks):\n"
+            ).bold = True
+            impact_para.add_run(
+                f"• Organic Traffic Potential: +{business_metrics.get('traffic_increase', '25')}%\n"
+            )
+            impact_para.add_run(
+                f"• Revenue Opportunity: ${business_metrics.get('revenue_opportunity', '15,000')}/month\n"
+            )
+            impact_para.add_run(
+                f"• Competitive Advantage: {business_metrics.get('competitive_advantage', 'Strong AI visibility positioning')}\n\n"
+            )
 
             disclaimer_para = doc.add_paragraph()
-            disclaimer_run = disclaimer_para.add_run("*Estimates based on industry benchmarks and site analysis. Actual results may vary.")
+            disclaimer_run = disclaimer_para.add_run(
+                "*Estimates based on industry benchmarks and site analysis. Actual results may vary."
+            )
             disclaimer_run.italic = True
             disclaimer_run.font.size = Pt(9)
         else:
@@ -134,17 +149,23 @@ def generate_enterprise_report(
             impact_para.add_run("• Competitive advantage through AI visibility optimization\n\n")
 
             disclaimer_para = doc.add_paragraph()
-            disclaimer_run = disclaimer_para.add_run("*Estimates based on industry averages. Contact RaapTech for detailed ROI analysis.")
+            disclaimer_run = disclaimer_para.add_run(
+                "*Estimates based on industry averages. Contact RaapTech for detailed ROI analysis."
+            )
             disclaimer_run.italic = True
             disclaimer_run.font.size = Pt(9)
 
         # === COMPETITIVE POSITIONING ===
-        doc.add_heading('🎯 Competitive Positioning', level=1)
+        doc.add_heading("🎯 Competitive Positioning", level=1)
 
         if competitors:
             comp_para = doc.add_paragraph()
-            comp_para.add_run(f"Competitive Analysis vs {len(competitors)} key competitors:\n").bold = True
-            comp_para.add_run("⚠️ Note: Competitive analysis requires manual research for accuracy\n\n")
+            comp_para.add_run(
+                f"Competitive Analysis vs {len(competitors)} key competitors:\n"
+            ).bold = True
+            comp_para.add_run(
+                "⚠️ Note: Competitive analysis requires manual research for accuracy\n\n"
+            )
 
             for i, competitor in enumerate(competitors[:3], 1):
                 comp_para.add_run(f"{i}. {competitor}\n")
@@ -153,19 +174,45 @@ def generate_enterprise_report(
             comp_para.add_run("Contact RaapTech for comprehensive competitor analysis")
         else:
             comp_para = doc.add_paragraph()
-            comp_para.add_run("🏆 UNIQUE ADVANTAGE: Your AI visibility analysis reveals positioning opportunities that 95% of competitors are missing.\n").bold = True
-            comp_para.add_run("Most competitors focus only on traditional SEO metrics. Your AI optimization strategy positions you ahead of the market.\n\n")
-            comp_para.add_run("📊 Competitive benchmarking: Contact RaapTech for detailed competitor analysis")
+            comp_para.add_run(
+                "🏆 UNIQUE ADVANTAGE: Your AI visibility analysis reveals positioning opportunities that 95% of competitors are missing.\n"
+            ).bold = True
+            comp_para.add_run(
+                "Most competitors focus only on traditional SEO metrics. Your AI optimization strategy positions you ahead of the market.\n\n"
+            )
+            comp_para.add_run(
+                "📊 Competitive benchmarking: Contact RaapTech for detailed competitor analysis"
+            )
 
         # === TOP 5 STRATEGIC RECOMMENDATIONS ===
-        doc.add_heading('🚀 Top 5 Strategic Recommendations', level=1)
+        doc.add_heading("🚀 Top 5 Strategic Recommendations", level=1)
 
         recommendations = [
-            ("1. AI Visibility Optimization", "HIGH", "Leverage your unique AI presence advantage to capture emerging search traffic"),
-            ("2. Technical Performance", "HIGH", "Address Core Web Vitals and mobile optimization for immediate ranking gains"),
-            ("3. Content Authority Building", "MEDIUM", "Develop expertise-driven content to establish market leadership"),
-            ("4. Competitive Gap Analysis", "MEDIUM", "Exploit competitor weaknesses in AI optimization"),
-            ("5. Local/Industry Targeting", "LOW", "Optimize for industry-specific and local search opportunities")
+            (
+                "1. AI Visibility Optimization",
+                "HIGH",
+                "Leverage your unique AI presence advantage to capture emerging search traffic",
+            ),
+            (
+                "2. Technical Performance",
+                "HIGH",
+                "Address Core Web Vitals and mobile optimization for immediate ranking gains",
+            ),
+            (
+                "3. Content Authority Building",
+                "MEDIUM",
+                "Develop expertise-driven content to establish market leadership",
+            ),
+            (
+                "4. Competitive Gap Analysis",
+                "MEDIUM",
+                "Exploit competitor weaknesses in AI optimization",
+            ),
+            (
+                "5. Local/Industry Targeting",
+                "LOW",
+                "Optimize for industry-specific and local search opportunities",
+            ),
         ]
 
         for rec, priority, description in recommendations:
@@ -188,12 +235,14 @@ def generate_enterprise_report(
         doc.add_page_break()
 
         # === AI VISIBILITY ANALYSIS (FEATURED SECTION) ===
-        ai_heading = doc.add_heading('🤖 AI Visibility Analysis', level=1)
+        ai_heading = doc.add_heading("🤖 AI Visibility Analysis", level=1)
         ai_heading.runs[0].font.color.rgb = RGBColor(138, 43, 226)
 
         # Market differentiation callout
         diff_para = doc.add_paragraph()
-        diff_run = diff_para.add_run("🏆 MARKET DIFFERENTIATOR: This analysis is unavailable from any other SEO provider")
+        diff_run = diff_para.add_run(
+            "🏆 MARKET DIFFERENTIATOR: This analysis is unavailable from any other SEO provider"
+        )
         diff_run.bold = True
         diff_run.font.size = Pt(14)
         diff_run.font.color.rgb = RGBColor(138, 43, 226)
@@ -206,29 +255,33 @@ def generate_enterprise_report(
         ai_systems_para.add_run("✓ OpenAI Search (ChatGPT)\n")
 
         # AI performance breakdown
-        ai_score = ai.get('score', 0)
+        ai_score = ai.get("score", 0)
         ai_perf_para = doc.add_paragraph()
         ai_perf_para.add_run(f"\nYour AI Visibility Score: {ai_score}/100\n").bold = True
 
         if ai_score >= 80:
-            ai_perf_para.add_run("🎯 EXCELLENT: Your brand consistently appears in AI responses with accurate information.")
+            ai_perf_para.add_run(
+                "🎯 EXCELLENT: Your brand consistently appears in AI responses with accurate information."
+            )
         elif ai_score >= 60:
             ai_perf_para.add_run("📈 GOOD: Strong AI presence with opportunities for optimization.")
         else:
-            ai_perf_para.add_run("🚀 OPPORTUNITY: Significant potential to establish AI market leadership.")
+            ai_perf_para.add_run(
+                "🚀 OPPORTUNITY: Significant potential to establish AI market leadership."
+            )
 
         # AI components table
-        if ai.get('components'):
-            doc.add_heading('AI Performance Components', level=2)
+        if ai.get("components"):
+            doc.add_heading("AI Performance Components", level=2)
 
             ai_table = doc.add_table(rows=7, cols=3)
-            ai_table.style = 'Table Grid'
+            ai_table.style = "Table Grid"
 
             # AI table headers
             ai_headers = ai_table.rows[0].cells
-            ai_headers[0].text = 'Component'
-            ai_headers[1].text = 'Score'
-            ai_headers[2].text = 'Impact'
+            ai_headers[0].text = "Component"
+            ai_headers[1].text = "Score"
+            ai_headers[2].text = "Impact"
 
             for cell in ai_headers:
                 for paragraph in cell.paragraphs:
@@ -237,26 +290,56 @@ def generate_enterprise_report(
 
             # AI components data
             ai_components = [
-                ('Brand Mention Rate', ai.get('components', {}).get('ai_presence', {}).get('score', 0), 'High'),
-                ('Information Accuracy', ai.get('components', {}).get('accuracy', {}).get('score', 0), 'High'),
-                ('AI Crawlability', ai.get('components', {}).get('parseability', {}).get('score', 0), 'Medium'),
-                ('Knowledge Graph Presence', ai.get('components', {}).get('knowledge_graph', {}).get('score', 0), 'Medium'),
-                ('Citation Potential', ai.get('components', {}).get('citation_likelihood', {}).get('score', 0), 'Medium'),
-                ('Brand Sentiment', ai.get('components', {}).get('sentiment', {}).get('score', 0), 'Low')
+                (
+                    "Brand Mention Rate",
+                    ai.get("components", {}).get("ai_presence", {}).get("score", 0),
+                    "High",
+                ),
+                (
+                    "Information Accuracy",
+                    ai.get("components", {}).get("accuracy", {}).get("score", 0),
+                    "High",
+                ),
+                (
+                    "AI Crawlability",
+                    ai.get("components", {}).get("parseability", {}).get("score", 0),
+                    "Medium",
+                ),
+                (
+                    "Knowledge Graph Presence",
+                    ai.get("components", {}).get("knowledge_graph", {}).get("score", 0),
+                    "Medium",
+                ),
+                (
+                    "Citation Potential",
+                    ai.get("components", {}).get("citation_likelihood", {}).get("score", 0),
+                    "Medium",
+                ),
+                (
+                    "Brand Sentiment",
+                    ai.get("components", {}).get("sentiment", {}).get("score", 0),
+                    "Low",
+                ),
             ]
 
             for i, (component, score, impact) in enumerate(ai_components, 1):
                 row = ai_table.rows[i].cells
                 row[0].text = component
-                row[1].text = f"{score}/25" if score <= 25 else f"{score}/20" if score <= 20 else f"{score}/15"
+                row[1].text = (
+                    f"{score}/25"
+                    if score <= 25
+                    else f"{score}/20"
+                    if score <= 20
+                    else f"{score}/15"
+                )
                 row[2].text = impact
 
         doc.add_page_break()
 
         # === TECHNICAL SEO ANALYSIS ===
-        doc.add_heading('🔧 Technical SEO Analysis', level=1)
+        doc.add_heading("🔧 Technical SEO Analysis", level=1)
 
-        tech_score = technical.get('score', 0)
+        tech_score = technical.get("score", 0)
         tech_para = doc.add_paragraph()
         tech_para.add_run(f"Technical Foundation Score: {tech_score}/100\n").bold = True
 
@@ -268,15 +351,35 @@ def generate_enterprise_report(
             tech_para.add_run("🚨 CRITICAL: Technical issues significantly impacting SEO")
 
         # Technical components summary
-        if technical.get('components'):
-            doc.add_heading('Technical Performance Breakdown', level=2)
+        if technical.get("components"):
+            doc.add_heading("Technical Performance Breakdown", level=2)
 
             tech_components = [
-                ('Site Crawlability', technical.get('components', {}).get('crawlability', {}).get('score', 0), 20),
-                ('Page Speed & Core Web Vitals', technical.get('components', {}).get('speed', {}).get('score', 0), 25),
-                ('Security & HTTPS', technical.get('components', {}).get('security', {}).get('score', 0), 10),
-                ('Mobile Optimization', technical.get('components', {}).get('mobile', {}).get('score', 0), 15),
-                ('Structured Data', technical.get('components', {}).get('structured_data', {}).get('score', 0), 15)
+                (
+                    "Site Crawlability",
+                    technical.get("components", {}).get("crawlability", {}).get("score", 0),
+                    20,
+                ),
+                (
+                    "Page Speed & Core Web Vitals",
+                    technical.get("components", {}).get("speed", {}).get("score", 0),
+                    25,
+                ),
+                (
+                    "Security & HTTPS",
+                    technical.get("components", {}).get("security", {}).get("score", 0),
+                    10,
+                ),
+                (
+                    "Mobile Optimization",
+                    technical.get("components", {}).get("mobile", {}).get("score", 0),
+                    15,
+                ),
+                (
+                    "Structured Data",
+                    technical.get("components", {}).get("structured_data", {}).get("score", 0),
+                    15,
+                ),
             ]
 
             for comp_name, score, max_score in tech_components:
@@ -295,29 +398,53 @@ def generate_enterprise_report(
         doc.add_page_break()
 
         # === CONTENT & AUTHORITY ANALYSIS ===
-        doc.add_heading('📝 Content & Authority Analysis', level=1)
+        doc.add_heading("📝 Content & Authority Analysis", level=1)
 
-        content_score = content.get('score', 0)
+        content_score = content.get("score", 0)
         content_para = doc.add_paragraph()
         content_para.add_run(f"Content Authority Score: {content_score}/100\n").bold = True
 
         if content_score >= 80:
             content_para.add_run("🏆 AUTHORITATIVE: Strong content foundation and market authority")
         elif content_score >= 60:
-            content_para.add_run("📈 DEVELOPING: Good content with opportunities for authority building")
+            content_para.add_run(
+                "📈 DEVELOPING: Good content with opportunities for authority building"
+            )
         else:
-            content_para.add_run("🚀 BUILDING: Significant opportunity to establish content leadership")
+            content_para.add_run(
+                "🚀 BUILDING: Significant opportunity to establish content leadership"
+            )
 
         # Content components
-        if content.get('components'):
-            doc.add_heading('Content Performance Areas', level=2)
+        if content.get("components"):
+            doc.add_heading("Content Performance Areas", level=2)
 
             content_components = [
-                ('Content Quality', content.get('components', {}).get('content_quality', {}).get('score', 0), 25),
-                ('E-E-A-T Signals', content.get('components', {}).get('eeat', {}).get('score', 0), 20),
-                ('Topical Authority', content.get('components', {}).get('topical_authority', {}).get('score', 0), 15),
-                ('Backlink Profile', content.get('components', {}).get('backlinks', {}).get('score', 0), 15),
-                ('Internal Link Structure', content.get('components', {}).get('internal_links', {}).get('score', 0), 10)
+                (
+                    "Content Quality",
+                    content.get("components", {}).get("content_quality", {}).get("score", 0),
+                    25,
+                ),
+                (
+                    "E-E-A-T Signals",
+                    content.get("components", {}).get("eeat", {}).get("score", 0),
+                    20,
+                ),
+                (
+                    "Topical Authority",
+                    content.get("components", {}).get("topical_authority", {}).get("score", 0),
+                    15,
+                ),
+                (
+                    "Backlink Profile",
+                    content.get("components", {}).get("backlinks", {}).get("score", 0),
+                    15,
+                ),
+                (
+                    "Internal Link Structure",
+                    content.get("components", {}).get("internal_links", {}).get("score", 0),
+                    10,
+                ),
             ]
 
             for comp_name, score, max_score in content_components:
@@ -335,43 +462,43 @@ def generate_enterprise_report(
         doc.add_page_break()
 
         # === 90-DAY ACTION PLAN ===
-        doc.add_heading('📅 90-Day Strategic Action Plan', level=1)
+        doc.add_heading("📅 90-Day Strategic Action Plan", level=1)
 
         # Month 1 - Critical Actions
-        doc.add_heading('Month 1: Critical Foundation (Days 1-30)', level=2)
+        doc.add_heading("Month 1: Critical Foundation (Days 1-30)", level=2)
         month1_actions = [
             "🤖 Optimize content for AI systems - create comprehensive FAQ and service pages",
             "🔧 Fix critical technical issues - improve Core Web Vitals and mobile performance",
             "📊 Implement tracking for business impact measurement",
-            "🎯 Conduct competitive gap analysis and identify quick wins"
+            "🎯 Conduct competitive gap analysis and identify quick wins",
         ]
 
         for action in month1_actions:
-            doc.add_paragraph(action, style='List Bullet')
+            doc.add_paragraph(action, style="List Bullet")
 
         # Month 2 - Strategic Improvements
-        doc.add_heading('Month 2: Strategic Improvements (Days 31-60)', level=2)
+        doc.add_heading("Month 2: Strategic Improvements (Days 31-60)", level=2)
         month2_actions = [
             "📝 Develop authority-building content strategy",
             "🔗 Launch strategic link building campaign",
             "📱 Optimize for mobile-first indexing",
-            "🎨 Enhance user experience and engagement metrics"
+            "🎨 Enhance user experience and engagement metrics",
         ]
 
         for action in month2_actions:
-            doc.add_paragraph(action, style='List Bullet')
+            doc.add_paragraph(action, style="List Bullet")
 
         # Month 3 - Market Leadership
-        doc.add_heading('Month 3: Market Leadership (Days 61-90)', level=2)
+        doc.add_heading("Month 3: Market Leadership (Days 61-90)", level=2)
         month3_actions = [
             "🏆 Establish thought leadership through expert content",
             "🤖 Advanced AI optimization strategies",
             "📊 Performance monitoring and optimization refinement",
-            "🎯 Competitive advantage consolidation"
+            "🎯 Competitive advantage consolidation",
         ]
 
         for action in month3_actions:
-            doc.add_paragraph(action, style='List Bullet')
+            doc.add_paragraph(action, style="List Bullet")
 
         # === FOOTER ===
         footer = doc.sections[0].footer
@@ -385,7 +512,10 @@ def generate_enterprise_report(
         reports_dir = os.path.join(project_root, "reports")
         os.makedirs(reports_dir, exist_ok=True)
 
-        output_path = os.path.join(reports_dir, f"{company_name.replace(' ', '-')}-Enterprise-SEO-Report-{datetime.now().strftime('%Y-%m-%d')}.docx")
+        output_path = os.path.join(
+            reports_dir,
+            f"{company_name.replace(' ', '-')}-Enterprise-SEO-Report-{datetime.now().strftime('%Y-%m-%d')}.docx",
+        )
         doc.save(output_path)
 
         print(f"\n🏆 ENTERPRISE REPORT GENERATED: {output_path}")
@@ -398,10 +528,13 @@ def generate_enterprise_report(
         return output_path
 
     except ImportError:
-        print("\n❌ Error: python-docx not installed. Run 'pip install python-docx' for enterprise report generation.")
+        print(
+            "\n❌ Error: python-docx not installed. Run 'pip install python-docx' for enterprise report generation."
+        )
         return None
     except Exception as e:
         print(f"\n❌ Error generating enterprise report: {e}")
         import traceback
+
         traceback.print_exc()
         return None

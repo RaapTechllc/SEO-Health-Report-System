@@ -81,7 +81,7 @@ class TestBrandingServiceUpdateBranding:
 
         service = BrandingService(mock_db)
 
-        with patch.object(service, 'get_branding', return_value={"is_custom": True}):
+        with patch.object(service, "get_branding", return_value={"is_custom": True}):
             service.update_branding(
                 tenant_id="tenant_123",
                 primary_color="#FF5733",
@@ -99,7 +99,7 @@ class TestBrandingServiceUpdateBranding:
 
         service = BrandingService(mock_db)
 
-        with patch.object(service, 'get_branding', return_value={"is_custom": True}):
+        with patch.object(service, "get_branding", return_value={"is_custom": True}):
             service.update_branding(
                 tenant_id="tenant_123",
                 primary_color="#FF5733",
@@ -137,7 +137,7 @@ class TestBrandingServiceUpdateBranding:
 
         service = BrandingService(mock_db)
 
-        with patch.object(service, 'get_branding', return_value={"is_custom": True}):
+        with patch.object(service, "get_branding", return_value={"is_custom": True}):
             service.update_branding(
                 tenant_id="tenant_123",
                 logo_url="https://example.com/new-logo.png",
@@ -154,7 +154,7 @@ class TestBrandingServiceUpdateBranding:
 
         service = BrandingService(mock_db)
 
-        with patch.object(service, 'get_branding', return_value={"is_custom": True}):
+        with patch.object(service, "get_branding", return_value={"is_custom": True}):
             service.update_branding(
                 tenant_id="tenant_123",
                 footer_text="New Footer Text",
@@ -204,12 +204,16 @@ class TestBrandingServiceGetReportBranding:
         mock_db = MagicMock()
         service = BrandingService(mock_db)
 
-        with patch.object(service, 'get_branding', return_value={
-            "logo_url": "https://example.com/logo.png",
-            "primary_color": "#FF5733",
-            "secondary_color": "#33FF57",
-            "footer_text": "Custom Footer",
-        }):
+        with patch.object(
+            service,
+            "get_branding",
+            return_value={
+                "logo_url": "https://example.com/logo.png",
+                "primary_color": "#FF5733",
+                "secondary_color": "#33FF57",
+                "footer_text": "Custom Footer",
+            },
+        ):
             result = service.get_report_branding("tenant_123")
 
         assert result["logo_url"] == "https://example.com/logo.png"

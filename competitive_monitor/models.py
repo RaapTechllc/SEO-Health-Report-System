@@ -10,7 +10,7 @@ class CompetitorProfile:
     company_name: str = ""
     last_score: int = 0
     current_score: int = 0
-    score_history: list['ScoreSnapshot'] = None
+    score_history: list["ScoreSnapshot"] = None
     monitoring_frequency: int = 60  # minutes
     alert_threshold: int = 10  # score change
     created_at: Optional[datetime] = None
@@ -23,6 +23,7 @@ class CompetitorProfile:
             self.created_at = datetime.now()
         if self.updated_at is None:
             self.updated_at = datetime.now()
+
 
 @dataclass
 class ScoreSnapshot:
@@ -37,6 +38,7 @@ class ScoreSnapshot:
     def __post_init__(self):
         if self.key_changes is None:
             self.key_changes = []
+
 
 @dataclass
 class AlertEvent:

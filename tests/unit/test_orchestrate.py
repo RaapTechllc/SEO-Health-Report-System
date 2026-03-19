@@ -124,9 +124,7 @@ class TestCollectAllIssues:
 
     def test_collect_main_issues(self, sample_issues):
         """Test collecting main issues from audits."""
-        audit_results = {
-            "audits": {"technical": {"score": 85, "issues": [sample_issues[0]]}}
-        }
+        audit_results = {"audits": {"technical": {"score": 85, "issues": [sample_issues[0]]}}}
         issues = collect_all_issues(audit_results)
         assert len(issues) == 1
         assert issues[0]["source"] == "technical"
@@ -138,11 +136,7 @@ class TestCollectAllIssues:
                 "technical": {
                     "score": 85,
                     "components": {
-                        "speed": {
-                            "issues": [
-                                {"severity": "high", "description": "Slow load time"}
-                            ]
-                        }
+                        "speed": {"issues": [{"severity": "high", "description": "Slow load time"}]}
                     },
                 }
             }
@@ -155,12 +149,8 @@ class TestCollectAllIssues:
         """Test collecting issues from multiple audits."""
         audit_results = {
             "audits": {
-                "technical": {
-                    "issues": [{"severity": "high", "description": "Issue 1"}]
-                },
-                "content": {
-                    "issues": [{"severity": "medium", "description": "Issue 2"}]
-                },
+                "technical": {"issues": [{"severity": "high", "description": "Issue 1"}]},
+                "content": {"issues": [{"severity": "medium", "description": "Issue 2"}]},
             }
         }
         issues = collect_all_issues(audit_results)
@@ -171,15 +161,9 @@ class TestCollectAllIssues:
         audit_results = {
             "audits": {
                 "technical": {
-                    "issues": [
-                        {"severity": "critical", "description": "Duplicate issue"}
-                    ]
+                    "issues": [{"severity": "critical", "description": "Duplicate issue"}]
                 },
-                "content": {
-                    "issues": [
-                        {"severity": "critical", "description": "Duplicate issue"}
-                    ]
-                },
+                "content": {"issues": [{"severity": "critical", "description": "Duplicate issue"}]},
             }
         }
         issues = collect_all_issues(audit_results)
@@ -209,9 +193,7 @@ class TestCollectAllIssues:
     def test_issues_without_source_field(self):
         """Test issues without severity field are handled."""
         audit_results = {
-            "audits": {
-                "technical": {"issues": [{"description": "Issue without severity"}]}
-            }
+            "audits": {"technical": {"issues": [{"description": "Issue without severity"}]}}
         }
         issues = collect_all_issues(audit_results)
         assert len(issues) == 1
@@ -231,13 +213,9 @@ class TestCollectAllRecommendations:
         audit_results = {
             "audits": {
                 "technical": {
-                    "recommendations": [
-                        {"priority": "high", "action": "Fix robots.txt"}
-                    ]
+                    "recommendations": [{"priority": "high", "action": "Fix robots.txt"}]
                 },
-                "content": {
-                    "recommendations": [{"priority": "medium", "action": "Add content"}]
-                },
+                "content": {"recommendations": [{"priority": "medium", "action": "Add content"}]},
             }
         }
         recommendations = collect_all_recommendations(audit_results)
@@ -246,11 +224,7 @@ class TestCollectAllRecommendations:
     def test_recommendations_have_source(self):
         """Test recommendations include source."""
         audit_results = {
-            "audits": {
-                "technical": {
-                    "recommendations": [{"priority": "high", "action": "Action"}]
-                }
-            }
+            "audits": {"technical": {"recommendations": [{"priority": "high", "action": "Action"}]}}
         }
         recommendations = collect_all_recommendations(audit_results)
         assert recommendations[0]["source"] == "technical"
@@ -335,9 +309,7 @@ class TestIdentifyCriticalIssues:
 
     def test_critical_issues_limit_to_10(self):
         """Test critical issues limited to top 10."""
-        issues = [
-            {"severity": "critical", "description": f"Critical {i}"} for i in range(15)
-        ]
+        issues = [{"severity": "critical", "description": f"Critical {i}"} for i in range(15)]
         critical = identify_critical_issues(issues)
         assert len(critical) <= 10
 

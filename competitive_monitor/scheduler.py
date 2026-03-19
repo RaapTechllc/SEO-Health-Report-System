@@ -37,14 +37,15 @@ class MonitoringScheduler:
             self.thread.join(timeout=5)
         self.logger.info("Monitoring scheduler stopped")
 
-    def schedule_competitor(self, competitor_id: int, frequency_minutes: int,
-                          callback: Callable[[int], None]):
+    def schedule_competitor(
+        self, competitor_id: int, frequency_minutes: int, callback: Callable[[int], None]
+    ):
         """Schedule monitoring for a competitor."""
         self.tasks[competitor_id] = {
-            'frequency': frequency_minutes,
-            'callback': callback,
-            'next_run': datetime.now() + timedelta(minutes=frequency_minutes),
-            'last_run': None
+            "frequency": frequency_minutes,
+            "callback": callback,
+            "next_run": datetime.now() + timedelta(minutes=frequency_minutes),
+            "last_run": None,
         }
         self.logger.info(f"Scheduled competitor {competitor_id} every {frequency_minutes} minutes")
 
@@ -74,15 +75,17 @@ class MonitoringScheduler:
 
                 # Check each scheduled task
                 for competitor_id, task_info in list(self.tasks.items()):
-                    if now >= task_info['next_run']:
+                    if now >= task_info["next_run"]:
                         # Run the callback
                         try:
-                            task_info['callback'](competitor_id)
-                            task_info['last_run'] = now
-                            task_info['next_run'] = now + timedelta(minutes=task_info['frequency'])
+                            task_info["callback"](competitor_id)
+                            task_info["last_run"] = now
+                            task_info["next_run"] = now + timedelta(minutes=task_info["frequency"])
                             self.logger.debug(f"Executed monitoring for competitor {competitor_id}")
                         except Exception as e:
-                            self.logger.error(f"Monitoring callback failed for competitor {competitor_id}: {e}")
+                            self.logger.error(
+                                f"Monitoring callback failed for competitor {competitor_id}: {e}"
+                            )
 
                 # Sleep for 30 seconds before next check
                 await asyncio.sleep(30)
@@ -94,23 +97,26 @@ class MonitoringScheduler:
     def get_status(self) -> dict:
         """Get scheduler status."""
         return {
-            'running': self.running,
-            'scheduled_competitors': len(self.tasks),
-            'tasks': {
+            "running": self.running,
+            "scheduled_competitors": len(self.tasks),
+            "tasks": {
                 cid: {
-                    'frequency_minutes': info['frequency'],
-                    'next_run': info['next_run'].isoformat(),
-                    'last_run': info['last_run'].isoformat() if info['last_run'] else None
+                    "frequency_minutes": info["frequency"],
+                    "next_run": info["next_run"].isoformat(),
+                    "last_run": info["last_run"].isoformat() if info["last_run"] else None,
                 }
                 for cid, info in self.tasks.items()
-            }
+            },
         }
+
 
 # Global scheduler instance
 scheduler = MonitoringScheduler()
 
+
 def setup_signal_handlers():
     """Setup graceful shutdown on signals."""
+
     def signal_handler(signum, frame):
         logging.info(f"Received signal {signum}, shutting down...")
         scheduler.stop()

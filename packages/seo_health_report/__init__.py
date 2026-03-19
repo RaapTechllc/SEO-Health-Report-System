@@ -147,9 +147,7 @@ def generate_report(
     result["grade"] = scores.get("grade", "F")
     result["component_scores"] = scores.get("component_scores", {})
 
-    logger.info(
-        f"Overall Score: {result['overall_score']}/100 (Grade: {result['grade']})"
-    )
+    logger.info(f"Overall Score: {result['overall_score']}/100 (Grade: {result['grade']})")
 
     # Step 3: Collect issues and recommendations
     logger.info("[Step 3/5] Analyzing findings...")
@@ -242,9 +240,7 @@ def format_text_report(result: dict[str, Any]) -> str:
     lines.append("SEO HEALTH REPORT SUMMARY")
     lines.append("=" * 60)
 
-    lines.append(
-        f"\nOVERALL SCORE: {result['overall_score']}/100 (Grade: {result['grade']})"
-    )
+    lines.append(f"\nOVERALL SCORE: {result['overall_score']}/100 (Grade: {result['grade']})")
     lines.append(f"\n{get_grade_description(result['grade'])}")
 
     lines.append("\n" + "-" * 60)
@@ -254,9 +250,7 @@ def format_text_report(result: dict[str, Any]) -> str:
     for name, data in result.get("component_scores", {}).items():
         score = data.get("score", 0)
         weight = data.get("weight", 0) * 100
-        lines.append(
-            f"  {name.replace('_', ' ').title()}: {score:.0f}/100 ({weight:.0f}% weight)"
-        )
+        lines.append(f"  {name.replace('_', ' ').title()}: {score:.0f}/100 ({weight:.0f}% weight)")
 
     if result.get("critical_issues"):
         lines.append("\n" + "-" * 60)
@@ -282,9 +276,7 @@ def main():
     """Command-line interface for generating reports."""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Generate comprehensive SEO health reports"
-    )
+    parser = argparse.ArgumentParser(description="Generate comprehensive SEO health reports")
     parser.add_argument("--url", required=True, help="Target URL to audit")
     parser.add_argument("--company", required=True, help="Company name")
     parser.add_argument("--logo", required=True, help="Path to logo file")

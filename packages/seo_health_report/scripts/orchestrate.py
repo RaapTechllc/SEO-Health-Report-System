@@ -105,12 +105,15 @@ async def run_full_audit(
     browser_data = await run_browser_crawl(target_url)
     if browser_data:
         results["browser_data"] = browser_data
-        logger.info(f"      Browser Crawl: {browser_data.get('page_load_time_ms', 0):.0f}ms load time, {browser_data.get('images_total', 0)} images")
+        logger.info(
+            f"      Browser Crawl: {browser_data.get('page_load_time_ms', 0):.0f}ms load time, {browser_data.get('images_total', 0)} images"
+        )
 
     async def run_technical():
         logger.info(f"[1/3] Running Technical Audit for {target_url}...")
         try:
             import packages.seo_technical_audit as seo_technical_audit
+
             return await seo_technical_audit.run_audit(
                 target_url=target_url, depth=50, competitor_urls=competitor_urls
             )
@@ -125,6 +128,7 @@ async def run_full_audit(
         logger.info("[2/3] Running Content & Authority Audit...")
         try:
             import packages.seo_content_authority as seo_content_authority
+
             return seo_content_authority.run_audit(
                 target_url=target_url,
                 primary_keywords=primary_keywords,
@@ -141,13 +145,12 @@ async def run_full_audit(
         logger.info("[3/3] Running AI Visibility Audit...")
         try:
             import packages.ai_visibility_audit as ai_visibility_audit
+
             return await ai_visibility_audit.run_audit(
                 brand_name=company_name,
                 target_url=target_url,
                 products_services=primary_keywords,
-                competitor_names=[
-                    extract_domain(url) for url in (competitor_urls or [])
-                ],
+                competitor_names=[extract_domain(url) for url in (competitor_urls or [])],
                 ground_truth=ground_truth,
             )
         except ImportError as e:
@@ -167,12 +170,8 @@ async def run_full_audit(
     results["audits"]["ai_visibility"] = audit_results[2]
 
     # Log scores
-    logger.info(
-        f"      Technical Score: {results['audits']['technical'].get('score', 'N/A')}/100"
-    )
-    logger.info(
-        f"      Content Score: {results['audits']['content'].get('score', 'N/A')}/100"
-    )
+    logger.info(f"      Technical Score: {results['audits']['technical'].get('score', 'N/A')}/100")
+    logger.info(f"      Content Score: {results['audits']['content'].get('score', 'N/A')}/100")
     logger.info(
         f"      AI Visibility Score: {results['audits']['ai_visibility'].get('score', 'N/A')}/100"
     )
@@ -205,18 +204,18 @@ def handle_audit_failure(audit_type: str, error_message: str) -> dict[str, Any]:
         "findings": [
             f"{audit_type.title()} audit could not be completed",
             "This does not affect other audit components",
-            "Manual analysis available upon request"
+            "Manual analysis available upon request",
         ],
         "recommendations": [
             f"Contact RaapTech for manual {audit_type} analysis",
             "Review available audit sections for actionable insights",
-            "Schedule follow-up audit when systems restored"
+            "Schedule follow-up audit when systems restored",
         ],
         "next_steps": [
             "Focus on available audit results",
             "Contact support for detailed consultation",
-            "Request manual analysis for missing components"
-        ]
+            "Request manual analysis for missing components",
+        ],
     }
 
 

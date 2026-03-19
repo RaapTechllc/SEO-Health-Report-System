@@ -1,4 +1,5 @@
 """Root-level shim — canonical code lives in packages/database/."""
+
 from packages.database import *  # noqa: F401,F403
 from packages.database import (  # noqa: F401
     Audit,

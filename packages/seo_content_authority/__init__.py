@@ -27,7 +27,7 @@ def run_audit(
     target_url: str,
     primary_keywords: list[str],
     competitor_urls: Optional[list[str]] = None,
-    crawl_depth: int = 30
+    crawl_depth: int = 30,
 ) -> dict[str, Any]:
     """
     Run a complete content and authority audit.
@@ -54,7 +54,7 @@ def run_audit(
         "components": {},
         "content_gaps": [],
         "topic_opportunities": [],
-        "recommendations": []
+        "recommendations": [],
     }
 
     # Component 1: Content Quality (25 points)
@@ -66,9 +66,29 @@ def run_audit(
 
     # File extensions to skip (not content pages)
     SKIP_EXTENSIONS = {
-        '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp',
-        '.woff', '.woff2', '.ttf', '.eot', '.pdf', '.zip', '.xml', '.json',
-        '.mp3', '.mp4', '.avi', '.mov', '.webm', '.wav'
+        ".js",
+        ".css",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".svg",
+        ".ico",
+        ".webp",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".eot",
+        ".pdf",
+        ".zip",
+        ".xml",
+        ".json",
+        ".mp3",
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".webm",
+        ".wav",
     }
 
     def is_content_url(url: str) -> bool:
@@ -76,13 +96,22 @@ def run_audit(
         parsed = urlparse(url)
         path = parsed.path.lower()
         # Skip if has file extension that's not HTML
-        if '.' in path.split('/')[-1]:
-            ext = '.' + path.split('.')[-1]
+        if "." in path.split("/")[-1]:
+            ext = "." + path.split(".")[-1]
             if ext in SKIP_EXTENSIONS:
                 return False
         # Skip common asset paths
-        if any(x in path for x in ['/wp-content/themes/', '/wp-content/plugins/',
-                                    '/assets/', '/static/', '/dist/', '/build/']):
+        if any(
+            x in path
+            for x in [
+                "/wp-content/themes/",
+                "/wp-content/plugins/",
+                "/assets/",
+                "/static/",
+                "/dist/",
+                "/build/",
+            ]
+        ):
             return False
         return True
 
@@ -117,7 +146,7 @@ def run_audit(
         "avg_word_count": content_result.get("avg_word_count", 0),
         "thin_content_pages": content_result.get("thin_content_pages", 0),
         "issues": content_result.get("issues", []),
-        "findings": content_result.get("findings", [])
+        "findings": content_result.get("findings", []),
     }
 
     # Component 2: E-E-A-T (20 points)
@@ -129,7 +158,7 @@ def run_audit(
         "has_authors": eeat_result.get("authors", {}).get("has_authors", False),
         "has_about_page": eeat_result.get("about_page", {}).get("has_about_page", False),
         "issues": eeat_result.get("issues", []),
-        "findings": eeat_result.get("findings", [])
+        "findings": eeat_result.get("findings", []),
     }
 
     # Component 3: Keyword Position (15 points)
@@ -147,7 +176,7 @@ def run_audit(
         "topics_covered": topic_result.get("topics_covered", 0),
         "clusters": topic_result.get("clusters", []),
         "issues": topic_result.get("issues", []),
-        "findings": topic_result.get("findings", [])
+        "findings": topic_result.get("findings", []),
     }
 
     # Store content gaps
@@ -168,7 +197,7 @@ def run_audit(
         "data_source": backlink_result.get("data_source", "unknown"),
         "estimated": backlink_result.get("estimated", False),
         "issues": backlink_result.get("issues", []),
-        "findings": backlink_result.get("findings", [])
+        "findings": backlink_result.get("findings", []),
     }
 
     # Component 6: Internal Linking (10 points)
@@ -180,21 +209,18 @@ def run_audit(
         "orphan_pages": len(link_result.get("orphan_pages", [])),
         "total_links": link_result.get("total_links", 0),
         "issues": link_result.get("issues", []),
-        "findings": link_result.get("findings", [])
+        "findings": link_result.get("findings", []),
     }
 
     # Calculate total score, skipping components with None (unavailable data)
     available_scores = [
-        comp["score"] for comp in results["components"].values()
-        if comp["score"] is not None
+        comp["score"] for comp in results["components"].values() if comp["score"] is not None
     ]
     available_max = [
-        comp["max"] for comp in results["components"].values()
-        if comp["score"] is not None
+        comp["max"] for comp in results["components"].values() if comp["score"] is not None
     ]
     unavailable_components = [
-        name for name, comp in results["components"].items()
-        if comp["score"] is None
+        name for name, comp in results["components"].items() if comp["score"] is None
     ]
 
     if available_scores and available_max:
@@ -234,10 +260,7 @@ def run_audit(
     return results
 
 
-def _check_keyword_rankings(
-    target_url: str,
-    primary_keywords: list[str]
-) -> dict[str, Any]:
+def _check_keyword_rankings(target_url: str, primary_keywords: list[str]) -> dict[str, Any]:
     """
     Check keyword rankings using DataForSEO API or Google Search Console.
 
@@ -269,26 +292,25 @@ def _check_keyword_rankings(
         "max": 15,
         "data_source": "unavailable",
         "rankings": {},
-        "issues": [{
-            "severity": "medium",
-            "category": "keyword_position",
-            "description": "Keyword ranking data unavailable — no ranking API configured",
-            "recommendation": (
-                "Set DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD for real ranking data"
-            )
-        }],
+        "issues": [
+            {
+                "severity": "medium",
+                "category": "keyword_position",
+                "description": "Keyword ranking data unavailable — no ranking API configured",
+                "recommendation": (
+                    "Set DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD for real ranking data"
+                ),
+            }
+        ],
         "findings": [
             "Keyword ranking data requires external API (DataForSEO or Google Search Console)",
-            "This component is excluded from scoring until real data is available"
-        ]
+            "This component is excluded from scoring until real data is available",
+        ],
     }
 
 
 def _check_rankings_dataforseo(
-    target_url: str,
-    keywords: list[str],
-    login: str,
-    password: str
+    target_url: str, keywords: list[str], login: str, password: str
 ) -> dict[str, Any]:
     """
     Check keyword rankings using DataForSEO SERP API.
@@ -314,12 +336,14 @@ def _check_rankings_dataforseo(
     keywords_checked = 0
 
     for keyword in keywords[:10]:  # Limit to control costs (~$0.002 per query)
-        payload = [{
-            "keyword": keyword,
-            "location_code": 2840,  # US
-            "language_code": "en",
-            "depth": 100
-        }]
+        payload = [
+            {
+                "keyword": keyword,
+                "location_code": 2840,  # US
+                "language_code": "en",
+                "depth": 100,
+            }
+        ]
 
         try:
             response = requests.post(
@@ -327,7 +351,7 @@ def _check_rankings_dataforseo(
                 json=payload,
                 auth=(login, password),
                 timeout=30,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
             data = response.json()
@@ -345,10 +369,7 @@ def _check_rankings_dataforseo(
                     position = item.get("rank_group")
                     break
 
-            rankings[keyword] = {
-                "position": position,
-                "found": position is not None
-            }
+            rankings[keyword] = {"position": position, "found": position is not None}
 
             if position is not None:
                 keywords_checked += 1
@@ -374,13 +395,15 @@ def _check_rankings_dataforseo(
             "data_source": "real_api",
             "api_provider": "dataforseo",
             "rankings": rankings,
-            "issues": [{
-                "severity": "medium",
-                "category": "keyword_position",
-                "description": "Could not retrieve ranking data from DataForSEO",
-                "recommendation": "Verify DataForSEO credentials and API access"
-            }],
-            "findings": ["DataForSEO API returned no usable ranking data"]
+            "issues": [
+                {
+                    "severity": "medium",
+                    "category": "keyword_position",
+                    "description": "Could not retrieve ranking data from DataForSEO",
+                    "recommendation": "Verify DataForSEO credentials and API access",
+                }
+            ],
+            "findings": ["DataForSEO API returned no usable ranking data"],
         }
 
     # Normalize: max possible is 3 pts * keywords_checked, scale to 15
@@ -399,15 +422,17 @@ def _check_rankings_dataforseo(
 
     issues = []
     if unranked:
-        issues.append({
-            "severity": "high" if len(unranked) > len(ranked_keywords) else "medium",
-            "category": "keyword_position",
-            "description": (
-                f"Not ranking in top 100 for {len(unranked)} of "
-                f"{keywords_checked} target keywords"
-            ),
-            "recommendation": "Create targeted content for unranked keywords"
-        })
+        issues.append(
+            {
+                "severity": "high" if len(unranked) > len(ranked_keywords) else "medium",
+                "category": "keyword_position",
+                "description": (
+                    f"Not ranking in top 100 for {len(unranked)} of "
+                    f"{keywords_checked} target keywords"
+                ),
+                "recommendation": "Create targeted content for unranked keywords",
+            }
+        )
 
     return {
         "score": score,
@@ -417,7 +442,7 @@ def _check_rankings_dataforseo(
         "rankings": rankings,
         "keywords_checked": keywords_checked,
         "issues": issues,
-        "findings": findings
+        "findings": findings,
     }
 
 
@@ -430,81 +455,95 @@ def generate_recommendations(results: dict[str, Any]) -> list[dict[str, Any]]:
     # Content quality recommendations
     content = components.get("content_quality", {})
     if content.get("thin_content_pages", 0) > 0:
-        recommendations.append({
-            "priority": "high",
-            "category": "content_quality",
-            "action": f"Expand thin content ({content['thin_content_pages']} pages)",
-            "details": "Pages with <500 words should be expanded to 1000+ words",
-            "impact": "high",
-            "effort": "medium"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "content_quality",
+                "action": f"Expand thin content ({content['thin_content_pages']} pages)",
+                "details": "Pages with <500 words should be expanded to 1000+ words",
+                "impact": "high",
+                "effort": "medium",
+            }
+        )
 
     if content.get("score", 0) < 15:
-        recommendations.append({
-            "priority": "high",
-            "category": "content_quality",
-            "action": "Improve content quality",
-            "details": "Add more comprehensive, media-rich content",
-            "impact": "high",
-            "effort": "high"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "content_quality",
+                "action": "Improve content quality",
+                "details": "Add more comprehensive, media-rich content",
+                "impact": "high",
+                "effort": "high",
+            }
+        )
 
     # E-E-A-T recommendations
     eeat = components.get("eeat", {})
     if not eeat.get("has_authors"):
-        recommendations.append({
-            "priority": "high",
-            "category": "eeat",
-            "action": "Add author attribution",
-            "details": "Add author names and link to author bio pages with credentials",
-            "impact": "high",
-            "effort": "low"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "eeat",
+                "action": "Add author attribution",
+                "details": "Add author names and link to author bio pages with credentials",
+                "impact": "high",
+                "effort": "low",
+            }
+        )
 
     if not eeat.get("has_about_page"):
-        recommendations.append({
-            "priority": "high",
-            "category": "eeat",
-            "action": "Create comprehensive About page",
-            "details": "Add company history, team info, and credentials",
-            "impact": "high",
-            "effort": "low"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "eeat",
+                "action": "Create comprehensive About page",
+                "details": "Add company history, team info, and credentials",
+                "impact": "high",
+                "effort": "low",
+            }
+        )
 
     if eeat.get("score", 0) < 12:
-        recommendations.append({
-            "priority": "medium",
-            "category": "eeat",
-            "action": "Strengthen trust signals",
-            "details": "Add testimonials, certifications, and social proof",
-            "impact": "medium",
-            "effort": "medium"
-        })
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "eeat",
+                "action": "Strengthen trust signals",
+                "details": "Add testimonials, certifications, and social proof",
+                "impact": "medium",
+                "effort": "medium",
+            }
+        )
 
     # Topical authority recommendations
     topics = components.get("topical_authority", {})
     if topics.get("topics_covered", 0) < len(results.get("content_gaps", [])):
         for gap in results.get("content_gaps", [])[:3]:
-            recommendations.append({
-                "priority": gap.get("priority", "medium"),
-                "category": "topical_authority",
-                "action": gap.get("recommendation", "Create content"),
-                "details": f"Topic: {gap.get('topic', 'Unknown')}",
-                "impact": "high",
-                "effort": "high"
-            })
+            recommendations.append(
+                {
+                    "priority": gap.get("priority", "medium"),
+                    "category": "topical_authority",
+                    "action": gap.get("recommendation", "Create content"),
+                    "details": f"Topic: {gap.get('topic', 'Unknown')}",
+                    "impact": "high",
+                    "effort": "high",
+                }
+            )
 
     # Internal linking recommendations
     links = components.get("internal_links", {})
     if links.get("orphan_pages", 0) > 0:
-        recommendations.append({
-            "priority": "medium",
-            "category": "internal_links",
-            "action": f"Link orphan pages ({links['orphan_pages']} pages)",
-            "details": "Add internal links to pages with no incoming links",
-            "impact": "medium",
-            "effort": "low"
-        })
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "internal_links",
+                "action": f"Link orphan pages ({links['orphan_pages']} pages)",
+                "details": "Add internal links to pages with no incoming links",
+                "impact": "medium",
+                "effort": "low",
+            }
+        )
 
     # Sort by priority
     priority_order = {"high": 0, "medium": 1, "low": 2}
@@ -530,8 +569,9 @@ def format_report(results: dict[str, Any]) -> str:
     for name, data in results.get("components", {}).items():
         score = data.get("score", 0)
         max_score = data.get("max", 0)
-        status = "GOOD" if score >= max_score * 0.8 else \
-                 "FAIR" if score >= max_score * 0.5 else "POOR"
+        status = (
+            "GOOD" if score >= max_score * 0.8 else "FAIR" if score >= max_score * 0.5 else "POOR"
+        )
         lines.append(f"  {name.replace('_', ' ').title()}: {score}/{max_score} [{status}]")
 
     if results.get("content_gaps"):
@@ -539,7 +579,9 @@ def format_report(results: dict[str, Any]) -> str:
         lines.append("CONTENT GAPS")
         lines.append("-" * 60)
         for gap in results["content_gaps"][:5]:
-            lines.append(f"\n  [{gap.get('priority', 'medium').upper()}] {gap.get('topic', 'Unknown')}")
+            lines.append(
+                f"\n  [{gap.get('priority', 'medium').upper()}] {gap.get('topic', 'Unknown')}"
+            )
             lines.append(f"  {gap.get('recommendation', '')}")
 
     lines.append("\n" + "-" * 60)
@@ -549,7 +591,7 @@ def format_report(results: dict[str, Any]) -> str:
     for rec in results.get("recommendations", [])[:5]:
         priority = rec.get("priority", "").upper()
         lines.append(f"\n[{priority}] {rec['action']}")
-        if rec.get('details'):
+        if rec.get("details"):
             lines.append(f"  {rec['details']}")
 
     lines.append("\n" + "=" * 60)
@@ -558,13 +600,13 @@ def format_report(results: dict[str, Any]) -> str:
 
 
 __all__ = [
-    'run_audit',
-    'generate_recommendations',
-    'format_report',
-    'analyze_page_content',
-    'assess_content_quality',
-    'analyze_eeat_signals',
-    'analyze_topical_coverage',
-    'analyze_internal_links',
-    'analyze_backlink_profile'
+    "run_audit",
+    "generate_recommendations",
+    "format_report",
+    "analyze_page_content",
+    "assess_content_quality",
+    "analyze_eeat_signals",
+    "analyze_topical_coverage",
+    "analyze_internal_links",
+    "analyze_backlink_profile",
 ]

@@ -21,17 +21,14 @@ router = APIRouter(tags=["payments"])
 
 class CheckoutRequest(BaseModel):
     """Request model for creating a checkout session."""
+
     tier: str
     url: str
     company_name: str
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "tier": "pro",
-                "url": "https://example.com",
-                "company_name": "Example Corp"
-            }
+            "example": {"tier": "pro", "url": "https://example.com", "company_name": "Example Corp"}
         }
 
 
@@ -47,20 +44,18 @@ class CheckoutRequest(BaseModel):
                     "example": {
                         "session_id": "cs_test_abc123",
                         "checkout_url": "https://checkout.stripe.com/...",
-                        "amount": 7900
+                        "amount": 7900,
                     }
                 }
-            }
+            },
         },
         400: ERROR_RESPONSES[400],
         401: ERROR_RESPONSES[401],
         500: ERROR_RESPONSES[500],
-    }
+    },
 )
 async def create_checkout(
-    request: CheckoutRequest,
-    user: User = Depends(require_auth),
-    db: Session = Depends(get_db)
+    request: CheckoutRequest, user: User = Depends(require_auth), db: Session = Depends(get_db)
 ):
     """Create Stripe checkout session."""
     if request.tier not in TIER_PRICES:
@@ -75,7 +70,7 @@ async def create_checkout(
             user_email=user.email,
             audit_url=request.url,
             success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{base_url}/checkout/cancel"
+            cancel_url=f"{base_url}/checkout/cancel",
         )
 
         payment = Payment(
@@ -84,7 +79,7 @@ async def create_checkout(
             stripe_checkout_session_id=result["session_id"],
             amount=result["amount"],
             tier=request.tier,
-            status="pending"
+            status="pending",
         )
         db.add(payment)
         db.commit()
@@ -99,17 +94,21 @@ async def create_checkout(
 @router.get(
     "/checkout/success",
     summary="Checkout success",
-    description="Redirect endpoint after successful Stripe checkout."
+    description="Redirect endpoint after successful Stripe checkout.",
 )
 async def checkout_success(session_id: str):
     """Handle successful checkout redirect."""
-    return {"status": "success", "session_id": session_id, "message": "Payment successful! Your audit will begin shortly."}
+    return {
+        "status": "success",
+        "session_id": session_id,
+        "message": "Payment successful! Your audit will begin shortly.",
+    }
 
 
 @router.get(
     "/checkout/cancel",
     summary="Checkout cancelled",
-    description="Redirect endpoint when checkout is cancelled."
+    description="Redirect endpoint when checkout is cancelled.",
 )
 async def checkout_cancel():
     """Handle cancelled checkout."""
@@ -123,9 +122,11 @@ async def checkout_cancel():
     responses={
         200: {"description": "Webhook processed"},
         400: ERROR_RESPONSES[400],
-    }
+    },
 )
-async def stripe_webhook(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def stripe_webhook(
+    request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+):
     """Handle Stripe webhook events."""
     payload = await request.body()
     signature = request.headers.get("stripe-signature", "")
@@ -138,9 +139,9 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks, db
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
 
-        payment = db.query(Payment).filter(
-            Payment.stripe_checkout_session_id == session["id"]
-        ).first()
+        payment = (
+            db.query(Payment).filter(Payment.stripe_checkout_session_id == session["id"]).first()
+        )
 
         if payment:
             payment.status = "succeeded"
@@ -158,22 +159,19 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks, db
                 url=metadata.get("audit_url", ""),
                 company_name="",
                 tier=tier,
-                status="pending"
+                status="pending",
             )
             db.add(audit)
             payment.audit_id = audit_id
             db.commit()
 
             background_tasks.add_task(
-                run_audit_task, audit_id, metadata.get("audit_url", ""),
-                "", [], [], tier
+                run_audit_task, audit_id, metadata.get("audit_url", ""), "", [], [], tier
             )
 
     elif event["type"] == "payment_intent.payment_failed":
         intent = event["data"]["object"]
-        payment = db.query(Payment).filter(
-            Payment.stripe_payment_intent_id == intent["id"]
-        ).first()
+        payment = db.query(Payment).filter(Payment.stripe_payment_intent_id == intent["id"]).first()
         if payment:
             payment.status = "failed"
             db.commit()
@@ -188,13 +186,9 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks, db
     responses={
         200: {
             "description": "Pricing information",
-            "content": {
-                "application/json": {
-                    "example": PRICING_EXAMPLE
-                }
-            }
+            "content": {"application/json": {"example": PRICING_EXAMPLE}},
         }
-    }
+    },
 )
 async def get_pricing():
     """Get available pricing tiers."""
@@ -204,7 +198,7 @@ async def get_pricing():
                 "name": info["name"],
                 "description": info["description"],
                 "price": info["amount"] / 100,
-                "currency": "USD"
+                "currency": "USD",
             }
             for tier, info in TIER_PRICES.items()
         }

@@ -13,7 +13,7 @@ def generate_executive_summary(
     scores: dict[str, Any],
     critical_issues: list[dict[str, Any]],
     quick_wins: list[dict[str, Any]],
-    company_name: str
+    company_name: str,
 ) -> dict[str, Any]:
     """
     Generate executive summary content.
@@ -35,13 +35,13 @@ def generate_executive_summary(
         "score_display": {
             "overall": overall_score,
             "grade": grade,
-            "grade_description": get_grade_description(grade)
+            "grade_description": get_grade_description(grade),
         },
         "component_summary": [],
         "what_this_means": generate_interpretation(overall_score, grade, company_name),
         "top_actions": [],
         "key_strengths": [],
-        "key_weaknesses": []
+        "key_weaknesses": [],
     }
 
     # Component summaries
@@ -49,12 +49,14 @@ def generate_executive_summary(
         comp_score = comp_data.get("score", 0)
         status = get_component_status(comp_score)
 
-        summary["component_summary"].append({
-            "name": format_component_name(comp_name),
-            "score": comp_score,
-            "status": status,
-            "status_icon": get_status_icon(status)
-        })
+        summary["component_summary"].append(
+            {
+                "name": format_component_name(comp_name),
+                "score": comp_score,
+                "status": status,
+                "status_icon": get_status_icon(status),
+            }
+        )
 
         # Track strengths and weaknesses
         if comp_score >= 80:
@@ -67,21 +69,25 @@ def generate_executive_summary(
 
     # Add critical issues first
     for issue in critical_issues[:3]:
-        actions.append({
-            "type": "critical",
-            "action": issue.get("description", "Fix critical issue"),
-            "impact": "high",
-            "source": issue.get("source", "")
-        })
+        actions.append(
+            {
+                "type": "critical",
+                "action": issue.get("description", "Fix critical issue"),
+                "impact": "high",
+                "source": issue.get("source", ""),
+            }
+        )
 
     # Fill remaining with quick wins
-    for win in quick_wins[:5 - len(actions)]:
-        actions.append({
-            "type": "quick_win",
-            "action": win.get("action", ""),
-            "impact": win.get("impact", "medium"),
-            "source": win.get("source", "")
-        })
+    for win in quick_wins[: 5 - len(actions)]:
+        actions.append(
+            {
+                "type": "quick_win",
+                "action": win.get("action", ""),
+                "impact": win.get("impact", "medium"),
+                "source": win.get("source", ""),
+            }
+        )
 
     summary["top_actions"] = actions[:5]
 
@@ -125,14 +131,10 @@ def generate_interpretation(score: int, grade: str, company_name: str) -> str:
     """
     interpretations = {
         "A": f"{company_name}'s website demonstrates excellent SEO fundamentals across technical, content, and AI visibility dimensions. The site is well-positioned to compete in search results and AI-powered discovery. Focus on maintaining these strengths while pursuing incremental optimizations.",
-
         "B": f"{company_name}'s website shows solid SEO health with some areas for improvement. The foundation is strong, and addressing the identified opportunities could push performance to the next level. Prioritize the recommended actions to maximize search visibility.",
-
         "C": f"{company_name}'s website has notable SEO gaps that may be limiting search visibility and AI discovery. Several key areas need attention to compete effectively. The action plan below prioritizes the most impactful improvements.",
-
         "D": f"{company_name}'s website has significant SEO issues that are likely impacting search performance. Multiple critical areas require attention. We recommend addressing the high-priority items immediately to prevent further visibility loss.",
-
-        "F": f"{company_name}'s website has fundamental SEO problems that require urgent attention. Critical issues are preventing the site from being properly indexed, ranked, or discovered by AI systems. Immediate action is recommended on the items below."
+        "F": f"{company_name}'s website has fundamental SEO problems that require urgent attention. Critical issues are preventing the site from being properly indexed, ranked, or discovered by AI systems. Immediate action is recommended on the items below.",
     }
 
     return interpretations.get(grade, interpretations["F"])
@@ -151,7 +153,7 @@ def format_component_name(name: str) -> str:
     name_map = {
         "technical": "Technical Health",
         "content": "Content & Authority",
-        "ai_visibility": "AI Visibility"
+        "ai_visibility": "AI Visibility",
     }
     return name_map.get(name, name.replace("_", " ").title())
 
@@ -166,11 +168,7 @@ def get_status_icon(status: str) -> str:
     Returns:
         Icon string
     """
-    icons = {
-        "good": "green",
-        "fair": "yellow",
-        "poor": "red"
-    }
+    icons = {"good": "green", "fair": "yellow", "poor": "red"}
     return icons.get(status, "gray")
 
 
@@ -200,8 +198,8 @@ def generate_score_gauge_data(score: int) -> dict[str, Any]:
         "segments": [
             {"start": 0, "end": 60, "color": "#ea4335"},
             {"start": 60, "end": 80, "color": "#fbbc04"},
-            {"start": 80, "end": 100, "color": "#34a853"}
-        ]
+            {"start": 80, "end": 100, "color": "#34a853"},
+        ],
     }
 
 
@@ -220,11 +218,13 @@ def generate_component_chart_data(component_scores: dict[str, Any]) -> list[dict
     for comp_name, comp_data in component_scores.items():
         score = comp_data.get("score", 0)
 
-        chart_data.append({
-            "label": format_component_name(comp_name),
-            "value": score,
-            "color": get_score_color(score)
-        })
+        chart_data.append(
+            {
+                "label": format_component_name(comp_name),
+                "value": score,
+                "color": get_score_color(score),
+            }
+        )
 
     return chart_data
 
@@ -248,12 +248,12 @@ def get_score_color(score: float) -> str:
 
 
 __all__ = [
-    'generate_executive_summary',
-    'generate_headline',
-    'generate_interpretation',
-    'format_component_name',
-    'get_status_icon',
-    'generate_score_gauge_data',
-    'generate_component_chart_data',
-    'get_score_color'
+    "generate_executive_summary",
+    "generate_headline",
+    "generate_interpretation",
+    "format_component_name",
+    "get_status_icon",
+    "generate_score_gauge_data",
+    "generate_component_chart_data",
+    "get_score_color",
 ]

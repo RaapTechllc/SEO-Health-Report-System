@@ -81,7 +81,7 @@ class TestAuditListView:
         """Test audit list pagination."""
         # Create 150 mock audits
         all_audits = [
-            {"audit_id": f"audit_{i:03d}", "created_at": f"2024-01-{i+1:02d}T10:00:00"}
+            {"audit_id": f"audit_{i:03d}", "created_at": f"2024-01-{i + 1:02d}T10:00:00"}
             for i in range(150)
         ]
 
@@ -150,6 +150,7 @@ class TestAuditDetailView:
 
     def test_audit_detail_not_found(self):
         """Test 404 response for non-existent audit."""
+
         def get_audit(audit_id):
             if audit_id == "nonexistent":
                 return {"error": "Audit not found", "status_code": 404}
@@ -172,7 +173,7 @@ class TestAuditDetailView:
                             "crawlability": {"score": 18, "max": 20},
                             "speed": {"score": 22, "max": 25},
                             "mobile": {"score": 15, "max": 20},
-                        }
+                        },
                     },
                     "content": {
                         "score": 70,
@@ -180,7 +181,7 @@ class TestAuditDetailView:
                         "components": {
                             "quality": {"score": 30, "max": 40},
                             "keywords": {"score": 20, "max": 30},
-                        }
+                        },
                     },
                     "ai_visibility": {
                         "score": 75,
@@ -188,10 +189,10 @@ class TestAuditDetailView:
                         "components": {
                             "presence": {"score": 40, "max": 50},
                             "accuracy": {"score": 35, "max": 50},
-                        }
+                        },
                     },
                 }
-            }
+            },
         }
 
         technical = mock_audit["result"]["audits"]["technical"]
@@ -212,10 +213,10 @@ class TestAuditDetailView:
                         "recommendations": [
                             {"priority": "high", "action": "Add meta descriptions"},
                             {"priority": "medium", "action": "Optimize images"},
-                        ]
+                        ],
                     }
                 }
-            }
+            },
         }
 
         technical = mock_audit["result"]["audits"]["technical"]
@@ -309,7 +310,11 @@ class TestProgressPolling:
         events = [
             {"event_type": "initializing", "progress_pct": 0},
             {"event_type": "technical_audit", "progress_pct": 10},
-            {"event_type": "failed", "progress_pct": 0, "message": "Audit failed: Connection timeout"},
+            {
+                "event_type": "failed",
+                "progress_pct": 0,
+                "message": "Audit failed: Connection timeout",
+            },
         ]
 
         assert events[-1]["event_type"] == "failed"
@@ -550,9 +555,7 @@ class TestDashboardAPIIntegration:
         """Test expected API response structure."""
         # List response
         list_response = {
-            "audits": [
-                {"audit_id": "...", "status": "...", "url": "...", "company_name": "..."}
-            ]
+            "audits": [{"audit_id": "...", "status": "...", "url": "...", "company_name": "..."}]
         }
         assert "audits" in list_response
 
@@ -571,8 +574,6 @@ class TestDashboardAPIIntegration:
         # Events response
         events_response = {
             "audit_id": "...",
-            "events": [
-                {"event_type": "...", "message": "...", "progress_pct": 0}
-            ]
+            "events": [{"event_type": "...", "message": "...", "progress_pct": 0}],
         }
         assert "events" in events_response

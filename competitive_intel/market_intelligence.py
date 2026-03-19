@@ -21,20 +21,23 @@ logger = logging.getLogger(__name__)
 # Import human copy guidelines for natural-sounding AI content
 try:
     from packages.seo_health_report.human_copy import HUMAN_TONE_SYSTEM, clean_ai_copy
+
     HUMAN_COPY_AVAILABLE = True
 except ImportError:
     HUMAN_COPY_AVAILABLE = False
+
     def clean_ai_copy(x):
         return x  # passthrough
+
     HUMAN_TONE_SYSTEM = ""
 
 
 def ordinal(n: int) -> str:
     """Convert integer to ordinal string (1st, 2nd, 3rd, 4th, etc.)."""
     if 11 <= (n % 100) <= 13:
-        suffix = 'th'
+        suffix = "th"
     else:
-        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
     return f"{n}{suffix}"
 
 
@@ -42,14 +45,16 @@ def ordinal(n: int) -> str:
 # INDUSTRY TAXONOMY
 # =============================================================================
 
+
 @dataclass
 class IndustryClassification:
     """Hierarchical industry classification for precise niche targeting."""
-    industry: str           # e.g., "Manufacturing"
-    vertical: str           # e.g., "Metal Fabrication"
-    niche: str              # e.g., "Custom Sheet Metal"
-    sub_niche: str          # e.g., "Precision Sheet Metal - Midwest"
-    geographic_scope: str   # "local", "regional", "national", "international"
+
+    industry: str  # e.g., "Manufacturing"
+    vertical: str  # e.g., "Metal Fabrication"
+    niche: str  # e.g., "Custom Sheet Metal"
+    sub_niche: str  # e.g., "Precision Sheet Metal - Midwest"
+    geographic_scope: str  # "local", "regional", "national", "international"
     service_area: Optional[str] = None  # e.g., "Midwest USA", "California"
     keywords: list[str] = field(default_factory=list)
     confidence: float = 0.0
@@ -58,130 +63,203 @@ class IndustryClassification:
 INDUSTRY_TAXONOMY = {
     "Manufacturing": {
         "Metal Fabrication": {
-            "niches": ["Custom Sheet Metal", "Precision Machining", "Welding Services",
-                      "Metal Stamping", "CNC Machining", "Laser Cutting"],
-            "keywords": ["fabrication", "metal", "steel", "aluminum", "welding", "machining",
-                        "sheet metal", "cnc", "laser", "stamping", "precision"]
+            "niches": [
+                "Custom Sheet Metal",
+                "Precision Machining",
+                "Welding Services",
+                "Metal Stamping",
+                "CNC Machining",
+                "Laser Cutting",
+            ],
+            "keywords": [
+                "fabrication",
+                "metal",
+                "steel",
+                "aluminum",
+                "welding",
+                "machining",
+                "sheet metal",
+                "cnc",
+                "laser",
+                "stamping",
+                "precision",
+            ],
         },
         "Industrial Equipment": {
-            "niches": ["Heavy Machinery", "Industrial Automation", "Conveyor Systems",
-                      "Material Handling", "Packaging Equipment"],
-            "keywords": ["industrial", "equipment", "machinery", "automation", "conveyor"]
+            "niches": [
+                "Heavy Machinery",
+                "Industrial Automation",
+                "Conveyor Systems",
+                "Material Handling",
+                "Packaging Equipment",
+            ],
+            "keywords": ["industrial", "equipment", "machinery", "automation", "conveyor"],
         },
         "Plastics & Composites": {
             "niches": ["Injection Molding", "Thermoforming", "Composite Manufacturing"],
-            "keywords": ["plastic", "molding", "composite", "polymer", "injection"]
-        }
+            "keywords": ["plastic", "molding", "composite", "polymer", "injection"],
+        },
     },
     "Professional Services": {
         "Legal": {
-            "niches": ["Personal Injury", "Business Law", "Family Law", "Criminal Defense",
-                      "Estate Planning", "Immigration", "Employment Law"],
-            "keywords": ["attorney", "lawyer", "law firm", "legal", "litigation"]
+            "niches": [
+                "Personal Injury",
+                "Business Law",
+                "Family Law",
+                "Criminal Defense",
+                "Estate Planning",
+                "Immigration",
+                "Employment Law",
+            ],
+            "keywords": ["attorney", "lawyer", "law firm", "legal", "litigation"],
         },
         "Accounting": {
             "niches": ["Tax Services", "Bookkeeping", "Audit", "CFO Services", "Payroll"],
-            "keywords": ["cpa", "accountant", "tax", "bookkeeping", "audit", "financial"]
+            "keywords": ["cpa", "accountant", "tax", "bookkeeping", "audit", "financial"],
         },
         "Consulting": {
-            "niches": ["Management Consulting", "IT Consulting", "HR Consulting",
-                      "Marketing Consulting", "Strategy Consulting"],
-            "keywords": ["consulting", "consultant", "advisory", "strategy"]
-        }
+            "niches": [
+                "Management Consulting",
+                "IT Consulting",
+                "HR Consulting",
+                "Marketing Consulting",
+                "Strategy Consulting",
+            ],
+            "keywords": ["consulting", "consultant", "advisory", "strategy"],
+        },
     },
     "Healthcare": {
         "Medical Practice": {
             "niches": ["Primary Care", "Specialty Care", "Urgent Care", "Telemedicine"],
-            "keywords": ["doctor", "physician", "medical", "clinic", "healthcare", "patient"]
+            "keywords": ["doctor", "physician", "medical", "clinic", "healthcare", "patient"],
         },
         "Dental": {
-            "niches": ["General Dentistry", "Cosmetic Dentistry", "Orthodontics",
-                      "Oral Surgery", "Pediatric Dentistry"],
-            "keywords": ["dentist", "dental", "orthodontist", "teeth", "oral"]
+            "niches": [
+                "General Dentistry",
+                "Cosmetic Dentistry",
+                "Orthodontics",
+                "Oral Surgery",
+                "Pediatric Dentistry",
+            ],
+            "keywords": ["dentist", "dental", "orthodontist", "teeth", "oral"],
         },
         "Mental Health": {
             "niches": ["Therapy", "Psychiatry", "Counseling", "Addiction Treatment"],
-            "keywords": ["therapist", "counselor", "psychiatrist", "mental health", "therapy"]
-        }
+            "keywords": ["therapist", "counselor", "psychiatrist", "mental health", "therapy"],
+        },
     },
     "Home Services": {
         "Construction": {
-            "niches": ["General Contracting", "Remodeling", "New Construction",
-                      "Commercial Construction"],
-            "keywords": ["contractor", "construction", "builder", "remodel", "renovation"]
+            "niches": [
+                "General Contracting",
+                "Remodeling",
+                "New Construction",
+                "Commercial Construction",
+            ],
+            "keywords": ["contractor", "construction", "builder", "remodel", "renovation"],
         },
         "HVAC": {
-            "niches": ["Residential HVAC", "Commercial HVAC", "HVAC Installation",
-                      "HVAC Repair"],
-            "keywords": ["hvac", "heating", "cooling", "air conditioning", "furnace"]
+            "niches": ["Residential HVAC", "Commercial HVAC", "HVAC Installation", "HVAC Repair"],
+            "keywords": ["hvac", "heating", "cooling", "air conditioning", "furnace"],
         },
         "Plumbing": {
-            "niches": ["Residential Plumbing", "Commercial Plumbing", "Emergency Plumbing",
-                      "Drain Cleaning"],
-            "keywords": ["plumber", "plumbing", "drain", "pipe", "water heater"]
+            "niches": [
+                "Residential Plumbing",
+                "Commercial Plumbing",
+                "Emergency Plumbing",
+                "Drain Cleaning",
+            ],
+            "keywords": ["plumber", "plumbing", "drain", "pipe", "water heater"],
         },
         "Electrical": {
             "niches": ["Residential Electrical", "Commercial Electrical", "Industrial Electrical"],
-            "keywords": ["electrician", "electrical", "wiring", "panel", "lighting"]
-        }
+            "keywords": ["electrician", "electrical", "wiring", "panel", "lighting"],
+        },
     },
     "Technology": {
         "Software Development": {
-            "niches": ["Custom Software", "Web Development", "Mobile Apps", "SaaS",
-                      "Enterprise Software"],
-            "keywords": ["software", "developer", "programming", "app", "saas", "web"]
+            "niches": [
+                "Custom Software",
+                "Web Development",
+                "Mobile Apps",
+                "SaaS",
+                "Enterprise Software",
+            ],
+            "keywords": ["software", "developer", "programming", "app", "saas", "web"],
         },
         "IT Services": {
             "niches": ["Managed IT", "Cybersecurity", "Cloud Services", "IT Support"],
-            "keywords": ["it services", "managed services", "cybersecurity", "cloud", "tech support"]
+            "keywords": [
+                "it services",
+                "managed services",
+                "cybersecurity",
+                "cloud",
+                "tech support",
+            ],
         },
         "Digital Marketing": {
-            "niches": ["SEO Agency", "PPC Management", "Social Media Marketing",
-                      "Content Marketing"],
-            "keywords": ["marketing", "seo", "ppc", "social media", "digital", "advertising"]
-        }
+            "niches": [
+                "SEO Agency",
+                "PPC Management",
+                "Social Media Marketing",
+                "Content Marketing",
+            ],
+            "keywords": ["marketing", "seo", "ppc", "social media", "digital", "advertising"],
+        },
     },
     "Real Estate": {
         "Residential": {
-            "niches": ["Buyer's Agent", "Seller's Agent", "Luxury Real Estate",
-                      "First-Time Buyers"],
-            "keywords": ["realtor", "real estate", "homes", "property", "housing"]
+            "niches": [
+                "Buyer's Agent",
+                "Seller's Agent",
+                "Luxury Real Estate",
+                "First-Time Buyers",
+            ],
+            "keywords": ["realtor", "real estate", "homes", "property", "housing"],
         },
         "Commercial": {
-            "niches": ["Office Space", "Retail Space", "Industrial Real Estate",
-                      "Investment Properties"],
-            "keywords": ["commercial real estate", "office", "retail", "industrial", "investment"]
+            "niches": [
+                "Office Space",
+                "Retail Space",
+                "Industrial Real Estate",
+                "Investment Properties",
+            ],
+            "keywords": ["commercial real estate", "office", "retail", "industrial", "investment"],
         },
         "Property Management": {
             "niches": ["Residential Management", "Commercial Management", "HOA Management"],
-            "keywords": ["property management", "landlord", "rental", "tenant"]
-        }
+            "keywords": ["property management", "landlord", "rental", "tenant"],
+        },
     },
     "Food & Beverage": {
         "Restaurants": {
             "niches": ["Fine Dining", "Casual Dining", "Fast Casual", "QSR", "Catering"],
-            "keywords": ["restaurant", "dining", "food", "chef", "cuisine", "catering"]
+            "keywords": ["restaurant", "dining", "food", "chef", "cuisine", "catering"],
         },
         "Food Manufacturing": {
             "niches": ["Bakery", "Beverage Production", "Food Processing", "Specialty Foods"],
-            "keywords": ["bakery", "food production", "beverage", "manufacturing"]
-        }
+            "keywords": ["bakery", "food production", "beverage", "manufacturing"],
+        },
     },
     "Financial Services": {
         "Banking": {
             "niches": ["Community Banking", "Credit Unions", "Commercial Banking"],
-            "keywords": ["bank", "banking", "credit union", "loans", "deposits"]
+            "keywords": ["bank", "banking", "credit union", "loans", "deposits"],
         },
         "Insurance": {
-            "niches": ["Life Insurance", "Health Insurance", "Property Insurance",
-                      "Commercial Insurance"],
-            "keywords": ["insurance", "coverage", "policy", "claims", "underwriting"]
+            "niches": [
+                "Life Insurance",
+                "Health Insurance",
+                "Property Insurance",
+                "Commercial Insurance",
+            ],
+            "keywords": ["insurance", "coverage", "policy", "claims", "underwriting"],
         },
         "Wealth Management": {
             "niches": ["Financial Planning", "Investment Management", "Retirement Planning"],
-            "keywords": ["financial advisor", "wealth", "investment", "retirement", "portfolio"]
-        }
-    }
+            "keywords": ["financial advisor", "wealth", "investment", "retirement", "portfolio"],
+        },
+    },
 }
 
 
@@ -189,7 +267,7 @@ async def classify_industry(
     company_name: str,
     url: str,
     description: Optional[str] = None,
-    products_services: Optional[list[str]] = None
+    products_services: Optional[list[str]] = None,
 ) -> IndustryClassification:
     """
     Classify a company into the industry taxonomy using AI analysis.
@@ -220,16 +298,18 @@ async def classify_industry(
     return _keyword_classify_industry(company_name, url, description, products_services)
 
 
-async def _ai_classify_industry(context: str, company_name: str, url: str) -> Optional[IndustryClassification]:
+async def _ai_classify_industry(
+    context: str, company_name: str, url: str
+) -> Optional[IndustryClassification]:
     """Use Claude to classify the company into the taxonomy."""
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         return None
 
-    taxonomy_summary = json.dumps({
-        industry: list(verticals.keys())
-        for industry, verticals in INDUSTRY_TAXONOMY.items()
-    }, indent=2)
+    taxonomy_summary = json.dumps(
+        {industry: list(verticals.keys()) for industry, verticals in INDUSTRY_TAXONOMY.items()},
+        indent=2,
+    )
 
     prompt = f"""Analyze this company and classify it into the most specific industry category possible.
 
@@ -258,12 +338,11 @@ Return ONLY the JSON object, no other text."""
 
     try:
         import anthropic
+
         client = anthropic.Anthropic(api_key=api_key)
 
         message = client.messages.create(
-            model=ANTHROPIC_MODEL,
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}]
+            model=ANTHROPIC_MODEL, max_tokens=1024, messages=[{"role": "user", "content": prompt}]
         )
 
         response_text = message.content[0].text.strip()
@@ -284,7 +363,7 @@ Return ONLY the JSON object, no other text."""
             geographic_scope=data.get("geographic_scope", "regional"),
             service_area=data.get("service_area"),
             keywords=data.get("keywords", []),
-            confidence=data.get("confidence", 0.8)
+            confidence=data.get("confidence", 0.8),
         )
 
     except Exception as e:
@@ -293,10 +372,7 @@ Return ONLY the JSON object, no other text."""
 
 
 def _keyword_classify_industry(
-    company_name: str,
-    url: str,
-    description: Optional[str],
-    products_services: Optional[list[str]]
+    company_name: str, url: str, description: Optional[str], products_services: Optional[list[str]]
 ) -> IndustryClassification:
     """Fallback keyword-based classification."""
     text = f"{company_name} {url} {description or ''} {' '.join(products_services or [])}".lower()
@@ -319,7 +395,7 @@ def _keyword_classify_industry(
                     sub_niche="",
                     geographic_scope="regional",
                     keywords=[kw for kw in keywords if kw in text],
-                    confidence=min(0.9, score * 0.15)
+                    confidence=min(0.9, score * 0.15),
                 )
 
     return best_match or IndustryClassification(
@@ -329,7 +405,7 @@ def _keyword_classify_industry(
         sub_niche="",
         geographic_scope="regional",
         keywords=[],
-        confidence=0.3
+        confidence=0.3,
     )
 
 
@@ -337,9 +413,11 @@ def _keyword_classify_industry(
 # COMPETITOR DISCOVERY
 # =============================================================================
 
+
 @dataclass
 class DiscoveredCompetitor:
     """A competitor discovered through market analysis."""
+
     name: str
     url: str
     description: str
@@ -353,6 +431,7 @@ class DiscoveredCompetitor:
 @dataclass
 class MarketLandscape:
     """Complete market landscape analysis."""
+
     classification: IndustryClassification
     market_size_estimate: str
     growth_trend: str  # "growing", "stable", "declining"
@@ -370,7 +449,7 @@ async def discover_competitors(
     classification: IndustryClassification,
     products_services: list[str],
     location: Optional[str] = None,
-    max_competitors: int = 10
+    max_competitors: int = 10,
 ) -> list[DiscoveredCompetitor]:
     """
     Discover competitors in the same niche using AI analysis.
@@ -399,8 +478,8 @@ COMPANY BEING ANALYZED:
 - Niche: {classification.niche}
 - Sub-niche: {classification.sub_niche}
 - Geographic Scope: {classification.geographic_scope}
-- Service Area: {classification.service_area or 'Not specified'}
-- Products/Services: {', '.join(products_services)}
+- Service Area: {classification.service_area or "Not specified"}
+- Products/Services: {", ".join(products_services)}
 
 TASK: Identify {max_competitors} real competitors{location_context} that:
 1. Operate in the EXACT same niche (not just same industry)
@@ -437,12 +516,11 @@ Return ONLY the JSON array, no other text."""
 
     try:
         import anthropic
+
         client = anthropic.Anthropic(api_key=api_key)
 
         message = client.messages.create(
-            model=ANTHROPIC_MODEL,
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}]
+            model=ANTHROPIC_MODEL, max_tokens=4096, messages=[{"role": "user", "content": prompt}]
         )
 
         response_text = message.content[0].text.strip()
@@ -457,15 +535,17 @@ Return ONLY the JSON array, no other text."""
 
         competitors = []
         for comp in competitors_data[:max_competitors]:
-            competitors.append(DiscoveredCompetitor(
-                name=comp.get("name", "Unknown"),
-                url=comp.get("url", ""),
-                description=comp.get("description", ""),
-                why_competitor=comp.get("why_competitor", ""),
-                estimated_strength=comp.get("estimated_strength", "moderate"),
-                geographic_overlap=comp.get("geographic_overlap", "partial"),
-                service_overlap=comp.get("service_overlap", [])
-            ))
+            competitors.append(
+                DiscoveredCompetitor(
+                    name=comp.get("name", "Unknown"),
+                    url=comp.get("url", ""),
+                    description=comp.get("description", ""),
+                    why_competitor=comp.get("why_competitor", ""),
+                    estimated_strength=comp.get("estimated_strength", "moderate"),
+                    geographic_overlap=comp.get("geographic_overlap", "partial"),
+                    service_overlap=comp.get("service_overlap", []),
+                )
+            )
 
         return competitors
 
@@ -475,10 +555,7 @@ Return ONLY the JSON array, no other text."""
 
 
 async def analyze_market_landscape(
-    company_name: str,
-    url: str,
-    products_services: list[str],
-    location: Optional[str] = None
+    company_name: str, url: str, products_services: list[str], location: Optional[str] = None
 ) -> MarketLandscape:
     """
     Complete market landscape analysis including classification and competitor discovery.
@@ -487,9 +564,7 @@ async def analyze_market_landscape(
     """
     # Step 1: Classify the company
     classification = await classify_industry(
-        company_name=company_name,
-        url=url,
-        products_services=products_services
+        company_name=company_name, url=url, products_services=products_services
     )
 
     # Step 2: Discover competitors
@@ -498,7 +573,7 @@ async def analyze_market_landscape(
         url=url,
         classification=classification,
         products_services=products_services,
-        location=location
+        location=location,
     )
 
     # Step 3: Analyze the landscape
@@ -523,7 +598,7 @@ async def analyze_market_landscape(
         market_leaders=market_leaders,
         emerging_players=emerging_players,
         key_differentiators=[],  # Will be populated by competitive analysis
-        ai_visibility_opportunity=ai_opportunity
+        ai_visibility_opportunity=ai_opportunity,
     )
 
 
@@ -531,9 +606,11 @@ async def analyze_market_landscape(
 # COMPETITIVE BENCHMARKING
 # =============================================================================
 
+
 @dataclass
 class CompetitorBenchmark:
     """Detailed benchmark comparison against a single competitor."""
+
     competitor_name: str
     competitor_url: str
 
@@ -559,6 +636,7 @@ class CompetitorBenchmark:
 @dataclass
 class MarketBenchmarkReport:
     """Complete market benchmark report for premium reports."""
+
     company_name: str
     classification: IndustryClassification
 
@@ -588,7 +666,7 @@ class MarketBenchmarkReport:
 async def benchmark_against_competitors(
     client_audit: dict[str, Any],
     competitor_audits: list[dict[str, Any]],
-    classification: IndustryClassification
+    classification: IndustryClassification,
 ) -> MarketBenchmarkReport:
     """
     Create comprehensive benchmark report comparing client to competitors.
@@ -605,10 +683,20 @@ async def benchmark_against_competitors(
 
     # Calculate market averages
     if competitor_audits:
-        avg_overall = sum(c.get("overall_score", 0) or 0 for c in competitor_audits) / len(competitor_audits)
-        avg_tech = sum((c.get("audits", {}).get("technical", {}).get("score", 0) or 0) for c in competitor_audits) / len(competitor_audits)
-        avg_content = sum((c.get("audits", {}).get("content", {}).get("score", 0) or 0) for c in competitor_audits) / len(competitor_audits)
-        avg_ai = sum((c.get("audits", {}).get("ai_visibility", {}).get("score", 0) or 0) for c in competitor_audits) / len(competitor_audits)
+        avg_overall = sum(c.get("overall_score", 0) or 0 for c in competitor_audits) / len(
+            competitor_audits
+        )
+        avg_tech = sum(
+            (c.get("audits", {}).get("technical", {}).get("score", 0) or 0)
+            for c in competitor_audits
+        ) / len(competitor_audits)
+        avg_content = sum(
+            (c.get("audits", {}).get("content", {}).get("score", 0) or 0) for c in competitor_audits
+        ) / len(competitor_audits)
+        avg_ai = sum(
+            (c.get("audits", {}).get("ai_visibility", {}).get("score", 0) or 0)
+            for c in competitor_audits
+        ) / len(competitor_audits)
     else:
         avg_overall = avg_tech = avg_content = avg_ai = 50
 
@@ -652,22 +740,26 @@ async def benchmark_against_competitors(
             quick_wins.append("Create AI-optimized FAQ content")
 
         # AI comparison
-        ai_comparison = "ahead" if client_ai > comp_ai else "behind" if client_ai < comp_ai else "tied"
+        ai_comparison = (
+            "ahead" if client_ai > comp_ai else "behind" if client_ai < comp_ai else "tied"
+        )
 
-        benchmarks.append(CompetitorBenchmark(
-            competitor_name=comp_name,
-            competitor_url=comp_url,
-            overall_score_diff=client_overall - comp_overall,
-            technical_score_diff=client_tech - comp_tech,
-            content_score_diff=client_content - comp_content,
-            ai_visibility_score_diff=client_ai - comp_ai,
-            strengths_vs_competitor=strengths,
-            weaknesses_vs_competitor=weaknesses,
-            ai_mention_comparison=ai_comparison,
-            ai_sentiment_comparison="neutral",  # Would need deeper analysis
-            quick_wins=quick_wins,
-            strategic_investments=strategic
-        ))
+        benchmarks.append(
+            CompetitorBenchmark(
+                competitor_name=comp_name,
+                competitor_url=comp_url,
+                overall_score_diff=client_overall - comp_overall,
+                technical_score_diff=client_tech - comp_tech,
+                content_score_diff=client_content - comp_content,
+                ai_visibility_score_diff=client_ai - comp_ai,
+                strengths_vs_competitor=strengths,
+                weaknesses_vs_competitor=weaknesses,
+                ai_mention_comparison=ai_comparison,
+                ai_sentiment_comparison="neutral",  # Would need deeper analysis
+                quick_wins=quick_wins,
+                strategic_investments=strategic,
+            )
+        )
 
     # Sort to find leader and closest competitor
     all_scores = [(client_overall, "client")] + [
@@ -700,7 +792,10 @@ async def benchmark_against_competitors(
 
     # AI visibility rank
     ai_scores = [(client_ai, "client")] + [
-        (c.get("audits", {}).get("ai_visibility", {}).get("score", 0) or 0, c.get("company_name", ""))
+        (
+            c.get("audits", {}).get("ai_visibility", {}).get("score", 0) or 0,
+            c.get("company_name", ""),
+        )
         for c in competitor_audits
     ]
     ai_scores.sort(reverse=True)
@@ -714,12 +809,18 @@ async def benchmark_against_competitors(
     ai_priorities = []
 
     if client_overall > avg_overall:
-        advantages.append(f"Overall SEO performance {client_overall - avg_overall:.0f} points above market average")
+        advantages.append(
+            f"Overall SEO performance {client_overall - avg_overall:.0f} points above market average"
+        )
     else:
-        gaps.append(f"Overall SEO performance {avg_overall - client_overall:.0f} points below market average")
+        gaps.append(
+            f"Overall SEO performance {avg_overall - client_overall:.0f} points below market average"
+        )
 
     if client_ai < avg_ai:
-        gaps.append(f"AI visibility {avg_ai - client_ai:.0f} points below competitors - critical gap")
+        gaps.append(
+            f"AI visibility {avg_ai - client_ai:.0f} points below competitors - critical gap"
+        )
         ai_priorities.append("Implement comprehensive AI optimization strategy")
         ai_priorities.append("Add structured data and schema markup")
         ai_priorities.append("Create content optimized for AI citation")
@@ -727,7 +828,9 @@ async def benchmark_against_competitors(
         advantages.append(f"AI visibility {client_ai - avg_ai:.0f} points ahead of competitors")
 
     if ai_rank > 1:
-        opportunities.append(f"Closing AI visibility gap could move from #{ai_rank} to market leader")
+        opportunities.append(
+            f"Closing AI visibility gap could move from #{ai_rank} to market leader"
+        )
 
     return MarketBenchmarkReport(
         company_name=company_name,
@@ -740,7 +843,7 @@ async def benchmark_against_competitors(
             "overall": int(client_overall - avg_overall),
             "technical": int(client_tech - avg_tech),
             "content": int(client_content - avg_content),
-            "ai_visibility": int(client_ai - avg_ai)
+            "ai_visibility": int(client_ai - avg_ai),
         },
         competitor_benchmarks=benchmarks,
         competitive_advantages=advantages,
@@ -748,7 +851,7 @@ async def benchmark_against_competitors(
         market_opportunities=opportunities,
         ai_visibility_rank=ai_rank,
         ai_visibility_gap_to_leader=int(ai_gap_to_leader),
-        ai_optimization_priorities=ai_priorities
+        ai_optimization_priorities=ai_priorities,
     )
 
 
@@ -756,10 +859,11 @@ async def benchmark_against_competitors(
 # PREMIUM EXECUTIVE SUMMARY GENERATION
 # =============================================================================
 
+
 async def generate_premium_executive_summary(
     client_audit: dict[str, Any],
     benchmark_report: MarketBenchmarkReport,
-    market_landscape: MarketLandscape
+    market_landscape: MarketLandscape,
 ) -> str:
     """
     Generate a premium executive summary that justifies high-value reports.
@@ -778,13 +882,13 @@ COMPANY: {company_name}
 INDUSTRY: {market_landscape.classification.industry} > {market_landscape.classification.vertical} > {market_landscape.classification.niche}
 SUB-NICHE: {market_landscape.classification.sub_niche}
 GEOGRAPHIC SCOPE: {market_landscape.classification.geographic_scope}
-SERVICE AREA: {market_landscape.classification.service_area or 'Not specified'}
+SERVICE AREA: {market_landscape.classification.service_area or "Not specified"}
 
 SCORES:
 - Overall: {overall_score}/100 (Grade: {grade})
-- Technical SEO: {client_audit.get('audits', {}).get('technical', {}).get('score', 0)}/100
-- Content Authority: {client_audit.get('audits', {}).get('content', {}).get('score', 0)}/100
-- AI Visibility: {client_audit.get('audits', {}).get('ai_visibility', {}).get('score', 0)}/100
+- Technical SEO: {client_audit.get("audits", {}).get("technical", {}).get("score", 0)}/100
+- Content Authority: {client_audit.get("audits", {}).get("content", {}).get("score", 0)}/100
+- AI Visibility: {client_audit.get("audits", {}).get("ai_visibility", {}).get("score", 0)}/100
 
 MARKET POSITION:
 - Rank: #{benchmark_report.market_position_rank} of {len(benchmark_report.competitor_benchmarks) + 1} analyzed
@@ -793,22 +897,22 @@ MARKET POSITION:
 - Gap to AI Leader: {benchmark_report.ai_visibility_gap_to_leader} points
 
 VS MARKET AVERAGE:
-- Overall: {benchmark_report.vs_market_average.get('overall', 0):+d} points
-- Technical: {benchmark_report.vs_market_average.get('technical', 0):+d} points
-- Content: {benchmark_report.vs_market_average.get('content', 0):+d} points
-- AI Visibility: {benchmark_report.vs_market_average.get('ai_visibility', 0):+d} points
+- Overall: {benchmark_report.vs_market_average.get("overall", 0):+d} points
+- Technical: {benchmark_report.vs_market_average.get("technical", 0):+d} points
+- Content: {benchmark_report.vs_market_average.get("content", 0):+d} points
+- AI Visibility: {benchmark_report.vs_market_average.get("ai_visibility", 0):+d} points
 
 COMPETITIVE ADVANTAGES:
-{chr(10).join('- ' + a for a in benchmark_report.competitive_advantages) or '- None identified'}
+{chr(10).join("- " + a for a in benchmark_report.competitive_advantages) or "- None identified"}
 
 CRITICAL GAPS:
-{chr(10).join('- ' + g for g in benchmark_report.critical_gaps) or '- None identified'}
+{chr(10).join("- " + g for g in benchmark_report.critical_gaps) or "- None identified"}
 
 MARKET OPPORTUNITIES:
-{chr(10).join('- ' + o for o in benchmark_report.market_opportunities) or '- None identified'}
+{chr(10).join("- " + o for o in benchmark_report.market_opportunities) or "- None identified"}
 
 TOP COMPETITORS:
-{chr(10).join('- ' + c.name + ' (' + c.estimated_strength + ')' for c in market_landscape.competitors[:5])}
+{chr(10).join("- " + c.name + " (" + c.estimated_strength + ")" for c in market_landscape.competitors[:5])}
 
 AI VISIBILITY OPPORTUNITY: {market_landscape.ai_visibility_opportunity}
 """
@@ -848,12 +952,11 @@ Write the executive summary now:"""
 
     try:
         import anthropic
+
         client = anthropic.Anthropic(api_key=api_key)
 
         message = client.messages.create(
-            model=ANTHROPIC_MODEL,
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}]
+            model=ANTHROPIC_MODEL, max_tokens=2048, messages=[{"role": "user", "content": prompt}]
         )
 
         # Post-process to ensure human-like copy
@@ -862,13 +965,15 @@ Write the executive summary now:"""
 
     except Exception as e:
         logger.error(f"Premium summary generation failed: {e}")
-        return clean_ai_copy(_generate_template_summary(client_audit, benchmark_report, market_landscape))
+        return clean_ai_copy(
+            _generate_template_summary(client_audit, benchmark_report, market_landscape)
+        )
 
 
 def _generate_template_summary(
     client_audit: dict[str, Any],
     benchmark_report: MarketBenchmarkReport,
-    market_landscape: MarketLandscape
+    market_landscape: MarketLandscape,
 ) -> str:
     """Fallback template-based summary when AI is unavailable."""
     company_name = client_audit.get("company_name", "Your Company")
@@ -877,7 +982,7 @@ def _generate_template_summary(
 
     rank = benchmark_report.market_position_rank
     total = len(benchmark_report.competitor_benchmarks) + 1
-    ai_score = client_audit.get('audits', {}).get('ai_visibility', {}).get('score', 0) or 0
+    ai_score = client_audit.get("audits", {}).get("ai_visibility", {}).get("score", 0) or 0
     ai_gap = benchmark_report.ai_visibility_gap_to_leader
 
     position_text = "leading" if rank == 1 else "competitive" if rank <= 3 else "trailing"
@@ -893,7 +998,7 @@ The most significant finding is in AI visibility, where {company_name} scores {a
 
     summary += f"""
 
-Key competitive advantages include: {', '.join(benchmark_report.competitive_advantages[:2]) if benchmark_report.competitive_advantages else 'technical foundation that can be built upon'}. However, critical gaps exist in: {', '.join(benchmark_report.critical_gaps[:2]) if benchmark_report.critical_gaps else 'content depth and AI optimization'}.
+Key competitive advantages include: {", ".join(benchmark_report.competitive_advantages[:2]) if benchmark_report.competitive_advantages else "technical foundation that can be built upon"}. However, critical gaps exist in: {", ".join(benchmark_report.critical_gaps[:2]) if benchmark_report.critical_gaps else "content depth and AI optimization"}.
 
 Recommended immediate actions:
 1. Implement structured data markup to improve AI parseability
@@ -909,11 +1014,12 @@ The window for AI visibility optimization is now - competitors who move first wi
 # SYNC WRAPPERS
 # =============================================================================
 
+
 def classify_industry_sync(
     company_name: str,
     url: str,
     description: Optional[str] = None,
-    products_services: Optional[list[str]] = None
+    products_services: Optional[list[str]] = None,
 ) -> IndustryClassification:
     """Sync wrapper for classify_industry."""
     return asyncio.run(classify_industry(company_name, url, description, products_services))
@@ -925,19 +1031,18 @@ def discover_competitors_sync(
     classification: IndustryClassification,
     products_services: list[str],
     location: Optional[str] = None,
-    max_competitors: int = 10
+    max_competitors: int = 10,
 ) -> list[DiscoveredCompetitor]:
     """Sync wrapper for discover_competitors."""
-    return asyncio.run(discover_competitors(
-        company_name, url, classification, products_services, location, max_competitors
-    ))
+    return asyncio.run(
+        discover_competitors(
+            company_name, url, classification, products_services, location, max_competitors
+        )
+    )
 
 
 def analyze_market_landscape_sync(
-    company_name: str,
-    url: str,
-    products_services: list[str],
-    location: Optional[str] = None
+    company_name: str, url: str, products_services: list[str], location: Optional[str] = None
 ) -> MarketLandscape:
     """Sync wrapper for analyze_market_landscape."""
     return asyncio.run(analyze_market_landscape(company_name, url, products_services, location))
@@ -946,19 +1051,23 @@ def analyze_market_landscape_sync(
 def benchmark_against_competitors_sync(
     client_audit: dict[str, Any],
     competitor_audits: list[dict[str, Any]],
-    classification: IndustryClassification
+    classification: IndustryClassification,
 ) -> MarketBenchmarkReport:
     """Sync wrapper for benchmark_against_competitors."""
-    return asyncio.run(benchmark_against_competitors(client_audit, competitor_audits, classification))
+    return asyncio.run(
+        benchmark_against_competitors(client_audit, competitor_audits, classification)
+    )
 
 
 def generate_premium_executive_summary_sync(
     client_audit: dict[str, Any],
     benchmark_report: MarketBenchmarkReport,
-    market_landscape: MarketLandscape
+    market_landscape: MarketLandscape,
 ) -> str:
     """Sync wrapper for generate_premium_executive_summary."""
-    return asyncio.run(generate_premium_executive_summary(client_audit, benchmark_report, market_landscape))
+    return asyncio.run(
+        generate_premium_executive_summary(client_audit, benchmark_report, market_landscape)
+    )
 
 
 # =============================================================================
@@ -967,26 +1076,23 @@ def generate_premium_executive_summary_sync(
 
 __all__ = [
     # Data classes
-    'IndustryClassification',
-    'DiscoveredCompetitor',
-    'MarketLandscape',
-    'CompetitorBenchmark',
-    'MarketBenchmarkReport',
-
+    "IndustryClassification",
+    "DiscoveredCompetitor",
+    "MarketLandscape",
+    "CompetitorBenchmark",
+    "MarketBenchmarkReport",
     # Taxonomy
-    'INDUSTRY_TAXONOMY',
-
+    "INDUSTRY_TAXONOMY",
     # Async functions
-    'classify_industry',
-    'discover_competitors',
-    'analyze_market_landscape',
-    'benchmark_against_competitors',
-    'generate_premium_executive_summary',
-
+    "classify_industry",
+    "discover_competitors",
+    "analyze_market_landscape",
+    "benchmark_against_competitors",
+    "generate_premium_executive_summary",
     # Sync wrappers
-    'classify_industry_sync',
-    'discover_competitors_sync',
-    'analyze_market_landscape_sync',
-    'benchmark_against_competitors_sync',
-    'generate_premium_executive_summary_sync',
+    "classify_industry_sync",
+    "discover_competitors_sync",
+    "analyze_market_landscape_sync",
+    "benchmark_against_competitors_sync",
+    "generate_premium_executive_summary_sync",
 ]

@@ -40,7 +40,7 @@ Examples:
     python apps/cli/run_audit.py --url https://example.com --company "Example Co"
     python apps/cli/run_audit.py --config audit_config.json
     python apps/cli/run_audit.py --url https://example.com --company "Example" --keywords "seo,marketing"
-        """
+        """,
     )
 
     parser.add_argument("--url", help="Target URL to audit")
@@ -110,7 +110,9 @@ def main():
 
         # Save JSON output
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        domain = config["target_url"].replace("https://", "").replace("http://", "").replace("/", "_")
+        domain = (
+            config["target_url"].replace("https://", "").replace("http://", "").replace("/", "_")
+        )
         output_file = output_dir / f"seo_audit_{domain}_{timestamp}.json"
 
         with open(output_file, "w") as f:

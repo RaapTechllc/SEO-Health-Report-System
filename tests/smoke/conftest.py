@@ -7,10 +7,12 @@ import pytest
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
+
 @pytest.fixture
 def sample_url():
     """Sample URL for testing."""
     return "https://example.com"
+
 
 @pytest.fixture
 def sample_config():
@@ -18,5 +20,5 @@ def sample_config():
     return {
         "company_name": "Test Corp",
         "primary_keywords": ["test keyword"],
-        "output_format": "json"
+        "output_format": "json",
     }

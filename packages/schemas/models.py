@@ -12,6 +12,7 @@ from typing import Any, Optional
 
 class AuditStatus(str, Enum):
     """Audit execution status."""
+
     PENDING = "pending"
     QUEUED = "queued"
     RUNNING = "running"
@@ -22,6 +23,7 @@ class AuditStatus(str, Enum):
 
 class AuditTier(str, Enum):
     """Audit tier levels."""
+
     BASIC = "basic"
     PRO = "pro"
     ENTERPRISE = "enterprise"
@@ -29,6 +31,7 @@ class AuditTier(str, Enum):
 
 class Severity(str, Enum):
     """Issue severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -37,6 +40,7 @@ class Severity(str, Enum):
 
 class Priority(str, Enum):
     """Recommendation priority levels."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -44,6 +48,7 @@ class Priority(str, Enum):
 
 class Effort(str, Enum):
     """Implementation effort levels."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -51,6 +56,7 @@ class Effort(str, Enum):
 
 class Grade(str, Enum):
     """Score grade mapping."""
+
     A = "A"
     B = "B"
     C = "C"
@@ -61,6 +67,7 @@ class Grade(str, Enum):
 
 class ProgressStage(str, Enum):
     """Progress stages for audit execution."""
+
     INITIALIZING = "initializing"
     TECHNICAL_AUDIT = "technical_audit"
     CONTENT_AUDIT = "content_audit"
@@ -72,14 +79,16 @@ class ProgressStage(str, Enum):
 
 class ActionTier(str, Enum):
     """Action delivery tiers for recommendations."""
-    DFY = "dfy"    # Done-For-You: automated fixes, ready-to-deploy artifacts
-    DWY = "dwy"    # Done-With-You: step-by-step instructions with code snippets
-    DIY = "diy"    # Do-It-Yourself: strategic guidance requiring human judgment
+
+    DFY = "dfy"  # Done-For-You: automated fixes, ready-to-deploy artifacts
+    DWY = "dwy"  # Done-With-You: step-by-step instructions with code snippets
+    DIY = "diy"  # Do-It-Yourself: strategic guidance requiring human judgment
 
 
 @dataclass
 class Issue:
     """Represents a single audit issue."""
+
     description: str
     severity: Severity = Severity.MEDIUM
     source: str = ""
@@ -90,7 +99,9 @@ class Issue:
     def to_dict(self) -> dict[str, Any]:
         return {
             "description": self.description,
-            "severity": self.severity.value if isinstance(self.severity, Severity) else self.severity,
+            "severity": self.severity.value
+            if isinstance(self.severity, Severity)
+            else self.severity,
             "source": self.source,
             "category": self.category,
             "url": self.url,
@@ -101,6 +112,7 @@ class Issue:
 @dataclass
 class Recommendation:
     """Represents a single recommendation."""
+
     action: str
     priority: Priority = Priority.MEDIUM
     impact: str = "medium"
@@ -112,7 +124,9 @@ class Recommendation:
     def to_dict(self) -> dict[str, Any]:
         return {
             "action": self.action,
-            "priority": self.priority.value if isinstance(self.priority, Priority) else self.priority,
+            "priority": self.priority.value
+            if isinstance(self.priority, Priority)
+            else self.priority,
             "impact": self.impact,
             "effort": self.effort.value if isinstance(self.effort, Effort) else self.effort,
             "source": self.source,
@@ -124,6 +138,7 @@ class Recommendation:
 @dataclass
 class ComponentScore:
     """Score for a single audit component."""
+
     name: str
     score: int
     max_score: int = 100
@@ -150,6 +165,7 @@ class ComponentScore:
 @dataclass
 class AuditRequest:
     """Request to start an audit."""
+
     url: str
     company_name: str
     tier: AuditTier = AuditTier.BASIC
@@ -171,6 +187,7 @@ class AuditRequest:
 @dataclass
 class AuditResponse:
     """Response after submitting an audit request."""
+
     audit_id: str
     status: AuditStatus
     message: str = ""
@@ -190,6 +207,7 @@ class AuditResponse:
 @dataclass
 class AuditResult:
     """Complete audit result."""
+
     audit_id: str
     url: str
     company_name: str
@@ -237,6 +255,7 @@ class AuditResult:
 @dataclass
 class ProgressEvent:
     """Progress event for real-time audit status updates."""
+
     audit_id: str
     stage: ProgressStage
     progress_percent: int
@@ -264,6 +283,7 @@ class ActionItem:
     concrete deliverables: artifacts for DFY, instructions for DWY,
     strategic guidance for DIY.
     """
+
     id: str
     title: str
     tier: ActionTier
@@ -272,12 +292,12 @@ class ActionItem:
     effort_minutes: Optional[int] = None
     impact: str = "medium"
     description: str = ""
-    artifact: Optional[str] = None       # DFY: the generated fix (code, config, etc.)
+    artifact: Optional[str] = None  # DFY: the generated fix (code, config, etc.)
     artifact_type: Optional[str] = None  # DFY: "robots_txt", "meta_tags", "schema_json", etc.
     instructions: list[str] = field(default_factory=list)  # DWY: step-by-step
-    strategy: Optional[str] = None       # DIY: strategic guidance
-    validation: Optional[str] = None     # How to verify the fix worked
-    source_issue: Optional[str] = None   # Original issue description
+    strategy: Optional[str] = None  # DIY: strategic guidance
+    validation: Optional[str] = None  # How to verify the fix worked
+    source_issue: Optional[str] = None  # Original issue description
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -285,7 +305,9 @@ class ActionItem:
             "title": self.title,
             "tier": self.tier.value if isinstance(self.tier, ActionTier) else self.tier,
             "pillar": self.pillar,
-            "severity": self.severity.value if isinstance(self.severity, Severity) else self.severity,
+            "severity": self.severity.value
+            if isinstance(self.severity, Severity)
+            else self.severity,
             "effort_minutes": self.effort_minutes,
             "impact": self.impact,
             "description": self.description,
@@ -317,7 +339,7 @@ def calculate_composite_score(
     technical: Optional[int],
     content: Optional[int],
     ai_visibility: Optional[int],
-    weights: Optional[dict[str, float]] = None
+    weights: Optional[dict[str, float]] = None,
 ) -> Optional[int]:
     """
     Calculate weighted composite score.

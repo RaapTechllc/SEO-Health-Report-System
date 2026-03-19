@@ -97,8 +97,7 @@ class TestHttpRequestCounter:
     def test_http_request_counter_increments(self, client):
         """Test that http_requests_total counter increments correctly."""
         initial = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/test", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/test", "status": "200"}
         )
 
         client.get("/test")
@@ -106,8 +105,7 @@ class TestHttpRequestCounter:
         client.get("/test")
 
         final = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/test", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/test", "status": "200"}
         )
 
         assert final == initial + 3
@@ -118,12 +116,10 @@ class TestHttpRequestCounter:
         client.post("/submit")
 
         get_count = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/test", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/test", "status": "200"}
         )
         post_count = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "POST", "path": "/submit", "status": "200"}
+            "http_requests_total", labels={"method": "POST", "path": "/submit", "status": "200"}
         )
 
         assert get_count >= 1
@@ -134,8 +130,7 @@ class TestHttpRequestCounter:
         client.get("/error")
 
         error_count = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/error", "status": "500"}
+            "http_requests_total", labels={"method": "GET", "path": "/error", "status": "500"}
         )
 
         assert error_count >= 1
@@ -147,7 +142,7 @@ class TestHttpRequestCounter:
         response = client.get("/metrics")
         content = response.text
 
-        assert 'http_requests_total{' in content
+        assert "http_requests_total{" in content
         assert 'method="GET"' in content
 
 
@@ -159,8 +154,7 @@ class TestHistogramLatency:
         client.get("/test")
 
         stats = metrics.get_histogram_stats(
-            "http_request_duration_seconds",
-            labels={"method": "GET", "path": "/test"}
+            "http_request_duration_seconds", labels={"method": "GET", "path": "/test"}
         )
 
         assert stats["count"] >= 1
@@ -171,8 +165,7 @@ class TestHistogramLatency:
         client.get("/test")
 
         stats = metrics.get_histogram_stats(
-            "http_request_duration_seconds",
-            labels={"method": "GET", "path": "/test"}
+            "http_request_duration_seconds", labels={"method": "GET", "path": "/test"}
         )
 
         assert len(stats["buckets"]) > 0
@@ -196,16 +189,14 @@ class TestMetricsMiddleware:
     def test_skip_paths_not_tracked(self, client):
         """Test that /metrics and /health paths are skipped."""
         initial_count = sum(
-            1 for key in metrics._counters.keys()
-            if "/metrics" in key or "/health" in key
+            1 for key in metrics._counters.keys() if "/metrics" in key or "/health" in key
         )
 
         client.get("/metrics")
         client.get("/metrics")
 
         final_count = sum(
-            1 for key in metrics._counters.keys()
-            if "/metrics" in key or "/health" in key
+            1 for key in metrics._counters.keys() if "/metrics" in key or "/health" in key
         )
 
         assert final_count == initial_count
@@ -225,8 +216,7 @@ class TestMetricsMiddleware:
         client.get("/audit/660e8400-e29b-41d4-a716-446655440001")
 
         normalized_count = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/audit/{id}", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/audit/{id}", "status": "200"}
         )
 
         assert normalized_count == 2
@@ -246,8 +236,7 @@ class TestMetricsMiddleware:
         client.get("/users/456")
 
         normalized_count = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/users/{id}", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/users/{id}", "status": "200"}
         )
 
         assert normalized_count == 2
@@ -271,10 +260,7 @@ class TestTimerContextManager:
         with Timer(metrics, "labeled_operation", {"operation": "test"}):
             time.sleep(0.01)
 
-        stats = metrics.get_histogram_stats(
-            "labeled_operation",
-            labels={"operation": "test"}
-        )
+        stats = metrics.get_histogram_stats("labeled_operation", labels={"operation": "test"})
 
         assert stats["count"] == 1
 
@@ -351,16 +337,14 @@ class TestMetricsReset:
         client.get("/test")
 
         count_before = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/test", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/test", "status": "200"}
         )
         assert count_before >= 1
 
         metrics.reset()
 
         count_after = metrics.get_counter(
-            "http_requests_total",
-            labels={"method": "GET", "path": "/test", "status": "200"}
+            "http_requests_total", labels={"method": "GET", "path": "/test", "status": "200"}
         )
         assert count_after == 0
 

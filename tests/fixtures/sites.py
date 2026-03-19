@@ -75,7 +75,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "broken_sitemap": FixtureSite(
         name="broken_sitemap",
         url="https://broken-sitemap.test",
@@ -112,7 +111,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "redirect_chains": FixtureSite(
         name="redirect_chains",
         url="https://redirect-chains.test",
@@ -164,7 +162,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "missing_schema": FixtureSite(
         name="missing_schema",
         url="https://missing-schema.test",
@@ -205,7 +202,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "crawl_blocked": FixtureSite(
         name="crawl_blocked",
         url="https://crawl-blocked.test",
@@ -242,7 +238,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "slow_performance": FixtureSite(
         name="slow_performance",
         url="https://slow-site.test",
@@ -291,7 +286,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "missing_meta": FixtureSite(
         name="missing_meta",
         url="https://missing-meta.test",
@@ -333,7 +327,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "security_issues": FixtureSite(
         name="security_issues",
         url="http://insecure-site.test",
@@ -368,7 +361,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "noindex_pages": FixtureSite(
         name="noindex_pages",
         url="https://noindex-pages.test",
@@ -409,7 +401,6 @@ FIXTURE_SITES: dict[str, FixtureSite] = {
             },
         },
     ),
-
     "broken_internal_links": FixtureSite(
         name="broken_internal_links",
         url="https://broken-links.test",
@@ -475,10 +466,7 @@ def get_all_fixtures() -> dict[str, FixtureSite]:
 
 def get_fixtures_by_issue(issue_type: str) -> list[FixtureSite]:
     """Get all fixtures that have a specific expected issue."""
-    return [
-        fixture for fixture in FIXTURE_SITES.values()
-        if issue_type in fixture.expected_issues
-    ]
+    return [fixture for fixture in FIXTURE_SITES.values() if issue_type in fixture.expected_issues]
 
 
 def validate_all_fixtures() -> dict[str, list[str]]:

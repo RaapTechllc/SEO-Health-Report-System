@@ -11,9 +11,7 @@ from unittest.mock import patch
 import pytest
 
 # Add project root to path
-project_root = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
@@ -25,7 +23,6 @@ class TestCLIArgumentParsing:
     def test_cli_requires_url(self):
         """Test that CLI requires --url argument."""
         import argparse
-
 
         # Capture parser behavior
         with patch("sys.argv", ["seo_health_report"]):

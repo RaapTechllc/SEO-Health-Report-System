@@ -326,7 +326,9 @@ class TestGlobalMetrics:
     def test_preregistered_metrics(self):
         """Test that standard metrics are pre-registered."""
         # These should not raise errors
-        metrics.inc_counter("http_requests_total", labels={"method": "GET", "path": "/", "status": "200"})
+        metrics.inc_counter(
+            "http_requests_total", labels={"method": "GET", "path": "/", "status": "200"}
+        )
         metrics.observe_histogram("http_request_duration_seconds", 0.1)
         metrics.set_gauge("active_audits", 5)
 

@@ -56,10 +56,7 @@ class TestRateLimiter:
             limiter.release()
 
         start = time.time()
-        tasks = [
-            asyncio.create_task(acquire_and_hold(f"host{i}.com", 0.1))
-            for i in range(4)
-        ]
+        tasks = [asyncio.create_task(acquire_and_hold(f"host{i}.com", 0.1)) for i in range(4)]
         await asyncio.gather(*tasks)
 
         elapsed = time.time() - start
@@ -78,7 +75,7 @@ class TestRateLimiter:
             limiter.release()
 
         for i in range(1, len(times)):
-            delay = times[i] - times[i-1]
+            delay = times[i] - times[i - 1]
             assert delay >= 0.09
 
     @pytest.mark.asyncio
@@ -116,7 +113,9 @@ class TestRateLimitedFetch:
         mock_result = MagicMock()
         mock_result.status_code = 200
 
-        with patch('packages.seo_health_report.scripts.rate_limiter.safe_fetch', new_callable=AsyncMock) as mock_fetch:
+        with patch(
+            "packages.seo_health_report.scripts.rate_limiter.safe_fetch", new_callable=AsyncMock
+        ) as mock_fetch:
             mock_fetch.return_value = mock_result
 
             start = time.time()

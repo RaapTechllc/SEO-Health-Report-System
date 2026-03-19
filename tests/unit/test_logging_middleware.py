@@ -108,7 +108,6 @@ class TestRequestLoggingMiddleware:
         request = MockRequest(path="/health")
         response = MockResponse()
 
-
         async def call_next(req):
             return response
 
@@ -234,10 +233,7 @@ class TestRequestLoggingMiddleware:
     async def test_custom_skip_paths(self, clear_context):
         """Test custom skip paths configuration."""
         app = MagicMock()
-        middleware = RequestLoggingMiddleware(
-            app,
-            skip_paths={"/custom", "/internal"}
-        )
+        middleware = RequestLoggingMiddleware(app, skip_paths={"/custom", "/internal"})
 
         request = MockRequest(path="/custom")
         response = MockResponse()
@@ -319,7 +315,5 @@ class TestClientIPExtraction:
         """Test IP extraction with multiple forwarded IPs."""
         middleware = RequestLoggingMiddleware(MagicMock())
 
-        request = MockRequest(
-            headers={"X-Forwarded-For": "1.1.1.1, 2.2.2.2, 3.3.3.3"}
-        )
+        request = MockRequest(headers={"X-Forwarded-For": "1.1.1.1, 2.2.2.2, 3.3.3.3"})
         assert middleware._get_client_ip(request) == "1.1.1.1"

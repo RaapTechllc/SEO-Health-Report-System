@@ -210,5 +210,7 @@ def get_tier_info() -> dict[str, str]:
         "display_name": os.environ.get("REPORT_TIER_NAME", "Unknown"),
         "ai_queries_per_provider": os.environ.get("REPORT_AI_QUERIES_PER_PROVIDER", "3"),
         "include_social_sentiment": os.environ.get("REPORT_INCLUDE_SOCIAL_SENTIMENT", "true"),
-        "include_competitive_analysis": os.environ.get("REPORT_INCLUDE_COMPETITIVE_ANALYSIS", "false"),
+        "include_competitive_analysis": os.environ.get(
+            "REPORT_INCLUDE_COMPETITIVE_ANALYSIS", "false"
+        ),
     }

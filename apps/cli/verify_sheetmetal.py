@@ -30,7 +30,7 @@ from packages.seo_health_report.scripts.orchestrate import run_full_audit_sync  
 from packages.seo_health_report.tier_config import load_tier_config  # noqa: E402
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +56,7 @@ def run_verification():
         "Mission critical HVAC sheet metal",
         "Prefabricated commercial ductwork",
         "Industrial sheet metal fabrication shop",
-        "Hospital grade stainless steel ductwork"
+        "Hospital grade stainless steel ductwork",
     ]
 
     try:
@@ -64,7 +64,7 @@ def run_verification():
             target_url=url,
             company_name=company,
             primary_keywords=keywords,
-            competitor_urls=None  # Auto-discovery
+            competitor_urls=None,  # Auto-discovery
         )
 
         # Calculate composite scores
@@ -77,7 +77,9 @@ def run_verification():
         if browser_data:
             print("\n✅ Browser Crawl Data Captured:")
             print(f"   Load Time: {browser_data.get('page_load_time_ms', 0):.0f}ms")
-            print(f"   Images: {browser_data.get('images_total', 0)} total, {browser_data.get('images_without_alt', 0)} without alt")
+            print(
+                f"   Images: {browser_data.get('images_total', 0)} total, {browser_data.get('images_without_alt', 0)} without alt"
+            )
             print(f"   Canonical: {browser_data.get('canonical_url', 'Not set')}")
             print(f"   Schema.org: {len(browser_data.get('schema_json', []))} blocks")
         else:
@@ -118,6 +120,7 @@ def run_verification():
     except Exception as e:
         print(f"\n❌ Verification failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

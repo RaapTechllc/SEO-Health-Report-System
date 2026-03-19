@@ -14,6 +14,7 @@ class CompetitiveAnalysis:
     key_differentiators: list[str]
     recommendations: list[str]
 
+
 @dataclass
 class ComparisonMatrix:
     prospect_score: int
@@ -22,6 +23,7 @@ class ComparisonMatrix:
     content_comparison: dict[str, dict[str, int]]
     ai_visibility_comparison: dict[str, dict[str, int]]
     grade_comparison: dict[str, str]  # url -> grade
+
 
 @dataclass
 class TalkingPoint:

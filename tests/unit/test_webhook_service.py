@@ -40,8 +40,16 @@ class TestRetryConfiguration:
 
 class MockWebhook:
     """Mock webhook for testing."""
-    def __init__(self, id="wh_123", tenant_id="tenant_1", url="https://example.com/webhook",
-                 secret="test_secret", events=None, is_active=True):
+
+    def __init__(
+        self,
+        id="wh_123",
+        tenant_id="tenant_1",
+        url="https://example.com/webhook",
+        secret="test_secret",
+        events=None,
+        is_active=True,
+    ):
         self.id = id
         self.tenant_id = tenant_id
         self.url = url
@@ -54,8 +62,16 @@ class MockWebhook:
 
 class MockDelivery:
     """Mock delivery for testing."""
-    def __init__(self, id="del_123", webhook_id="wh_123", event_type="audit.completed",
-                 payload=None, status="pending", attempts=0):
+
+    def __init__(
+        self,
+        id="del_123",
+        webhook_id="wh_123",
+        event_type="audit.completed",
+        payload=None,
+        status="pending",
+        attempts=0,
+    ):
         self.id = id
         self.webhook_id = webhook_id
         self.event_type = event_type
@@ -81,7 +97,9 @@ class TestWebhookServiceCreate:
 
         service = WebhookService(mock_db)
 
-        with patch("packages.seo_health_report.webhooks.service.validate_webhook_url") as mock_validate:
+        with patch(
+            "packages.seo_health_report.webhooks.service.validate_webhook_url"
+        ) as mock_validate:
             mock_validate.return_value = (True, None)
 
             with patch("database.Webhook") as mock_webhook_class:
@@ -104,7 +122,9 @@ class TestWebhookServiceCreate:
         mock_db = MagicMock()
         service = WebhookService(mock_db)
 
-        with patch("packages.seo_health_report.webhooks.service.validate_webhook_url") as mock_validate:
+        with patch(
+            "packages.seo_health_report.webhooks.service.validate_webhook_url"
+        ) as mock_validate:
             mock_validate.return_value = (False, "Private IP blocked")
 
             with pytest.raises(SSRFError):
@@ -118,7 +138,9 @@ class TestWebhookServiceCreate:
         mock_db = MagicMock()
         service = WebhookService(mock_db)
 
-        with patch("packages.seo_health_report.webhooks.service.validate_webhook_url") as mock_validate:
+        with patch(
+            "packages.seo_health_report.webhooks.service.validate_webhook_url"
+        ) as mock_validate:
             mock_validate.return_value = (True, None)
 
             with pytest.raises(ValueError) as exc_info:

@@ -103,9 +103,7 @@ class StartupValidator:
                 if env.is_production:
                     errors.append("JWT_SECRET_KEY is required in production")
                 else:
-                    warnings.append(
-                        "JWT_SECRET_KEY not configured - using insecure default"
-                    )
+                    warnings.append("JWT_SECRET_KEY not configured - using insecure default")
 
         # Check required features
         if required_features:
@@ -180,13 +178,13 @@ class StartupValidator:
             )
 
         # Check Google services
-        if not any([
-            self.secrets.is_configured("google"),
-            self.secrets.is_configured("pagespeed"),
-        ]):
-            warnings.append(
-                "No Google API key configured - PageSpeed insights unavailable"
-            )
+        if not any(
+            [
+                self.secrets.is_configured("google"),
+                self.secrets.is_configured("pagespeed"),
+            ]
+        ):
+            warnings.append("No Google API key configured - PageSpeed insights unavailable")
 
         # Check cache configuration
         if settings.cache_ttl_ai_response == 0:
@@ -244,11 +242,11 @@ def validate_startup(
     except ValidationError as e:
         logger.error(f"Configuration validation failed: {e}")
         if exit_on_error:
-            print(f"\n{'='*60}", file=sys.stderr)
+            print(f"\n{'=' * 60}", file=sys.stderr)
             print("CONFIGURATION ERROR - Application cannot start", file=sys.stderr)
-            print(f"{'='*60}\n", file=sys.stderr)
+            print(f"{'=' * 60}\n", file=sys.stderr)
             print(str(e), file=sys.stderr)
-            print(f"\n{'='*60}\n", file=sys.stderr)
+            print(f"\n{'=' * 60}\n", file=sys.stderr)
             sys.exit(1)
         raise
 

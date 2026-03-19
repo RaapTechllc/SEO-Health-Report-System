@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 @dataclass
 class EEATIssue:
     """An E-E-A-T issue found during analysis."""
+
     severity: str
     category: str  # "experience", "expertise", "authority", "trust"
     description: str
@@ -23,7 +24,8 @@ def fetch_page(url: str, timeout: int = 30) -> Optional[str]:
     """Fetch HTML content from URL."""
     try:
         import requests
-        headers = {'User-Agent': 'SEO-Health-Report-Bot/1.0'}
+
+        headers = {"User-Agent": "SEO-Health-Report-Bot/1.0"}
         response = requests.get(url, headers=headers, timeout=timeout)
         response.raise_for_status()
         return response.text
@@ -49,20 +51,20 @@ def check_author_pages(html: str, base_url: str) -> dict[str, Any]:
         "authors_with_credentials": 0,
         "author_links": [],
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     # Look for author indicators
     author_patterns = [
         # Schema.org author
-        (r'"author"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]+)"', 'schema'),
+        (r'"author"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]+)"', "schema"),
         # Meta tag author
-        (r'<meta[^>]*name=["\']author["\'][^>]*content=["\']([^"\']+)', 'meta'),
+        (r'<meta[^>]*name=["\']author["\'][^>]*content=["\']([^"\']+)', "meta"),
         # Common author class patterns
-        (r'class=["\'][^"\']*author[^"\']*["\'][^>]*>([^<]+)</(?:a|span|div)', 'class'),
+        (r'class=["\'][^"\']*author[^"\']*["\'][^>]*>([^<]+)</(?:a|span|div)', "class"),
         # "By [Author]" patterns
-        (r'[Bb]y\s+<a[^>]+>([^<]+)</a>', 'byline'),
-        (r'[Bb]y\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)', 'byline_text'),
+        (r"[Bb]y\s+<a[^>]+>([^<]+)</a>", "byline"),
+        (r"[Bb]y\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", "byline_text"),
     ]
 
     authors_found = set()
@@ -79,12 +81,14 @@ def check_author_pages(html: str, base_url: str) -> dict[str, Any]:
     if authors_found:
         result["findings"].append(f"Found {len(authors_found)} author(s)")
     else:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "expertise",
-            "description": "No author attribution found",
-            "recommendation": "Add author names and links to author bio pages"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "expertise",
+                "description": "No author attribution found",
+                "recommendation": "Add author names and links to author bio pages",
+            }
+        )
 
     # Look for author bio links
     author_link_patterns = [
@@ -101,10 +105,10 @@ def check_author_pages(html: str, base_url: str) -> dict[str, Any]:
 
     # Check for credential indicators
     credential_patterns = [
-        r'(?:Ph\.?D|M\.?D|J\.?D|MBA|CPA|CFA)',
-        r'(?:\d+\+?\s+)?years?\s+(?:of\s+)?experience',
-        r'certified|licensed|accredited',
-        r'professor|doctor|attorney|expert',
+        r"(?:Ph\.?D|M\.?D|J\.?D|MBA|CPA|CFA)",
+        r"(?:\d+\+?\s+)?years?\s+(?:of\s+)?experience",
+        r"certified|licensed|accredited",
+        r"professor|doctor|attorney|expert",
     ]
 
     for pattern in credential_patterns:
@@ -115,12 +119,14 @@ def check_author_pages(html: str, base_url: str) -> dict[str, Any]:
     if result["authors_with_credentials"] > 0:
         result["findings"].append("Author credentials visible")
     elif result["has_authors"]:
-        result["issues"].append({
-            "severity": "low",
-            "category": "expertise",
-            "description": "No visible author credentials",
-            "recommendation": "Add author qualifications, experience, and credentials"
-        })
+        result["issues"].append(
+            {
+                "severity": "low",
+                "category": "expertise",
+                "description": "No visible author credentials",
+                "recommendation": "Add author qualifications, experience, and credentials",
+            }
+        )
 
     return result
 
@@ -143,7 +149,7 @@ def check_about_page(base_url: str) -> dict[str, Any]:
         "has_history": False,
         "word_count": 0,
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     # Try common about page URLs
@@ -164,12 +170,14 @@ def check_about_page(base_url: str) -> dict[str, Any]:
             break
 
     if not result["has_about_page"]:
-        result["issues"].append({
-            "severity": "high",
-            "category": "trust",
-            "description": "No about page found",
-            "recommendation": "Create a comprehensive about page with company information"
-        })
+        result["issues"].append(
+            {
+                "severity": "high",
+                "category": "trust",
+                "description": "No about page found",
+                "recommendation": "Create a comprehensive about page with company information",
+            }
+        )
         return result
 
     # Analyze about page content
@@ -177,8 +185,14 @@ def check_about_page(base_url: str) -> dict[str, Any]:
 
     # Check for company information
     company_indicators = [
-        'founded', 'established', 'mission', 'vision', 'values',
-        'headquarters', 'office', 'location'
+        "founded",
+        "established",
+        "mission",
+        "vision",
+        "values",
+        "headquarters",
+        "office",
+        "location",
     ]
     company_matches = sum(1 for ind in company_indicators if ind in html_lower)
     if company_matches >= 3:
@@ -186,29 +200,31 @@ def check_about_page(base_url: str) -> dict[str, Any]:
         result["findings"].append("About page has company information")
 
     # Check for team information
-    team_indicators = ['team', 'leadership', 'founder', 'ceo', 'staff', 'employees']
+    team_indicators = ["team", "leadership", "founder", "ceo", "staff", "employees"]
     if any(ind in html_lower for ind in team_indicators):
         result["has_team_info"] = True
         result["findings"].append("About page mentions team/leadership")
 
     # Check for company history
-    history_indicators = ['history', 'story', 'journey', 'since', 'years']
+    history_indicators = ["history", "story", "journey", "since", "years"]
     if any(ind in html_lower for ind in history_indicators):
         result["has_history"] = True
         result["findings"].append("About page includes company history")
 
     # Check word count
-    text = re.sub(r'<[^>]+>', ' ', html)
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r"<[^>]+>", " ", html)
+    text = re.sub(r"\s+", " ", text).strip()
     result["word_count"] = len(text.split())
 
     if result["word_count"] < 200:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "trust",
-            "description": "About page is too brief",
-            "recommendation": "Expand about page with more company details"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "trust",
+                "description": "About page is too brief",
+                "recommendation": "Expand about page with more company details",
+            }
+        )
 
     return result
 
@@ -230,7 +246,7 @@ def check_contact_page(base_url: str) -> dict[str, Any]:
         "has_email": False,
         "has_form": False,
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     # Try common contact page URLs
@@ -252,39 +268,41 @@ def check_contact_page(base_url: str) -> dict[str, Any]:
 
     # Check for address
     address_patterns = [
-        r'<address[^>]*>.*?</address>',
-        r'(?:street|avenue|road|blvd|drive|suite|floor)\s*(?:#?\d+)?',
-        r'\d{5}(?:-\d{4})?',  # ZIP code
+        r"<address[^>]*>.*?</address>",
+        r"(?:street|avenue|road|blvd|drive|suite|floor)\s*(?:#?\d+)?",
+        r"\d{5}(?:-\d{4})?",  # ZIP code
     ]
     if any(re.search(p, check_html, re.IGNORECASE) for p in address_patterns):
         result["has_address"] = True
         result["findings"].append("Physical address found")
 
     # Check for phone
-    phone_pattern = r'(?:\+1|1)?[-.\s]?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}'
+    phone_pattern = r"(?:\+1|1)?[-.\s]?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}"
     if re.search(phone_pattern, check_html):
         result["has_phone"] = True
         result["findings"].append("Phone number found")
 
     # Check for email
-    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
     if re.search(email_pattern, check_html):
         result["has_email"] = True
         result["findings"].append("Email address found")
 
     # Check for contact form
-    if '<form' in check_html.lower():
+    if "<form" in check_html.lower():
         result["has_form"] = True
         result["findings"].append("Contact form available")
 
     # Generate issues
     if not result["has_contact_page"]:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "trust",
-            "description": "No dedicated contact page found",
-            "recommendation": "Create a contact page with multiple ways to reach you"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "trust",
+                "description": "No dedicated contact page found",
+                "recommendation": "Create a contact page with multiple ways to reach you",
+            }
+        )
 
     missing = []
     if not result["has_address"]:
@@ -295,12 +313,14 @@ def check_contact_page(base_url: str) -> dict[str, Any]:
         missing.append("email")
 
     if missing:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "trust",
-            "description": f"Missing contact info: {', '.join(missing)}",
-            "recommendation": "Add complete contact information for trustworthiness"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "trust",
+                "description": f"Missing contact info: {', '.join(missing)}",
+                "recommendation": "Add complete contact information for trustworthiness",
+            }
+        )
 
     return result
 
@@ -324,52 +344,56 @@ def check_trust_signals(html: str, base_url: str) -> dict[str, Any]:
         "has_secure_badges": False,
         "social_profiles": [],
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     html_lower = html.lower()
 
     # Check for privacy policy
-    if re.search(r'privacy[\s-]?policy|privacy', html_lower):
+    if re.search(r"privacy[\s-]?policy|privacy", html_lower):
         result["has_privacy_policy"] = True
         result["findings"].append("Privacy policy linked")
     else:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "trust",
-            "description": "No privacy policy link found",
-            "recommendation": "Add visible link to privacy policy"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "trust",
+                "description": "No privacy policy link found",
+                "recommendation": "Add visible link to privacy policy",
+            }
+        )
 
     # Check for terms
-    if re.search(r'terms[\s-]?(?:of[\s-]?(?:service|use))?|terms[\s-]?(?:and[\s-]?)?conditions', html_lower):
+    if re.search(
+        r"terms[\s-]?(?:of[\s-]?(?:service|use))?|terms[\s-]?(?:and[\s-]?)?conditions", html_lower
+    ):
         result["has_terms"] = True
         result["findings"].append("Terms of service linked")
 
     # Check for testimonials/reviews
-    testimonial_indicators = ['testimonial', 'review', 'customer said', 'client said', 'rating']
+    testimonial_indicators = ["testimonial", "review", "customer said", "client said", "rating"]
     if any(ind in html_lower for ind in testimonial_indicators):
         result["has_testimonials"] = True
         result["findings"].append("Testimonials/reviews present")
 
     # Check for certifications/badges
-    cert_indicators = ['certified', 'accredited', 'verified', 'award', 'badge', 'iso', 'soc']
+    cert_indicators = ["certified", "accredited", "verified", "award", "badge", "iso", "soc"]
     if any(ind in html_lower for ind in cert_indicators):
         result["has_certifications"] = True
         result["findings"].append("Certifications or badges present")
 
     # Check for security badges
-    security_indicators = ['ssl', 'secure', 'encrypted', 'https', 'norton', 'mcafee', 'trust']
+    security_indicators = ["ssl", "secure", "encrypted", "https", "norton", "mcafee", "trust"]
     if any(ind in html_lower for ind in security_indicators):
         result["has_secure_badges"] = True
 
     # Check for social profiles
     social_patterns = [
-        (r'(?:linkedin\.com|linkedin)', 'LinkedIn'),
-        (r'(?:twitter\.com|twitter|x\.com)', 'Twitter/X'),
-        (r'(?:facebook\.com|facebook)', 'Facebook'),
-        (r'(?:instagram\.com|instagram)', 'Instagram'),
-        (r'(?:youtube\.com|youtube)', 'YouTube'),
+        (r"(?:linkedin\.com|linkedin)", "LinkedIn"),
+        (r"(?:twitter\.com|twitter|x\.com)", "Twitter/X"),
+        (r"(?:facebook\.com|facebook)", "Facebook"),
+        (r"(?:instagram\.com|instagram)", "Instagram"),
+        (r"(?:youtube\.com|youtube)", "YouTube"),
     ]
 
     for pattern, name in social_patterns:
@@ -400,17 +424,15 @@ def analyze_eeat_signals(url: str) -> dict[str, Any]:
         "contact": {},
         "trust_signals": {},
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     # Fetch homepage
     html = fetch_page(url)
     if not html:
-        result["issues"].append({
-            "severity": "high",
-            "category": "fetch",
-            "description": "Could not fetch homepage"
-        })
+        result["issues"].append(
+            {"severity": "high", "category": "fetch", "description": "Could not fetch homepage"}
+        )
         result["score"] = 0
         return result
 
@@ -440,7 +462,7 @@ def analyze_eeat_signals(url: str) -> dict[str, Any]:
     # Experience (5 points)
     # First-hand experience indicators would need content analysis
     # For now, base on case studies, examples mentioned
-    if 'case study' in html.lower() or 'example' in html.lower():
+    if "case study" in html.lower() or "example" in html.lower():
         score += 2
         result["findings"].append("Shows experience through examples")
 
@@ -476,10 +498,10 @@ def analyze_eeat_signals(url: str) -> dict[str, Any]:
 
 
 __all__ = [
-    'EEATIssue',
-    'check_author_pages',
-    'check_about_page',
-    'check_contact_page',
-    'check_trust_signals',
-    'analyze_eeat_signals'
+    "EEATIssue",
+    "check_author_pages",
+    "check_about_page",
+    "check_contact_page",
+    "check_trust_signals",
+    "analyze_eeat_signals",
 ]

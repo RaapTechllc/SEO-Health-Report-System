@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 class SSRFError(Exception):
     """Raised when a URL fails SSRF validation."""
+
     pass
 
 

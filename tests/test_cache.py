@@ -11,7 +11,7 @@ import sys
 import time
 
 # Add the seo-health-report scripts to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'seo-health-report', 'scripts'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "seo-health-report", "scripts"))
 
 from cache import TTL_HTTP_FETCH, cached, clear_cache, get_cache_stats
 
@@ -21,11 +21,8 @@ def simulate_api_call(url: str, delay: float = 1.0) -> dict:
     """Simulate a slow API call."""
     print(f"  Making API call to {url}...")
     time.sleep(delay)
-    return {
-        "url": url,
-        "timestamp": time.time(),
-        "data": f"Response from {url}"
-    }
+    return {"url": url, "timestamp": time.time(), "data": f"Response from {url}"}
+
 
 def main():
     print("=" * 60)
@@ -36,7 +33,7 @@ def main():
     test_urls = [
         "https://example.com",
         "https://test.com",
-        "https://example.com"  # Duplicate to test cache hit
+        "https://example.com",  # Duplicate to test cache hit
     ]
 
     print("\n1. Testing cache functionality...")
@@ -83,6 +80,7 @@ def main():
     print("- Bypass calls are always slow")
     print("- Cache clear makes subsequent calls slow again")
     print("\nWithout diskcache, all calls will be slow (fallback behavior)")
+
 
 if __name__ == "__main__":
     main()

@@ -78,21 +78,26 @@ class CompetitorStorage:
         """Add new competitor and return ID."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     INSERT INTO competitors
                     (url, company_name, monitoring_frequency, alert_threshold, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, (
-                    competitor.url,
-                    competitor.company_name,
-                    competitor.monitoring_frequency,
-                    competitor.alert_threshold,
-                    competitor.created_at.isoformat(),
-                    competitor.updated_at.isoformat()
-                ))
+                """,
+                    (
+                        competitor.url,
+                        competitor.company_name,
+                        competitor.monitoring_frequency,
+                        competitor.alert_threshold,
+                        competitor.created_at.isoformat(),
+                        competitor.updated_at.isoformat(),
+                    ),
+                )
                 competitor_id = cursor.lastrowid
                 conn.commit()
-                self.logger.info(f"Added competitor: {competitor.company_name} (ID: {competitor_id})")
+                self.logger.info(
+                    f"Added competitor: {competitor.company_name} (ID: {competitor_id})"
+                )
                 return competitor_id
         except sqlite3.IntegrityError:
             self.logger.error(f"Competitor already exists: {competitor.url}")
@@ -106,22 +111,25 @@ class CompetitorStorage:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.row_factory = sqlite3.Row
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT * FROM competitors WHERE id = ?
-                """, (competitor_id,))
+                """,
+                    (competitor_id,),
+                )
                 row = cursor.fetchone()
 
                 if row:
                     return CompetitorProfile(
-                        id=row['id'],
-                        url=row['url'],
-                        company_name=row['company_name'],
-                        last_score=row['last_score'],
-                        current_score=row['current_score'],
-                        monitoring_frequency=row['monitoring_frequency'],
-                        alert_threshold=row['alert_threshold'],
-                        created_at=datetime.fromisoformat(row['created_at']),
-                        updated_at=datetime.fromisoformat(row['updated_at'])
+                        id=row["id"],
+                        url=row["url"],
+                        company_name=row["company_name"],
+                        last_score=row["last_score"],
+                        current_score=row["current_score"],
+                        monitoring_frequency=row["monitoring_frequency"],
+                        alert_threshold=row["alert_threshold"],
+                        created_at=datetime.fromisoformat(row["created_at"]),
+                        updated_at=datetime.fromisoformat(row["updated_at"]),
                     )
                 return None
         except Exception as e:
@@ -138,17 +146,19 @@ class CompetitorStorage:
 
                 competitors = []
                 for row in rows:
-                    competitors.append(CompetitorProfile(
-                        id=row['id'],
-                        url=row['url'],
-                        company_name=row['company_name'],
-                        last_score=row['last_score'],
-                        current_score=row['current_score'],
-                        monitoring_frequency=row['monitoring_frequency'],
-                        alert_threshold=row['alert_threshold'],
-                        created_at=datetime.fromisoformat(row['created_at']),
-                        updated_at=datetime.fromisoformat(row['updated_at'])
-                    ))
+                    competitors.append(
+                        CompetitorProfile(
+                            id=row["id"],
+                            url=row["url"],
+                            company_name=row["company_name"],
+                            last_score=row["last_score"],
+                            current_score=row["current_score"],
+                            monitoring_frequency=row["monitoring_frequency"],
+                            alert_threshold=row["alert_threshold"],
+                            created_at=datetime.fromisoformat(row["created_at"]),
+                            updated_at=datetime.fromisoformat(row["updated_at"]),
+                        )
+                    )
 
                 return competitors
         except Exception as e:
@@ -160,7 +170,9 @@ class CompetitorStorage:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Get current score first
-                cursor = conn.execute("SELECT current_score FROM competitors WHERE id = ?", (competitor_id,))
+                cursor = conn.execute(
+                    "SELECT current_score FROM competitors WHERE id = ?", (competitor_id,)
+                )
                 row = cursor.fetchone()
                 if not row:
                     return False
@@ -168,11 +180,14 @@ class CompetitorStorage:
                 old_score = row[0]
 
                 # Update scores
-                conn.execute("""
+                conn.execute(
+                    """
                     UPDATE competitors
                     SET last_score = ?, current_score = ?, updated_at = ?
                     WHERE id = ?
-                """, (old_score, new_score, datetime.now().isoformat(), competitor_id))
+                """,
+                    (old_score, new_score, datetime.now().isoformat(), competitor_id),
+                )
 
                 conn.commit()
                 return True
@@ -184,21 +199,24 @@ class CompetitorStorage:
         """Add score snapshot for competitor."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO score_snapshots
                     (competitor_id, timestamp, overall_score, technical_score,
                      content_score, ai_visibility_score, grade, key_changes)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    competitor_id,
-                    snapshot.timestamp.isoformat(),
-                    snapshot.overall_score,
-                    snapshot.technical_score,
-                    snapshot.content_score,
-                    snapshot.ai_visibility_score,
-                    snapshot.grade,
-                    json.dumps(snapshot.key_changes)
-                ))
+                """,
+                    (
+                        competitor_id,
+                        snapshot.timestamp.isoformat(),
+                        snapshot.overall_score,
+                        snapshot.technical_score,
+                        snapshot.content_score,
+                        snapshot.ai_visibility_score,
+                        snapshot.grade,
+                        json.dumps(snapshot.key_changes),
+                    ),
+                )
                 conn.commit()
                 return True
         except Exception as e:
@@ -209,20 +227,23 @@ class CompetitorStorage:
         """Add alert event."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO alert_events
                     (competitor_url, score_change, previous_score, current_score,
                      trigger_reason, alert_channels, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    alert.competitor_url,
-                    alert.score_change,
-                    alert.previous_score,
-                    alert.current_score,
-                    alert.trigger_reason,
-                    json.dumps(alert.alert_channels),
-                    alert.created_at.isoformat()
-                ))
+                """,
+                    (
+                        alert.competitor_url,
+                        alert.score_change,
+                        alert.previous_score,
+                        alert.current_score,
+                        alert.trigger_reason,
+                        json.dumps(alert.alert_channels),
+                        alert.created_at.isoformat(),
+                    ),
+                )
                 conn.commit()
                 return True
         except Exception as e:

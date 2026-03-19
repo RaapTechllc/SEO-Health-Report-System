@@ -13,6 +13,7 @@ from typing import Any, Optional
 @dataclass
 class SchemaIssue:
     """A structured data issue found during validation."""
+
     severity: str
     category: str
     schema_type: str
@@ -35,7 +36,7 @@ REQUIRED_PROPERTIES = {
     "Person": ["name"],
     "Event": ["name", "startDate", "location"],
     "Review": ["itemReviewed", "reviewRating"],
-    "AggregateRating": ["ratingValue", "reviewCount"]
+    "AggregateRating": ["ratingValue", "reviewCount"],
 }
 
 # Recommended properties for better rich results
@@ -56,7 +57,8 @@ def fetch_page(url: str, timeout: int = 30) -> Optional[str]:
     """Fetch HTML content from URL."""
     try:
         import requests
-        headers = {'User-Agent': 'SEO-Health-Report-Bot/1.0'}
+
+        headers = {"User-Agent": "SEO-Health-Report-Bot/1.0"}
         response = requests.get(url, headers=headers, timeout=timeout)
         response.raise_for_status()
         return response.text
@@ -116,11 +118,7 @@ def extract_microdata(html: str) -> list[dict[str, Any]]:
     for itemtype in matches:
         # Extract schema type from URL
         schema_type = itemtype.split("/")[-1]
-        results.append({
-            "@type": schema_type,
-            "_format": "microdata",
-            "_itemtype": itemtype
-        })
+        results.append({"@type": schema_type, "_format": "microdata", "_itemtype": itemtype})
 
     return results
 
@@ -142,10 +140,7 @@ def extract_rdfa(html: str) -> list[dict[str, Any]]:
     matches = re.findall(typeof_pattern, html, re.IGNORECASE)
 
     for typeof in matches:
-        results.append({
-            "@type": typeof,
-            "_format": "rdfa"
-        })
+        results.append({"@type": typeof, "_format": "rdfa"})
 
     return results
 
@@ -163,7 +158,7 @@ def extract_structured_data(html: str) -> dict[str, Any]:
     return {
         "json_ld": extract_json_ld(html),
         "microdata": extract_microdata(html),
-        "rdfa": extract_rdfa(html)
+        "rdfa": extract_rdfa(html),
     }
 
 
@@ -181,26 +176,30 @@ def validate_schema(schema_data: dict[str, Any]) -> list[SchemaIssue]:
 
     # Check for parse errors
     if schema_data.get("_parse_error"):
-        issues.append(SchemaIssue(
-            severity="high",
-            category="json_ld",
-            schema_type="Unknown",
-            description="JSON-LD parse error - invalid JSON syntax",
-            recommendation="Fix JSON syntax in structured data"
-        ))
+        issues.append(
+            SchemaIssue(
+                severity="high",
+                category="json_ld",
+                schema_type="Unknown",
+                description="JSON-LD parse error - invalid JSON syntax",
+                recommendation="Fix JSON syntax in structured data",
+            )
+        )
         return issues
 
     # Get schema type
     schema_type = schema_data.get("@type")
 
     if not schema_type:
-        issues.append(SchemaIssue(
-            severity="medium",
-            category="schema",
-            schema_type="Unknown",
-            description="Missing @type property in schema",
-            recommendation="Add @type to specify the schema type"
-        ))
+        issues.append(
+            SchemaIssue(
+                severity="medium",
+                category="schema",
+                schema_type="Unknown",
+                description="Missing @type property in schema",
+                recommendation="Add @type to specify the schema type",
+            )
+        )
         return issues
 
     # Handle array of types
@@ -211,27 +210,31 @@ def validate_schema(schema_data: dict[str, Any]) -> list[SchemaIssue]:
     required = REQUIRED_PROPERTIES.get(schema_type, [])
     for prop in required:
         if prop not in schema_data:
-            issues.append(SchemaIssue(
-                severity="high",
-                category="required_property",
-                schema_type=schema_type,
-                property_name=prop,
-                description=f"Missing required property '{prop}' for {schema_type}",
-                recommendation=f"Add '{prop}' property to {schema_type} schema"
-            ))
+            issues.append(
+                SchemaIssue(
+                    severity="high",
+                    category="required_property",
+                    schema_type=schema_type,
+                    property_name=prop,
+                    description=f"Missing required property '{prop}' for {schema_type}",
+                    recommendation=f"Add '{prop}' property to {schema_type} schema",
+                )
+            )
 
     # Check recommended properties
     recommended = RECOMMENDED_PROPERTIES.get(schema_type, [])
     for prop in recommended:
         if prop not in schema_data:
-            issues.append(SchemaIssue(
-                severity="low",
-                category="recommended_property",
-                schema_type=schema_type,
-                property_name=prop,
-                description=f"Missing recommended property '{prop}' for {schema_type}",
-                recommendation=f"Consider adding '{prop}' for better rich results"
-            ))
+            issues.append(
+                SchemaIssue(
+                    severity="low",
+                    category="recommended_property",
+                    schema_type=schema_type,
+                    property_name=prop,
+                    description=f"Missing recommended property '{prop}' for {schema_type}",
+                    recommendation=f"Consider adding '{prop}' for better rich results",
+                )
+            )
 
     # Validate nested schemas
     for _key, value in schema_data.items():
@@ -257,51 +260,35 @@ def check_rich_results_eligibility(schemas: list[dict[str, Any]]) -> dict[str, A
     Returns:
         Dict with rich results eligibility
     """
-    eligibility = {
-        "eligible": [],
-        "potential": [],
-        "findings": []
-    }
+    eligibility = {"eligible": [], "potential": [], "findings": []}
 
     # Rich result types and their requirements
     rich_results = {
-        "FAQ": {
-            "types": ["FAQPage"],
-            "required": ["mainEntity"]
-        },
-        "How-to": {
-            "types": ["HowTo"],
-            "required": ["name", "step"]
-        },
+        "FAQ": {"types": ["FAQPage"], "required": ["mainEntity"]},
+        "How-to": {"types": ["HowTo"], "required": ["name", "step"]},
         "Product": {
             "types": ["Product"],
             "required": ["name"],
-            "recommended": ["offers", "aggregateRating", "review"]
+            "recommended": ["offers", "aggregateRating", "review"],
         },
         "Article": {
             "types": ["Article", "NewsArticle", "BlogPosting"],
-            "required": ["headline", "author", "datePublished"]
+            "required": ["headline", "author", "datePublished"],
         },
         "Local Business": {
             "types": ["LocalBusiness", "Restaurant", "Store"],
-            "required": ["name", "address"]
+            "required": ["name", "address"],
         },
         "Organization": {
             "types": ["Organization", "Corporation"],
-            "required": ["name", "url", "logo"]
+            "required": ["name", "url", "logo"],
         },
-        "Breadcrumb": {
-            "types": ["BreadcrumbList"],
-            "required": ["itemListElement"]
-        },
-        "Event": {
-            "types": ["Event"],
-            "required": ["name", "startDate", "location"]
-        },
+        "Breadcrumb": {"types": ["BreadcrumbList"], "required": ["itemListElement"]},
+        "Event": {"types": ["Event"], "required": ["name", "startDate", "location"]},
         "Review": {
             "types": ["Review", "AggregateRating"],
-            "required": ["itemReviewed", "ratingValue"]
-        }
+            "required": ["itemReviewed", "ratingValue"],
+        },
     }
 
     schema_types = set()
@@ -348,27 +335,25 @@ def validate_structured_data(url: str) -> dict[str, Any]:
     result = {
         "score": 0,
         "max": 15,
-        "structured_data": {
-            "json_ld": [],
-            "microdata": [],
-            "rdfa": []
-        },
+        "structured_data": {"json_ld": [], "microdata": [], "rdfa": []},
         "schema_types": [],
         "rich_results": {},
         "issues": [],
-        "findings": []
+        "findings": [],
     }
 
     # Fetch page
     html = fetch_page(url)
 
     if not html:
-        result["issues"].append({
-            "severity": "high",
-            "category": "fetch",
-            "description": f"Could not fetch {url}",
-            "recommendation": "Verify URL is accessible"
-        })
+        result["issues"].append(
+            {
+                "severity": "high",
+                "category": "fetch",
+                "description": f"Could not fetch {url}",
+                "recommendation": "Verify URL is accessible",
+            }
+        )
         result["score"] = 0
         return result
 
@@ -383,12 +368,14 @@ def validate_structured_data(url: str) -> dict[str, Any]:
     all_schemas.extend(structured["rdfa"])
 
     if not all_schemas:
-        result["issues"].append({
-            "severity": "medium",
-            "category": "structured_data",
-            "description": "No structured data found on page",
-            "recommendation": "Add JSON-LD structured data for Organization, Product, or other relevant types"
-        })
+        result["issues"].append(
+            {
+                "severity": "medium",
+                "category": "structured_data",
+                "description": "No structured data found on page",
+                "recommendation": "Add JSON-LD structured data for Organization, Product, or other relevant types",
+            }
+        )
         result["findings"].append("No structured data found")
         result["score"] = 2  # Minimal score
         return result
@@ -403,20 +390,24 @@ def validate_structured_data(url: str) -> dict[str, Any]:
                 result["schema_types"].append(schema_type)
 
     result["schema_types"] = list(set(result["schema_types"]))
-    result["findings"].append(f"Found {len(all_schemas)} schema(s): {', '.join(result['schema_types'])}")
+    result["findings"].append(
+        f"Found {len(all_schemas)} schema(s): {', '.join(result['schema_types'])}"
+    )
 
     # Validate each schema
     for schema in structured["json_ld"]:
         issues = validate_schema(schema)
         for issue in issues:
-            result["issues"].append({
-                "severity": issue.severity,
-                "category": issue.category,
-                "schema_type": issue.schema_type,
-                "property": issue.property_name,
-                "description": issue.description,
-                "recommendation": issue.recommendation
-            })
+            result["issues"].append(
+                {
+                    "severity": issue.severity,
+                    "category": issue.category,
+                    "schema_type": issue.schema_type,
+                    "property": issue.property_name,
+                    "description": issue.description,
+                    "recommendation": issue.recommendation,
+                }
+            )
 
     # Check rich results eligibility
     rich_results = check_rich_results_eligibility(all_schemas)
@@ -453,14 +444,14 @@ def validate_structured_data(url: str) -> dict[str, Any]:
 
 
 __all__ = [
-    'SchemaIssue',
-    'REQUIRED_PROPERTIES',
-    'RECOMMENDED_PROPERTIES',
-    'extract_json_ld',
-    'extract_microdata',
-    'extract_rdfa',
-    'extract_structured_data',
-    'validate_schema',
-    'check_rich_results_eligibility',
-    'validate_structured_data'
+    "SchemaIssue",
+    "REQUIRED_PROPERTIES",
+    "RECOMMENDED_PROPERTIES",
+    "extract_json_ld",
+    "extract_microdata",
+    "extract_rdfa",
+    "extract_structured_data",
+    "validate_schema",
+    "check_rich_results_eligibility",
+    "validate_structured_data",
 ]

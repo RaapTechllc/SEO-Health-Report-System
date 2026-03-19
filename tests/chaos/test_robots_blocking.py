@@ -290,7 +290,7 @@ class TestMalformedRobotstxt:
                         "Crawl-delay:",
                     ]
                     if not any(line.startswith(d) for d in valid_directives):
-                        issues.append(f"Line {i+1}: Unrecognized directive")
+                        issues.append(f"Line {i + 1}: Unrecognized directive")
             return issues
 
         issues = check_robots_validity(ROBOTS_MALFORMED)

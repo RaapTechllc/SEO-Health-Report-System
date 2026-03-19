@@ -79,7 +79,9 @@ class MetricsRegistry:
             if help_text:
                 self._metric_help[name] = help_text
 
-    def inc_counter(self, name: str, labels: Optional[dict[str, str]] = None, value: float = 1.0) -> None:
+    def inc_counter(
+        self, name: str, labels: Optional[dict[str, str]] = None, value: float = 1.0
+    ) -> None:
         """
         Increment a counter by the given value.
 
@@ -123,13 +125,17 @@ class MetricsRegistry:
         with self._lock:
             self._gauges[key] = value
 
-    def inc_gauge(self, name: str, labels: Optional[dict[str, str]] = None, value: float = 1.0) -> None:
+    def inc_gauge(
+        self, name: str, labels: Optional[dict[str, str]] = None, value: float = 1.0
+    ) -> None:
         """Increment a gauge by the given value."""
         key = self._make_key(name, labels)
         with self._lock:
             self._gauges[key] = self._gauges.get(key, 0.0) + value
 
-    def dec_gauge(self, name: str, labels: Optional[dict[str, str]] = None, value: float = 1.0) -> None:
+    def dec_gauge(
+        self, name: str, labels: Optional[dict[str, str]] = None, value: float = 1.0
+    ) -> None:
         """Decrement a gauge by the given value."""
         key = self._make_key(name, labels)
         with self._lock:
@@ -212,7 +218,7 @@ class MetricsRegistry:
                     # Extract labels from key
                     labels_str = ""
                     if "{" in key:
-                        labels_str = key[key.index("{"):key.index("}") + 1]
+                        labels_str = key[key.index("{") : key.index("}") + 1]
                         labels_prefix = labels_str[:-1] + "," if labels_str != "{}" else "{"
                     else:
                         labels_prefix = "{"
@@ -221,12 +227,20 @@ class MetricsRegistry:
                     for le in buckets:
                         count = sum(1 for v in values if v <= le)
                         le_label = f'le="{le}"'
-                        bucket_labels = f"{labels_prefix}{le_label}}}" if labels_prefix != "{" else f"{{{le_label}}}"
+                        bucket_labels = (
+                            f"{labels_prefix}{le_label}}}"
+                            if labels_prefix != "{"
+                            else f"{{{le_label}}}"
+                        )
                         lines.append(f"{base_name}_bucket{bucket_labels} {count}")
 
                     # +Inf bucket
                     inf_label = 'le="+Inf"'
-                    inf_labels = f"{labels_prefix}{inf_label}}}" if labels_prefix != "{" else f"{{{inf_label}}}"
+                    inf_labels = (
+                        f"{labels_prefix}{inf_label}}}"
+                        if labels_prefix != "{"
+                        else f"{{{inf_label}}}"
+                    )
                     lines.append(f"{base_name}_bucket{inf_labels} {len(values)}")
 
                     # Sum and count
@@ -263,7 +277,7 @@ class MetricsRegistry:
     def _extract_base_name(self, key: str) -> str:
         """Extract base metric name from key with labels."""
         if "{" in key:
-            return key[:key.index("{")]
+            return key[: key.index("{")]
         return key
 
 
@@ -300,29 +314,17 @@ class Timer:
 metrics = MetricsRegistry()
 
 # Pre-register standard metrics
-metrics.register_counter(
-    "http_requests_total",
-    "Total number of HTTP requests"
-)
+metrics.register_counter("http_requests_total", "Total number of HTTP requests")
 metrics.register_histogram(
     "http_request_duration_seconds",
     "HTTP request latency in seconds",
     buckets=HistogramBuckets.HTTP_LATENCY,
 )
-metrics.register_gauge(
-    "active_audits",
-    "Number of currently running audits"
-)
-metrics.register_counter(
-    "audit_total",
-    "Total number of audits by tier and status"
-)
+metrics.register_gauge("active_audits", "Number of currently running audits")
+metrics.register_counter("audit_total", "Total number of audits by tier and status")
 metrics.register_histogram(
     "audit_duration_seconds",
     "Audit completion time in seconds",
     buckets=HistogramBuckets.AUDIT_DURATION,
 )
-metrics.register_counter(
-    "webhook_deliveries_total",
-    "Total webhook delivery attempts by status"
-)
+metrics.register_counter("webhook_deliveries_total", "Total webhook delivery attempts by status")

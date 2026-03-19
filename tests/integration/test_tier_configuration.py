@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 import sys
@@ -47,6 +46,7 @@ class TestTierConfiguration(unittest.TestCase):
         Verify that AI query modules read from os.environ at runtime,
         not just at import time. This prevents 'stale config' bugs.
         """
+
         async def run_test():
             # Mock the Anthropic client to capture the model passed
             with patch("anthropic.Anthropic") as MockAnthropic:
@@ -69,8 +69,11 @@ class TestTierConfiguration(unittest.TestCase):
 
                 # Verify arg
                 args_low = mock_messages.create.call_args.kwargs
-                self.assertEqual(args_low.get("model"), expected_low,
-                                f"Detailed check: Expected {expected_low}, got {args_low.get('model')}")
+                self.assertEqual(
+                    args_low.get("model"),
+                    expected_low,
+                    f"Detailed check: Expected {expected_low}, got {args_low.get('model')}",
+                )
 
                 # 2. Test HIGH Tier
                 load_tier_config("high")
@@ -81,8 +84,11 @@ class TestTierConfiguration(unittest.TestCase):
 
                 # Verify arg
                 args_high = mock_messages.create.call_args.kwargs
-                self.assertEqual(args_high.get("model"), expected_high,
-                                f"Detailed check: Expected {expected_high}, got {args_high.get('model')}")
+                self.assertEqual(
+                    args_high.get("model"),
+                    expected_high,
+                    f"Detailed check: Expected {expected_high}, got {args_high.get('model')}",
+                )
 
         # Run async test
         loop = asyncio.new_event_loop()
@@ -90,6 +96,7 @@ class TestTierConfiguration(unittest.TestCase):
             loop.run_until_complete(run_test())
         finally:
             loop.close()
+
 
 if __name__ == "__main__":
     unittest.main()

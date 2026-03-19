@@ -21,9 +21,7 @@ class KnowledgeSource:
     error: Optional[str] = None
 
 
-def check_google_knowledge_graph(
-    brand_name: str, api_key: Optional[str] = None
-) -> KnowledgeSource:
+def check_google_knowledge_graph(brand_name: str, api_key: Optional[str] = None) -> KnowledgeSource:
     """
     Check Google Knowledge Graph for brand presence.
 
@@ -35,11 +33,7 @@ def check_google_knowledge_graph(
         KnowledgeSource with results
     """
     # Support multiple env var names for flexibility
-    api_key = (
-        api_key
-        or os.environ.get("GOOGLE_KG_API_KEY")
-        or os.environ.get("GOOGLE_API_KEY")
-    )
+    api_key = api_key or os.environ.get("GOOGLE_KG_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
     if not api_key:
         # STUB: Return placeholder when no API key
@@ -80,9 +74,9 @@ def check_google_knowledge_graph(
                         data={
                             "name": result.get("name"),
                             "description": result.get("description"),
-                            "detailed_description": result.get(
-                                "detailedDescription", {}
-                            ).get("articleBody"),
+                            "detailed_description": result.get("detailedDescription", {}).get(
+                                "articleBody"
+                            ),
                             "types": result.get("@type", []),
                             "score": item.get("resultScore", 0),
                         },
@@ -93,9 +87,7 @@ def check_google_knowledge_graph(
                 source="google_kg",
                 found=False,
                 data={
-                    "related_entities": [
-                        item.get("result", {}).get("name") for item in items[:3]
-                    ]
+                    "related_entities": [item.get("result", {}).get("name") for item in items[:3]]
                 },
             )
         else:
@@ -122,9 +114,7 @@ def check_wikipedia(brand_name: str) -> KnowledgeSource:
     try:
         import requests
 
-        headers = {
-            "User-Agent": "SEOHealthReport/1.0 (https://raaptech.com; info@raaptech.com)"
-        }
+        headers = {"User-Agent": "SEOHealthReport/1.0 (https://raaptech.com; info@raaptech.com)"}
 
         # Search Wikipedia API
         search_url = "https://en.wikipedia.org/w/api.php"
@@ -150,7 +140,9 @@ def check_wikipedia(brand_name: str) -> KnowledgeSource:
 
                 if brand_lower in title or title in brand_lower:
                     # Found a match - get more details
-                    page_url = f"https://en.wikipedia.org/wiki/{quote(result['title'].replace(' ', '_'))}"
+                    page_url = (
+                        f"https://en.wikipedia.org/wiki/{quote(result['title'].replace(' ', '_'))}"
+                    )
 
                     # Get page extract
                     extract_params = {
@@ -177,9 +169,7 @@ def check_wikipedia(brand_name: str) -> KnowledgeSource:
                         data={
                             "title": result["title"],
                             "snippet": result.get("snippet", ""),
-                            "extract": page_data.get("extract", "")[
-                                :500
-                            ],  # First 500 chars
+                            "extract": page_data.get("extract", "")[:500],  # First 500 chars
                         },
                     )
 
@@ -213,9 +203,7 @@ def check_wikidata(brand_name: str) -> KnowledgeSource:
     try:
         import requests
 
-        headers = {
-            "User-Agent": "SEOHealthReport/1.0 (https://raaptech.com; info@raaptech.com)"
-        }
+        headers = {"User-Agent": "SEOHealthReport/1.0 (https://raaptech.com; info@raaptech.com)"}
 
         # Search Wikidata API
         url = "https://www.wikidata.org/w/api.php"
@@ -312,9 +300,7 @@ def check_crunchbase(brand_name: str, api_key: Optional[str] = None) -> Knowledg
     )
 
 
-def check_linkedin(
-    brand_name: str, linkedin_url: Optional[str] = None
-) -> KnowledgeSource:
+def check_linkedin(brand_name: str, linkedin_url: Optional[str] = None) -> KnowledgeSource:
     """
     Check if brand has LinkedIn company page by verifying page exists.
 
@@ -341,15 +327,9 @@ def check_linkedin(
         base_name = brand_name.lower()
         slugs_to_try.extend(
             [
-                base_name.replace(" ", "-")
-                .replace(".", "")
-                .replace(",", ""),  # sheet-metal-werks
-                base_name.replace(" ", "")
-                .replace(".", "")
-                .replace(",", ""),  # sheetmetalwerks
-                base_name.replace(" ", "-").replace(
-                    ".", "-"
-                ),  # sheet-metal-werks (dots to dashes)
+                base_name.replace(" ", "-").replace(".", "").replace(",", ""),  # sheet-metal-werks
+                base_name.replace(" ", "").replace(".", "").replace(",", ""),  # sheetmetalwerks
+                base_name.replace(" ", "-").replace(".", "-"),  # sheet-metal-werks (dots to dashes)
                 base_name.replace(" ", ""),  # sheetmetalwerks (simple)
             ]
         )
@@ -372,9 +352,7 @@ def check_linkedin(
             url = f"https://www.linkedin.com/company/{slug}"
 
             try:
-                response = requests.get(
-                    url, headers=headers, timeout=10, allow_redirects=True
-                )
+                response = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
 
                 # LinkedIn returns 200 for valid company pages
                 # Invalid pages redirect to login or return 404
@@ -397,8 +375,7 @@ def check_linkedin(
                     is_login_wall = any(
                         [
                             "join linkedin" in content_lower,
-                            "sign in" in content_lower
-                            and "company" not in content_lower,
+                            "sign in" in content_lower and "company" not in content_lower,
                             "/login" in response.url.lower(),
                         ]
                     )
@@ -422,9 +399,7 @@ def check_linkedin(
         return KnowledgeSource(
             source="linkedin",
             found=False,
-            url=f"https://www.linkedin.com/company/{unique_slugs[0]}"
-            if unique_slugs
-            else None,
+            url=f"https://www.linkedin.com/company/{unique_slugs[0]}" if unique_slugs else None,
             data={
                 "slugs_tried": unique_slugs,
                 "suggestion": "Create a LinkedIn company page or verify the company name spelling",
@@ -439,9 +414,7 @@ def check_linkedin(
         return KnowledgeSource(source="linkedin", found=False, error=str(e))
 
 
-def check_all_sources(
-    brand_name: str, target_url: Optional[str] = None
-) -> dict[str, Any]:
+def check_all_sources(brand_name: str, target_url: Optional[str] = None) -> dict[str, Any]:
     """
     Check all knowledge graph sources for brand presence.
 
@@ -480,9 +453,7 @@ def check_all_sources(
         else:
             findings.append(f"NOT FOUND in {name}")
             if source.data and source.data.get("related_entities"):
-                findings.append(
-                    f"  Related: {', '.join(source.data['related_entities'][:3])}"
-                )
+                findings.append(f"  Related: {', '.join(source.data['related_entities'][:3])}")
             if source.data and source.data.get("suggestion"):
                 findings.append(f"  Suggestion: {source.data['suggestion']}")
 
@@ -494,9 +465,7 @@ def check_all_sources(
         score += 5
         findings.append("Wikipedia presence: Strong authority signal for AI systems")
     else:
-        findings.append(
-            "Recommendation: Create Wikipedia article to improve AI awareness"
-        )
+        findings.append("Recommendation: Create Wikipedia article to improve AI awareness")
 
     if sources["google_kg"].found:
         score += 5
@@ -504,9 +473,7 @@ def check_all_sources(
     elif sources["google_kg"].error and "not set" in sources["google_kg"].error:
         score += 2  # Give partial credit if we couldn't check
     else:
-        findings.append(
-            "Recommendation: Improve structured data to appear in Google KG"
-        )
+        findings.append("Recommendation: Improve structured data to appear in Google KG")
 
     if sources["linkedin"].found:
         score += 3

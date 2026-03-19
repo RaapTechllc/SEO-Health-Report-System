@@ -12,26 +12,26 @@ class PricingIntelligence:
             "traditional_seo_agency": {
                 "monthly_retainer": {"min": 3000, "max": 15000, "avg": 8000},
                 "one_time_audit": {"min": 2000, "max": 10000, "avg": 5000},
-                "hourly_rate": {"min": 150, "max": 400, "avg": 250}
+                "hourly_rate": {"min": 150, "max": 400, "avg": 250},
             },
             "ai_seo_specialist": {
                 "monthly_retainer": {"min": 2000, "max": 8000, "avg": 4500},
                 "one_time_audit": {"min": 1500, "max": 5000, "avg": 2500},
-                "hourly_rate": {"min": 200, "max": 500, "avg": 350}
+                "hourly_rate": {"min": 200, "max": 500, "avg": 350},
             },
             "enterprise_platform": {
                 "monthly_subscription": {"min": 500, "max": 5000, "avg": 2000},
-                "setup_fee": {"min": 1000, "max": 10000, "avg": 3000}
-            }
+                "setup_fee": {"min": 1000, "max": 10000, "avg": 3000},
+            },
         }
 
     def analyze_pricing_opportunity(self, analysis_data: dict[str, Any]) -> dict[str, Any]:
         """Analyze pricing opportunity based on competitive analysis."""
 
         try:
-            prospect_score = analysis_data.get('comparison_matrix', {}).get('prospect_score', 0)
-            win_probability = analysis_data.get('win_probability', 0.5)
-            ai_gaps = analysis_data.get('ai_visibility_gaps', [])
+            prospect_score = analysis_data.get("comparison_matrix", {}).get("prospect_score", 0)
+            win_probability = analysis_data.get("win_probability", 0.5)
+            ai_gaps = analysis_data.get("ai_visibility_gaps", [])
 
             # Determine pricing tier based on analysis
             pricing_tier = self._determine_pricing_tier(prospect_score, win_probability, ai_gaps)
@@ -40,7 +40,9 @@ class PricingIntelligence:
             value_prop = self._calculate_value_proposition(prospect_score, ai_gaps)
 
             # Generate pricing recommendations
-            pricing_recommendations = self._generate_pricing_recommendations(pricing_tier, value_prop)
+            pricing_recommendations = self._generate_pricing_recommendations(
+                pricing_tier, value_prop
+            )
 
             # ROI projections
             roi_projections = self._calculate_roi_projections(prospect_score, ai_gaps)
@@ -51,14 +53,16 @@ class PricingIntelligence:
                 "pricing_recommendations": pricing_recommendations,
                 "roi_projections": roi_projections,
                 "competitive_positioning": self._get_competitive_positioning(),
-                "analysis_date": datetime.now().isoformat()
+                "analysis_date": datetime.now().isoformat(),
             }
 
         except Exception as e:
             self.logger.error(f"Pricing analysis failed: {e}")
             raise
 
-    def _determine_pricing_tier(self, prospect_score: int, win_probability: float, ai_gaps: list[str]) -> str:
+    def _determine_pricing_tier(
+        self, prospect_score: int, win_probability: float, ai_gaps: list[str]
+    ) -> str:
         """Determine appropriate pricing tier."""
 
         # High-value prospects (strong position, high win probability)
@@ -77,7 +81,9 @@ class PricingIntelligence:
         else:
             return "standard"
 
-    def _calculate_value_proposition(self, prospect_score: int, ai_gaps: list[str]) -> dict[str, Any]:
+    def _calculate_value_proposition(
+        self, prospect_score: int, ai_gaps: list[str]
+    ) -> dict[str, Any]:
         """Calculate value proposition metrics."""
 
         # Potential score improvement
@@ -92,7 +98,9 @@ class PricingIntelligence:
         ai_opportunity_value = len(ai_gaps) * 5000  # $5K per gap addressed
 
         # Traditional agency comparison
-        agency_cost_annual = self.market_rates["traditional_seo_agency"]["monthly_retainer"]["avg"] * 12
+        agency_cost_annual = (
+            self.market_rates["traditional_seo_agency"]["monthly_retainer"]["avg"] * 12
+        )
         our_cost_annual = 2000 * 12  # Our platform cost
         cost_savings = agency_cost_annual - our_cost_annual
 
@@ -101,28 +109,30 @@ class PricingIntelligence:
             "ai_opportunity_value": ai_opportunity_value,
             "annual_cost_savings": cost_savings,
             "total_value": ai_opportunity_value + cost_savings,
-            "payback_period_months": 3  # Typical payback period
+            "payback_period_months": 3,  # Typical payback period
         }
 
-    def _generate_pricing_recommendations(self, tier: str, value_prop: dict[str, Any]) -> dict[str, Any]:
+    def _generate_pricing_recommendations(
+        self, tier: str, value_prop: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate pricing recommendations by tier."""
 
         base_pricing = {
             "premium": {
                 "setup_fee": 5000,
                 "monthly_fee": 3000,
-                "description": "Premium AI SEO optimization with dedicated support"
+                "description": "Premium AI SEO optimization with dedicated support",
             },
             "standard": {
                 "setup_fee": 2500,
                 "monthly_fee": 1500,
-                "description": "Comprehensive AI SEO platform with standard support"
+                "description": "Comprehensive AI SEO platform with standard support",
             },
             "opportunity": {
                 "setup_fee": 1500,
                 "monthly_fee": 1000,
-                "description": "High-opportunity optimization with growth pricing"
-            }
+                "description": "High-opportunity optimization with growth pricing",
+            },
         }
 
         pricing = base_pricing.get(tier, base_pricing["standard"])
@@ -156,7 +166,12 @@ class PricingIntelligence:
         monthly_visitors = 10000  # Assumed baseline
         current_revenue = monthly_visitors * 0.02 * 100 * 12  # Annual
 
-        improved_revenue = (monthly_visitors * (1 + traffic_improvement + ai_traffic_opportunity)) * 0.02 * 100 * 12
+        improved_revenue = (
+            (monthly_visitors * (1 + traffic_improvement + ai_traffic_opportunity))
+            * 0.02
+            * 100
+            * 12
+        )
         revenue_increase = improved_revenue - current_revenue
 
         return {
@@ -168,8 +183,8 @@ class PricingIntelligence:
             "roi_timeline": {
                 "3_months": revenue_increase * 0.25,
                 "6_months": revenue_increase * 0.5,
-                "12_months": revenue_increase
-            }
+                "12_months": revenue_increase,
+            },
         }
 
     def _get_competitive_positioning(self) -> dict[str, Any]:
@@ -179,19 +194,20 @@ class PricingIntelligence:
             "vs_traditional_agency": {
                 "cost_comparison": "60-75% less expensive than traditional agencies",
                 "speed_advantage": "Real-time monitoring vs quarterly reports",
-                "ai_advantage": "AI search optimization not offered by traditional agencies"
+                "ai_advantage": "AI search optimization not offered by traditional agencies",
             },
             "vs_diy_tools": {
                 "expertise_advantage": "Expert analysis vs raw data",
                 "time_savings": "Automated insights vs manual analysis",
-                "comprehensive_coverage": "All-in-one platform vs multiple tools"
+                "comprehensive_coverage": "All-in-one platform vs multiple tools",
             },
             "vs_enterprise_platforms": {
                 "cost_advantage": "Fraction of enterprise platform costs",
                 "ai_focus": "Specialized AI search optimization",
-                "personalized_service": "Dedicated support vs self-service"
-            }
+                "personalized_service": "Dedicated support vs self-service",
+            },
         }
+
 
 # Global pricing intelligence
 pricing_intel = PricingIntelligence()

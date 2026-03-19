@@ -30,20 +30,20 @@ TIERS = {
         "name": "Budget Watchdog",
         "env_file": "config/tier_low.env",
         "description": "~$0.023/report | Cheapest models everywhere",
-        "monthly_cost_3k": "$69"
+        "monthly_cost_3k": "$69",
     },
     "medium": {
         "name": "Smart Balance",
         "env_file": "config/tier_medium.env",
         "description": "~$0.051/report | Quality where it matters",
-        "monthly_cost_3k": "$153"
+        "monthly_cost_3k": "$153",
     },
     "high": {
         "name": "Premium Agency",
         "env_file": "config/tier_high.env",
         "description": "~$0.158/report | Maximum quality",
-        "monthly_cost_3k": "$474"
-    }
+        "monthly_cost_3k": "$474",
+    },
 }
 
 
@@ -69,11 +69,11 @@ def generate_report_for_tier(json_path: str, tier: str) -> str:
     # Create tier-specific output filename
     json_file = Path(json_path)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"🏷️  TIER: {tier.upper()} — {tier_info['name']}")
     print(f"📊 {tier_info['description']}")
     print(f"💰 Monthly @ 3,000 reports: {tier_info['monthly_cost_3k']}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # Set environment variables for this tier
     env = os.environ.copy()
@@ -96,7 +96,7 @@ def generate_report_for_tier(json_path: str, tier: str) -> str:
         env=env,
         capture_output=True,
         text=True,
-        cwd=Path(__file__).parent
+        cwd=Path(__file__).parent,
     )
 
     if result.returncode != 0:
@@ -122,9 +122,9 @@ def generate_report_for_tier(json_path: str, tier: str) -> str:
 def generate_comparison_summary(results: dict) -> str:
     """Generate a text summary comparing all tier results."""
     summary = []
-    summary.append("\n" + "="*70)
+    summary.append("\n" + "=" * 70)
     summary.append("📊 TIER COMPARISON SUMMARY")
-    summary.append("="*70)
+    summary.append("=" * 70)
 
     for tier, info in results.items():
         tier_data = TIERS[tier]
@@ -134,12 +134,12 @@ def generate_comparison_summary(results: dict) -> str:
         if info.get("file"):
             summary.append(f"   File: {info['file']}")
 
-    summary.append("\n" + "="*70)
+    summary.append("\n" + "=" * 70)
     summary.append("💡 RECOMMENDATIONS:")
     summary.append("   • LOW:    Best for bulk operations, internal audits")
     summary.append("   • MEDIUM: Ideal for client-facing reports at scale")
     summary.append("   • HIGH:   Enterprise clients, maximum quality")
-    summary.append("="*70 + "\n")
+    summary.append("=" * 70 + "\n")
 
     return "\n".join(summary)
 

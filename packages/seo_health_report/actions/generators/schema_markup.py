@@ -8,10 +8,7 @@ import json
 from typing import Any
 
 
-def generate_schema_markup(
-    audit_data: dict[str, Any],
-    schema_type: str = "Organization"
-) -> str:
+def generate_schema_markup(audit_data: dict[str, Any], schema_type: str = "Organization") -> str:
     """
     Generate JSON-LD structured data for a website.
 
@@ -53,9 +50,7 @@ def generate_all_schemas(audit_data: dict[str, Any]) -> str:
 
 
 def _generate_organization_schema(
-    url: str,
-    company_name: str,
-    audit_data: dict[str, Any]
+    url: str, company_name: str, audit_data: dict[str, Any]
 ) -> dict[str, Any]:
     """Generate Organization schema."""
     schema = {
@@ -78,9 +73,7 @@ def _generate_organization_schema(
 
 
 def _generate_website_schema(
-    url: str,
-    company_name: str,
-    audit_data: dict[str, Any]
+    url: str, company_name: str, audit_data: dict[str, Any]
 ) -> dict[str, Any]:
     """Generate WebSite schema with search action."""
     return {
@@ -92,38 +85,25 @@ def _generate_website_schema(
             "@type": "SearchAction",
             "target": {
                 "@type": "EntryPoint",
-                "urlTemplate": f"{url}search?q={{search_term_string}}"
+                "urlTemplate": f"{url}search?q={{search_term_string}}",
             },
-            "query-input": "required name=search_term_string"
-        }
+            "query-input": "required name=search_term_string",
+        },
     }
 
 
 def _generate_breadcrumb_schema(
-    url: str,
-    company_name: str,
-    audit_data: dict[str, Any]
+    url: str, company_name: str, audit_data: dict[str, Any]
 ) -> dict[str, Any]:
     """Generate BreadcrumbList schema."""
     return {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": url
-            }
-        ]
+        "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": url}],
     }
 
 
-def _generate_faq_schema(
-    url: str,
-    company_name: str,
-    audit_data: dict[str, Any]
-) -> dict[str, Any]:
+def _generate_faq_schema(url: str, company_name: str, audit_data: dict[str, Any]) -> dict[str, Any]:
     """Generate FAQ schema template."""
     return {
         "@context": "https://schema.org",
@@ -134,16 +114,16 @@ def _generate_faq_schema(
                 "name": f"What does {company_name} do?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": f"[Replace with your answer about {company_name}]"
-                }
+                    "text": f"[Replace with your answer about {company_name}]",
+                },
             },
             {
                 "@type": "Question",
                 "name": f"How can I contact {company_name}?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "[Replace with your contact information]"
-                }
-            }
-        ]
+                    "text": "[Replace with your contact information]",
+                },
+            },
+        ],
     }

@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 WEASYPRINT_AVAILABLE = False
 try:
     from weasyprint import HTML as WeasyprintHTML
+
     WEASYPRINT_AVAILABLE = True
 except ImportError:
     WeasyprintHTML = None
@@ -52,6 +53,7 @@ async def generate_pdf_report(
         if not html_path:
             # Import the HTML generator from the handler
             from apps.worker.handlers.full_audit import generate_html_report_simple
+
             html_path = await generate_html_report_simple(audit_result, raw_result, tenant_id)
 
         # Verify HTML file exists
@@ -61,7 +63,7 @@ async def generate_pdf_report(
             return None
 
         # Generate PDF path
-        pdf_path = str(html_file.with_suffix('.pdf'))
+        pdf_path = str(html_file.with_suffix(".pdf"))
 
         # Generate PDF
         logger.info(f"Generating PDF report at {pdf_path}")

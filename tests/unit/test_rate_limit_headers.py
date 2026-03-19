@@ -179,7 +179,10 @@ class TestRateLimitExceeded:
         client = TestClient(app)
 
         # Set a very low limit for testing
-        with patch.dict(TIER_LIMITS, {"default": {"requests_per_minute": 2, "audits_per_day": 1, "concurrent_audits": 1}}):
+        with patch.dict(
+            TIER_LIMITS,
+            {"default": {"requests_per_minute": 2, "audits_per_day": 1, "concurrent_audits": 1}},
+        ):
             _request_counts.clear()
 
             # Make requests up to limit
@@ -202,7 +205,10 @@ class TestRateLimitExceeded:
 
         client = TestClient(app)
 
-        with patch.dict(TIER_LIMITS, {"default": {"requests_per_minute": 1, "audits_per_day": 1, "concurrent_audits": 1}}):
+        with patch.dict(
+            TIER_LIMITS,
+            {"default": {"requests_per_minute": 1, "audits_per_day": 1, "concurrent_audits": 1}},
+        ):
             _request_counts.clear()
 
             client.get("/limited2")

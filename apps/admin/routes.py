@@ -1,4 +1,5 @@
 """Admin routes for system health monitoring."""
+
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Request

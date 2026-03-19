@@ -58,10 +58,10 @@ class TestCallbackURLValidation:
 
     @pytest.mark.asyncio
     async def test_blocks_localhost(self):
-        with patch('packages.seo_health_report.scripts.webhook.resolve_dns') as mock_dns:
+        with patch("packages.seo_health_report.scripts.webhook.resolve_dns") as mock_dns:
             mock_dns.return_value = "127.0.0.1"
 
-            with patch('packages.seo_health_report.scripts.webhook.validate_ip') as mock_validate:
+            with patch("packages.seo_health_report.scripts.webhook.validate_ip") as mock_validate:
                 mock_validate.side_effect = SSRFError("IP address 127.0.0.1 is in blocked range")
 
                 with pytest.raises(SSRFError):
@@ -69,10 +69,10 @@ class TestCallbackURLValidation:
 
     @pytest.mark.asyncio
     async def test_blocks_private_ip(self):
-        with patch('packages.seo_health_report.scripts.webhook.resolve_dns') as mock_dns:
+        with patch("packages.seo_health_report.scripts.webhook.resolve_dns") as mock_dns:
             mock_dns.return_value = "192.168.1.1"
 
-            with patch('packages.seo_health_report.scripts.webhook.validate_ip') as mock_validate:
+            with patch("packages.seo_health_report.scripts.webhook.validate_ip") as mock_validate:
                 mock_validate.side_effect = SSRFError("IP address 192.168.1.1 is in blocked range")
 
                 with pytest.raises(SSRFError):
@@ -80,10 +80,10 @@ class TestCallbackURLValidation:
 
     @pytest.mark.asyncio
     async def test_allows_public_url(self):
-        with patch('packages.seo_health_report.scripts.webhook.resolve_dns') as mock_dns:
+        with patch("packages.seo_health_report.scripts.webhook.resolve_dns") as mock_dns:
             mock_dns.return_value = "93.184.216.34"
 
-            with patch('packages.seo_health_report.scripts.webhook.validate_ip'):
+            with patch("packages.seo_health_report.scripts.webhook.validate_ip"):
                 await validate_callback_url("https://example.com/webhook")
 
     @pytest.mark.asyncio
@@ -102,9 +102,15 @@ class TestWebhookDelivery:
 
     @pytest.mark.asyncio
     async def test_successful_delivery(self):
-        with patch('packages.seo_health_report.scripts.webhook.validate_callback_url', new_callable=AsyncMock):
-            with patch('packages.seo_health_report.scripts.webhook.redact_dict', return_value={"test": "data"}):
-                with patch('httpx.AsyncClient') as mock_client_class:
+        with patch(
+            "packages.seo_health_report.scripts.webhook.validate_callback_url",
+            new_callable=AsyncMock,
+        ):
+            with patch(
+                "packages.seo_health_report.scripts.webhook.redact_dict",
+                return_value={"test": "data"},
+            ):
+                with patch("httpx.AsyncClient") as mock_client_class:
                     mock_response = MagicMock()
                     mock_response.status_code = 200
 
@@ -115,9 +121,7 @@ class TestWebhookDelivery:
                     mock_client_class.return_value = mock_client
 
                     result = await deliver_webhook(
-                        "https://example.com/webhook",
-                        {"test": "data"},
-                        "secret"
+                        "https://example.com/webhook", {"test": "data"}, "secret"
                     )
 
                     assert result.success
@@ -126,14 +130,13 @@ class TestWebhookDelivery:
 
     @pytest.mark.asyncio
     async def test_invalid_url_fails_immediately(self):
-        with patch('packages.seo_health_report.scripts.webhook.validate_callback_url', new_callable=AsyncMock) as mock_validate:
+        with patch(
+            "packages.seo_health_report.scripts.webhook.validate_callback_url",
+            new_callable=AsyncMock,
+        ) as mock_validate:
             mock_validate.side_effect = SSRFError("Blocked")
 
-            result = await deliver_webhook(
-                "http://localhost/webhook",
-                {"test": "data"},
-                "secret"
-            )
+            result = await deliver_webhook("http://localhost/webhook", {"test": "data"}, "secret")
 
             assert not result.success
             assert result.attempts == 0
@@ -142,9 +145,15 @@ class TestWebhookDelivery:
     @pytest.mark.asyncio
     async def test_client_error_no_retry(self):
         """4xx errors (except 429) should not retry."""
-        with patch('packages.seo_health_report.scripts.webhook.validate_callback_url', new_callable=AsyncMock):
-            with patch('packages.seo_health_report.scripts.webhook.redact_dict', return_value={"test": "data"}):
-                with patch('httpx.AsyncClient') as mock_client_class:
+        with patch(
+            "packages.seo_health_report.scripts.webhook.validate_callback_url",
+            new_callable=AsyncMock,
+        ):
+            with patch(
+                "packages.seo_health_report.scripts.webhook.redact_dict",
+                return_value={"test": "data"},
+            ):
+                with patch("httpx.AsyncClient") as mock_client_class:
                     mock_response = MagicMock()
                     mock_response.status_code = 400
 
@@ -155,10 +164,7 @@ class TestWebhookDelivery:
                     mock_client_class.return_value = mock_client
 
                     result = await deliver_webhook(
-                        "https://example.com/webhook",
-                        {"test": "data"},
-                        "secret",
-                        max_attempts=3
+                        "https://example.com/webhook", {"test": "data"}, "secret", max_attempts=3
                     )
 
                     assert not result.success
@@ -174,7 +180,7 @@ class TestWebhookPayloadBuilder:
             status="completed",
             overall_score=85,
             grade="B",
-            report_url="/reports/test-123.html"
+            report_url="/reports/test-123.html",
         )
 
         assert payload["event"] == "audit.completed"
@@ -186,9 +192,7 @@ class TestWebhookPayloadBuilder:
 
     def test_failed_audit_payload(self):
         payload = build_audit_webhook_payload(
-            audit_id="test-456",
-            status="failed",
-            error_message="Connection timeout"
+            audit_id="test-456", status="failed", error_message="Connection timeout"
         )
 
         assert payload["event"] == "audit.failed"

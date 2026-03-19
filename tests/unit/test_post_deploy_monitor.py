@@ -7,7 +7,7 @@ import os
 import sys
 
 # Add scripts to path for import
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'scripts'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "scripts"))
 
 
 class TestCheckMetricsModule:
@@ -177,7 +177,7 @@ class TestPrometheusFormatParsing:
         """Test parsing gauge metric."""
         from check_metrics import parse_prometheus_metrics
 
-        content = 'active_audits 5'
+        content = "active_audits 5"
         result = parse_prometheus_metrics(content)
 
         assert result["active_audits"][""] == 5.0
@@ -195,7 +195,7 @@ class TestPrometheusFormatParsing:
         """Test parsing scientific notation values."""
         from check_metrics import parse_prometheus_metrics
 
-        content = 'big_number 1.5e6'
+        content = "big_number 1.5e6"
         result = parse_prometheus_metrics(content)
 
         assert result["big_number"][""] == 1500000.0
@@ -204,7 +204,7 @@ class TestPrometheusFormatParsing:
         """Test parsing negative values."""
         from check_metrics import parse_prometheus_metrics
 
-        content = 'temperature_celsius -10.5'
+        content = "temperature_celsius -10.5"
         result = parse_prometheus_metrics(content)
 
         assert result["temperature_celsius"][""] == -10.5

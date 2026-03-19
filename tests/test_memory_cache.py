@@ -227,6 +227,7 @@ class TestCacheDataTypes:
 
     def test_cache_none_not_stored(self):
         """Test that None values are not cached by decorators."""
+
         @memory_cache.cached_memory("none_func", ttl=60)
         def returns_none():
             return None

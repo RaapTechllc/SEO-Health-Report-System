@@ -63,8 +63,7 @@ class TestMetricsMiddleware:
         await middleware.dispatch(request, call_next)
 
         count = fresh_registry.get_counter(
-            "http_requests_total",
-            {"method": "GET", "path": "/api/test", "status": "200"}
+            "http_requests_total", {"method": "GET", "path": "/api/test", "status": "200"}
         )
         assert count == 1.0
 
@@ -83,8 +82,7 @@ class TestMetricsMiddleware:
         await middleware.dispatch(request, call_next)
 
         stats = fresh_registry.get_histogram_stats(
-            "http_request_duration_seconds",
-            {"method": "POST", "path": "/api/audit"}
+            "http_request_duration_seconds", {"method": "POST", "path": "/api/audit"}
         )
         assert stats["count"] == 1
         assert stats["sum"] > 0
@@ -122,8 +120,7 @@ class TestMetricsMiddleware:
         await middleware.dispatch(request, call_next)
 
         count = fresh_registry.get_counter(
-            "http_requests_total",
-            {"method": "GET", "path": "/health", "status": "200"}
+            "http_requests_total", {"method": "GET", "path": "/health", "status": "200"}
         )
         assert count == 0
 
@@ -142,8 +139,7 @@ class TestMetricsMiddleware:
         await middleware.dispatch(request, call_next)
 
         count = fresh_registry.get_counter(
-            "http_requests_total",
-            {"method": "GET", "path": "/internal", "status": "200"}
+            "http_requests_total", {"method": "GET", "path": "/internal", "status": "200"}
         )
         assert count == 0
 
@@ -163,8 +159,7 @@ class TestMetricsMiddleware:
 
         # Should still record the request with 500 status
         count = fresh_registry.get_counter(
-            "http_requests_total",
-            {"method": "GET", "path": "/api/error", "status": "500"}
+            "http_requests_total", {"method": "GET", "path": "/api/error", "status": "500"}
         )
         assert count == 1.0
 
@@ -188,10 +183,30 @@ class TestMetricsMiddleware:
         await make_request(400)
         await make_request(500)
 
-        assert fresh_registry.get_counter("http_requests_total", {"method": "GET", "path": "/api/test", "status": "200"}) == 1
-        assert fresh_registry.get_counter("http_requests_total", {"method": "GET", "path": "/api/test", "status": "201"}) == 1
-        assert fresh_registry.get_counter("http_requests_total", {"method": "GET", "path": "/api/test", "status": "400"}) == 1
-        assert fresh_registry.get_counter("http_requests_total", {"method": "GET", "path": "/api/test", "status": "500"}) == 1
+        assert (
+            fresh_registry.get_counter(
+                "http_requests_total", {"method": "GET", "path": "/api/test", "status": "200"}
+            )
+            == 1
+        )
+        assert (
+            fresh_registry.get_counter(
+                "http_requests_total", {"method": "GET", "path": "/api/test", "status": "201"}
+            )
+            == 1
+        )
+        assert (
+            fresh_registry.get_counter(
+                "http_requests_total", {"method": "GET", "path": "/api/test", "status": "400"}
+            )
+            == 1
+        )
+        assert (
+            fresh_registry.get_counter(
+                "http_requests_total", {"method": "GET", "path": "/api/test", "status": "500"}
+            )
+            == 1
+        )
 
 
 class TestPathNormalization:
@@ -277,8 +292,7 @@ class TestPathNormalization:
 
             # Path should NOT be normalized
             count = registry.get_counter(
-                "http_requests_total",
-                {"method": "GET", "path": "/users/12345", "status": "200"}
+                "http_requests_total", {"method": "GET", "path": "/users/12345", "status": "200"}
             )
             assert count == 1.0
 
@@ -351,6 +365,7 @@ class TestIntegration:
                 async def make_call_next(resp):
                     async def call_next(req):
                         return resp
+
                     return call_next
 
                 await middleware.dispatch(request, await make_call_next(response))

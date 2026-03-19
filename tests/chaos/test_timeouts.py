@@ -17,6 +17,7 @@ class TestPageSpeedTimeout:
     @pytest.mark.asyncio
     async def test_pagespeed_timeout_returns_partial_results(self):
         """PageSpeed timeout should not fail entire audit."""
+
         # Simulate PageSpeed timeout scenario
         async def fetch_pagespeed_with_timeout():
             raise asyncio.TimeoutError("PageSpeed timeout")
@@ -159,6 +160,7 @@ class TestExternalAPITimeout:
     @pytest.mark.asyncio
     async def test_ai_api_timeout_returns_fallback(self):
         """AI API timeout should return fallback/default analysis."""
+
         # Simulate AI API timeout
         async def ai_generate_with_timeout():
             raise asyncio.TimeoutError("AI API timeout")

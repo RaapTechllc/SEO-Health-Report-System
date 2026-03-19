@@ -1,4 +1,5 @@
 """Premium PDF report components for SEO Health Reports."""
+
 from .callout_box import CalloutBox
 from .colors import ReportColors
 from .finding_block import FindingBlock

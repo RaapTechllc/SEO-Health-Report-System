@@ -80,6 +80,7 @@ BANNED_PHRASES = [
 # HELPER FUNCTIONS
 # =============================================================================
 
+
 def clean_ai_copy(text: str) -> str:
     """
     Post-process AI-generated copy to remove robotic phrases.
@@ -145,16 +146,11 @@ def clean_ai_copy(text: str) -> str:
     }
 
     for phrase, replacement in replacements.items():
-        result = re.sub(
-            r'\b' + re.escape(phrase) + r'\b',
-            replacement,
-            result,
-            flags=re.IGNORECASE
-        )
+        result = re.sub(r"\b" + re.escape(phrase) + r"\b", replacement, result, flags=re.IGNORECASE)
 
     # Clean up any double spaces created
-    result = re.sub(r' +', ' ', result)
-    result = re.sub(r'\n +', '\n', result)
+    result = re.sub(r" +", " ", result)
+    result = re.sub(r"\n +", "\n", result)
 
     return result.strip()
 
@@ -200,7 +196,9 @@ def score_copy_humanness(text: str) -> dict:
             deductions += 5
 
     # Check sentence variety
-    sentences = [s.strip() for s in text.replace('!', '.').replace('?', '.').split('.') if s.strip()]
+    sentences = [
+        s.strip() for s in text.replace("!", ".").replace("?", ".").split(".") if s.strip()
+    ]
     if sentences:
         lengths = [len(s.split()) for s in sentences]
         avg_length = sum(lengths) / len(lengths)
@@ -215,7 +213,14 @@ def score_copy_humanness(text: str) -> dict:
             deductions += 5
 
     # Check for passive voice indicators
-    passive_indicators = [" is being ", " was being ", " has been ", " had been ", " will be ", " should be "]
+    passive_indicators = [
+        " is being ",
+        " was being ",
+        " has been ",
+        " had been ",
+        " will be ",
+        " should be ",
+    ]
     passive_count = sum(1 for p in passive_indicators if p in text_lower)
     if passive_count > 3:
         issues.append(f"Too much passive voice ({passive_count} instances)")

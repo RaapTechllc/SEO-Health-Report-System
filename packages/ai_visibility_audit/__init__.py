@@ -37,7 +37,7 @@ async def run_audit(
     competitor_names: Optional[list[str]] = None,
     test_queries: Optional[list[str]] = None,
     ground_truth: Optional[dict[str, Any]] = None,
-    ai_systems: Optional[list[str]] = None
+    ai_systems: Optional[list[str]] = None,
 ) -> dict[str, Any]:
     """
     Run a complete AI visibility audit.
@@ -61,6 +61,7 @@ async def run_audit(
         - recommendations: Prioritized action items
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     results = {
@@ -71,7 +72,7 @@ async def run_audit(
         "components": {},
         "ai_responses": [],
         "accuracy_issues": [],
-        "recommendations": []
+        "recommendations": [],
     }
 
     # Default to Claude only if no systems specified
@@ -84,7 +85,7 @@ async def run_audit(
         brand_name=brand_name,
         products_services=products_services,
         competitors=competitor_names,
-        custom_queries=test_queries
+        custom_queries=test_queries,
     )
 
     # Limit queries to avoid rate limits and long wait times
@@ -97,11 +98,12 @@ async def run_audit(
             queries=queries,
             brand_name=brand_name,
             systems=ai_systems,
-            rate_limit_ms=500  # Faster rate limit
+            rate_limit_ms=500,  # Faster rate limit
         )
     except Exception as e:
         print(f"[AI-AUDIT] ERROR: query_all_systems failed: {e}")
         import traceback
+
         traceback.print_exc()
         responses = {s: [] for s in ai_systems}
 
@@ -109,36 +111,34 @@ async def run_audit(
     for _system, system_responses in responses.items():
         for response in system_responses:
             if not response.error:
-                results["ai_responses"].append({
-                    "query": response.query,
-                    "system": response.system,
-                    "response": response.response,
-                    "brand_mentioned": response.brand_mentioned,
-                    "position": response.position,
-                    "sentiment": response.sentiment
-                })
+                results["ai_responses"].append(
+                    {
+                        "query": response.query,
+                        "system": response.system,
+                        "response": response.response,
+                        "brand_mentioned": response.brand_mentioned,
+                        "position": response.position,
+                        "sentiment": response.sentiment,
+                    }
+                )
 
     # Step 3: Analyze AI presence (25 points)
     presence_result = analyze_brand_presence(
-        responses=responses,
-        brand_name=brand_name,
-        competitors=competitor_names
+        responses=responses, brand_name=brand_name, competitors=competitor_names
     )
     results["components"]["ai_presence"] = presence_result
 
     # Step 4: Check accuracy (20 points)
     if ground_truth:
         accuracy_result = check_accuracy(
-            responses=responses,
-            ground_truth=ground_truth,
-            brand_name=brand_name
+            responses=responses, ground_truth=ground_truth, brand_name=brand_name
         )
     else:
         accuracy_result = {
             "score": 10,  # Neutral score if no ground truth
             "max": 20,
             "findings": ["No ground truth provided - accuracy partially assessed"],
-            "issues": []
+            "issues": [],
         }
     results["components"]["accuracy"] = accuracy_result
     results["accuracy_issues"] = accuracy_result.get("issues", [])
@@ -177,12 +177,12 @@ async def run_audit(
 
     # Calculate total score
     total_score = (
-        presence_result["score"] +
-        accuracy_result["score"] +
-        parseability_result["score"] +
-        knowledge_result["score"] +
-        citation_result["score"] +
-        sentiment_result["score"]
+        presence_result["score"]
+        + accuracy_result["score"]
+        + parseability_result["score"]
+        + knowledge_result["score"]
+        + citation_result["score"]
+        + sentiment_result["score"]
     )
     results["score"] = total_score
 
@@ -221,105 +221,123 @@ def generate_recommendations(results: dict[str, Any]) -> list[dict[str, Any]]:
     # AI Presence recommendations
     ai_presence = components.get("ai_presence", {})
     if ai_presence.get("score", 0) < 15:
-        recommendations.append({
-            "priority": "high",
-            "category": "ai_presence",
-            "action": "Increase brand mentions in AI responses",
-            "details": "Create more authoritative content that AI systems will reference. Focus on comprehensive guides and original research.",
-            "impact": "high",
-            "effort": "high"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "ai_presence",
+                "action": "Increase brand mentions in AI responses",
+                "details": "Create more authoritative content that AI systems will reference. Focus on comprehensive guides and original research.",
+                "impact": "high",
+                "effort": "high",
+            }
+        )
 
     # Knowledge graph recommendations
     kg = components.get("knowledge_graph", {})
     sources = kg.get("sources", {})
 
     if not sources.get("wikipedia", {}).get("found"):
-        recommendations.append({
-            "priority": "high",
-            "category": "knowledge_graph",
-            "action": "Work toward Wikipedia presence",
-            "details": "Build notability through press coverage, awards, and industry recognition. Do not create your own Wikipedia article.",
-            "impact": "high",
-            "effort": "high"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "knowledge_graph",
+                "action": "Work toward Wikipedia presence",
+                "details": "Build notability through press coverage, awards, and industry recognition. Do not create your own Wikipedia article.",
+                "impact": "high",
+                "effort": "high",
+            }
+        )
 
     if not sources.get("wikidata", {}).get("found"):
-        recommendations.append({
-            "priority": "medium",
-            "category": "knowledge_graph",
-            "action": "Create Wikidata item",
-            "details": "Add your organization to Wikidata with proper structured properties.",
-            "impact": "medium",
-            "effort": "low"
-        })
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "knowledge_graph",
+                "action": "Create Wikidata item",
+                "details": "Add your organization to Wikidata with proper structured properties.",
+                "impact": "medium",
+                "effort": "low",
+            }
+        )
 
     # Parseability recommendations
     parseability = components.get("parseability", {})
     if parseability.get("score", 0) < 10:
-        recommendations.append({
-            "priority": "high",
-            "category": "parseability",
-            "action": "Improve website semantic structure",
-            "details": "Add semantic HTML elements (main, article, section), proper heading hierarchy, and structured data.",
-            "impact": "medium",
-            "effort": "medium"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "parseability",
+                "action": "Improve website semantic structure",
+                "details": "Add semantic HTML elements (main, article, section), proper heading hierarchy, and structured data.",
+                "impact": "medium",
+                "effort": "medium",
+            }
+        )
 
     # Citation recommendations
     citation = components.get("citation_likelihood", {})
     if citation.get("score", 0) < 8:
-        recommendations.append({
-            "priority": "medium",
-            "category": "citation_likelihood",
-            "action": "Create citation-worthy content",
-            "details": "Publish original research, comprehensive guides, or free tools that AI systems would reference.",
-            "impact": "high",
-            "effort": "high"
-        })
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "citation_likelihood",
+                "action": "Create citation-worthy content",
+                "details": "Publish original research, comprehensive guides, or free tools that AI systems would reference.",
+                "impact": "high",
+                "effort": "high",
+            }
+        )
 
     # Accuracy recommendations
     accuracy = components.get("accuracy", {})
     if accuracy.get("issues"):
-        recommendations.append({
-            "priority": "high",
-            "category": "accuracy",
-            "action": "Correct inaccurate AI information",
-            "details": f"Found {len(accuracy['issues'])} accuracy issues. Update source information and create authoritative fact pages.",
-            "impact": "high",
-            "effort": "medium"
-        })
+        recommendations.append(
+            {
+                "priority": "high",
+                "category": "accuracy",
+                "action": "Correct inaccurate AI information",
+                "details": f"Found {len(accuracy['issues'])} accuracy issues. Update source information and create authoritative fact pages.",
+                "impact": "high",
+                "effort": "medium",
+            }
+        )
 
     # Sentiment recommendations
     sentiment = components.get("sentiment", {})
     if sentiment.get("score", 0) < 5:
-        recommendations.append({
-            "priority": "medium",
-            "category": "sentiment",
-            "action": "Address negative sentiment",
-            "details": "Investigate sources of negative sentiment and create positive content to balance perception.",
-            "impact": "medium",
-            "effort": "medium"
-        })
+        recommendations.append(
+            {
+                "priority": "medium",
+                "category": "sentiment",
+                "action": "Address negative sentiment",
+                "details": "Investigate sources of negative sentiment and create positive content to balance perception.",
+                "impact": "medium",
+                "effort": "medium",
+            }
+        )
 
     # Quick wins
-    recommendations.append({
-        "priority": "quick_win",
-        "category": "parseability",
-        "action": "Add Organization schema to homepage",
-        "details": "Implement JSON-LD Organization schema with accurate company information.",
-        "impact": "medium",
-        "effort": "low"
-    })
+    recommendations.append(
+        {
+            "priority": "quick_win",
+            "category": "parseability",
+            "action": "Add Organization schema to homepage",
+            "details": "Implement JSON-LD Organization schema with accurate company information.",
+            "impact": "medium",
+            "effort": "low",
+        }
+    )
 
-    recommendations.append({
-        "priority": "quick_win",
-        "category": "accuracy",
-        "action": "Create a facts/media page",
-        "details": "Publish official company facts (founding date, founders, HQ, etc.) that AI can reference.",
-        "impact": "medium",
-        "effort": "low"
-    })
+    recommendations.append(
+        {
+            "priority": "quick_win",
+            "category": "accuracy",
+            "action": "Create a facts/media page",
+            "details": "Publish official company facts (founding date, founders, HQ, etc.) that AI can reference.",
+            "impact": "medium",
+            "effort": "low",
+        }
+    )
 
     # Sort by priority
     priority_order = {"high": 0, "medium": 1, "quick_win": 2, "low": 3}
@@ -381,15 +399,15 @@ def format_report(results: dict[str, Any]) -> str:
 
 
 __all__ = [
-    'run_audit',
-    'generate_recommendations',
-    'format_report',
-    'generate_test_queries',
-    'query_all_systems',
-    'analyze_brand_presence',
-    'check_accuracy',
-    'analyze_sentiment',
-    'analyze_site_structure',
-    'check_all_sources',
-    'analyze_content_citability'
+    "run_audit",
+    "generate_recommendations",
+    "format_report",
+    "generate_test_queries",
+    "query_all_systems",
+    "analyze_brand_presence",
+    "check_accuracy",
+    "analyze_sentiment",
+    "analyze_site_structure",
+    "check_all_sources",
+    "analyze_content_citability",
 ]

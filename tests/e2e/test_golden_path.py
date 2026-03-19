@@ -26,11 +26,10 @@ os.environ["RATE_LIMIT_REQUESTS_PER_MINUTE"] = "10000"
 os.environ["RATE_LIMIT_AUDITS_PER_DAY"] = "1000"
 
 mock_stripe = MagicMock()
-mock_stripe.checkout.Session.create = MagicMock(return_value=MagicMock(
-    id="cs_test_123",
-    url="https://checkout.stripe.com/test"
-))
-sys.modules['stripe'] = mock_stripe
+mock_stripe.checkout.Session.create = MagicMock(
+    return_value=MagicMock(id="cs_test_123", url="https://checkout.stripe.com/test")
+)
+sys.modules["stripe"] = mock_stripe
 
 from fastapi.testclient import TestClient
 
@@ -40,8 +39,10 @@ from tests.fixtures.sites import get_fixture
 def _create_audit_jobs_table(engine):
     """Create audit_jobs table for testing."""
     from sqlalchemy import text
+
     with engine.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_jobs (
                 job_id TEXT PRIMARY KEY,
                 tenant_id TEXT NOT NULL DEFAULT 'default',
@@ -54,8 +55,10 @@ def _create_audit_jobs_table(engine):
                 finished_at TIMESTAMP,
                 error_message TEXT
             )
-        """))
-        conn.execute(text("""
+        """)
+        )
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_progress_events (
                 event_id TEXT PRIMARY KEY,
                 audit_id TEXT NOT NULL,
@@ -65,13 +68,15 @@ def _create_audit_jobs_table(engine):
                 message TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """))
+        """)
+        )
         conn.commit()
 
 
 def _reset_rate_limiters():
     """Clear rate limiter counters and increase limits for isolated tests."""
     import rate_limiter
+
     rate_limiter._request_counts.clear()
     rate_limiter._audit_counts.clear()
     rate_limiter._endpoint_counts.clear()
@@ -88,10 +93,12 @@ class TestGoldenPath:
     def client(self):
         """Create test client with fresh database state."""
         from database import engine, init_db
+
         init_db()
         _create_audit_jobs_table(engine)
         _reset_rate_limiters()
         from apps.api.main import app
+
         return TestClient(app)
 
     def test_complete_audit_flow(self, client: TestClient, tmp_path):
@@ -110,10 +117,11 @@ class TestGoldenPath:
         password = "TestPassword123!"
 
         register_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": password}
+            "/auth/register", json={"email": email, "password": password}
         )
-        assert register_response.status_code == 200, f"Registration failed: {register_response.text}"
+        assert register_response.status_code == 200, (
+            f"Registration failed: {register_response.text}"
+        )
 
         auth_data = register_response.json()
         assert "access_token" in auth_data
@@ -128,8 +136,10 @@ class TestGoldenPath:
         assert me_response.json()["email"] == email
 
         # 3. Create a new audit with mocked execution and rate limiter
-        with patch("apps.api.main.check_rate_limit") as mock_rate_limit, \
-             patch("scripts.orchestrate.run_full_audit") as mock_audit:
+        with (
+            patch("apps.api.main.check_rate_limit") as mock_rate_limit,
+            patch("scripts.orchestrate.run_full_audit") as mock_audit,
+        ):
             mock_rate_limit.return_value = None
             mock_result = {
                 "url": fixture.url,
@@ -181,10 +191,12 @@ class TestGoldenPath:
                     "company_name": fixture.company_name,
                     "keywords": fixture.keywords,
                     "tier": "basic",
-                }
+                },
             )
 
-            assert audit_response.status_code == 200, f"Audit creation failed: {audit_response.text}"
+            assert audit_response.status_code == 200, (
+                f"Audit creation failed: {audit_response.text}"
+            )
             audit_data = audit_response.json()
             assert "audit_id" in audit_data
             audit_id = audit_data["audit_id"]
@@ -235,8 +247,7 @@ class TestGoldenPath:
 
         email = f"error_test_{int(time.time())}@test.com"
         register_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": "TestPassword123!"}
+            "/auth/register", json={"email": email, "password": "TestPassword123!"}
         )
         assert register_response.status_code == 200
         register_response.json()["access_token"]
@@ -294,7 +305,7 @@ class TestGoldenPath:
                     "company_name": fixture.company_name,
                     "keywords": fixture.keywords,
                     "tier": "basic",
-                }
+                },
             )
 
             assert audit_response.status_code == 200
@@ -316,8 +327,7 @@ class TestGoldenPath:
         """Test that quota limits are enforced for users/tenants."""
         email = f"quota_test_{int(time.time())}@test.com"
         register_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": "TestPassword123!"}
+            "/auth/register", json={"email": email, "password": "TestPassword123!"}
         )
         assert register_response.status_code == 200
         register_response.json()["access_token"]
@@ -333,15 +343,11 @@ class TestGoldenPath:
         password = "TestPassword123!"
 
         register_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": password}
+            "/auth/register", json={"email": email, "password": password}
         )
         assert register_response.status_code == 200
 
-        login_response = client.post(
-            "/auth/login",
-            json={"email": email, "password": password}
-        )
+        login_response = client.post("/auth/login", json={"email": email, "password": password})
         assert login_response.status_code == 200
         login_data = login_response.json()
         assert "access_token" in login_data
@@ -354,8 +360,7 @@ class TestGoldenPath:
     def test_invalid_login_rejected(self, client: TestClient):
         """Test that invalid credentials are rejected."""
         login_response = client.post(
-            "/auth/login",
-            json={"email": "nonexistent@test.com", "password": "wrongpassword"}
+            "/auth/login", json={"email": "nonexistent@test.com", "password": "wrongpassword"}
         )
         assert login_response.status_code == 401
 
@@ -381,10 +386,7 @@ class TestGoldenPath:
 
     def test_url_validation(self, client: TestClient):
         """Test URL validation endpoint."""
-        validate_response = client.post(
-            "/validate-url",
-            json={"url": "example.com"}
-        )
+        validate_response = client.post("/validate-url", json={"url": "example.com"})
         assert validate_response.status_code == 200
         data = validate_response.json()
         assert data["validation"]["isValid"] is True
@@ -397,21 +399,23 @@ class TestAuditWithFixtureSites:
     @pytest.fixture
     def client(self):
         from database import engine, init_db
+
         init_db()
         _create_audit_jobs_table(engine)
         from apps.api.main import app
+
         return TestClient(app)
 
-    @pytest.mark.parametrize("fixture_name,expected_grade_range", [
-        ("healthy_plumber", ["A", "B"]),
-        ("broken_sitemap", ["C", "D", "F"]),
-        ("crawl_blocked", ["D", "F"]),
-    ])
+    @pytest.mark.parametrize(
+        "fixture_name,expected_grade_range",
+        [
+            ("healthy_plumber", ["A", "B"]),
+            ("broken_sitemap", ["C", "D", "F"]),
+            ("crawl_blocked", ["D", "F"]),
+        ],
+    )
     def test_fixture_sites_produce_expected_grades(
-        self,
-        client: TestClient,
-        fixture_name: str,
-        expected_grade_range: list
+        self, client: TestClient, fixture_name: str, expected_grade_range: list
     ):
         """Verify fixture sites produce grades in expected ranges."""
         fixture = get_fixture(fixture_name)
@@ -432,32 +436,25 @@ class TestAPIRobustness:
     @pytest.fixture
     def client(self):
         from database import engine, init_db
+
         init_db()
         _create_audit_jobs_table(engine)
         from apps.api.main import app
+
         return TestClient(app)
 
     def test_invalid_tier_rejected(self, client: TestClient):
         """Test that invalid tiers are rejected."""
         response = client.post(
             "/audit",
-            json={
-                "url": "https://example.com",
-                "company_name": "Test",
-                "tier": "invalid_tier"
-            }
+            json={"url": "https://example.com", "company_name": "Test", "tier": "invalid_tier"},
         )
         assert response.status_code == 422
 
     def test_invalid_url_rejected(self, client: TestClient):
         """Test that invalid URLs are rejected."""
         response = client.post(
-            "/audit",
-            json={
-                "url": "notavalidurl",
-                "company_name": "Test",
-                "tier": "basic"
-            }
+            "/audit", json={"url": "notavalidurl", "company_name": "Test", "tier": "basic"}
         )
         assert response.status_code == 422
 
@@ -471,14 +468,12 @@ class TestAPIRobustness:
         email = f"duplicate_test_{int(time.time())}@test.com"
 
         first_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": "TestPassword123!"}
+            "/auth/register", json={"email": email, "password": "TestPassword123!"}
         )
         assert first_response.status_code == 200
 
         second_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": "DifferentPassword123!"}
+            "/auth/register", json={"email": email, "password": "DifferentPassword123!"}
         )
         assert second_response.status_code == 400
 
@@ -503,10 +498,12 @@ class TestDashboardAuditFlow:
     @pytest.fixture
     def client(self):
         from database import engine, init_db
+
         init_db()
         _create_audit_jobs_table(engine)
         _reset_rate_limiters()
         from apps.api.main import app
+
         return TestClient(app)
 
     def _create_dashboard_user(self, client: TestClient) -> dict:
@@ -515,8 +512,7 @@ class TestDashboardAuditFlow:
         password = "TestPassword123!"
 
         register_response = client.post(
-            "/auth/register",
-            json={"email": email, "password": password}
+            "/auth/register", json={"email": email, "password": password}
         )
         assert register_response.status_code == 200
 
@@ -624,10 +620,12 @@ class TestReportDownload:
     @pytest.fixture
     def client(self):
         from database import engine, init_db
+
         init_db()
         _create_audit_jobs_table(engine)
         _reset_rate_limiters()
         from apps.api.main import app
+
         return TestClient(app)
 
     def test_report_download_requires_completed_audit(self, client: TestClient):
@@ -698,7 +696,7 @@ class TestReportDownload:
                 "technical": {"score": 80},
                 "content": {"score": 75},
                 "ai_visibility": {"score": 78},
-            }
+            },
         }
 
         audit = Audit(
@@ -731,10 +729,12 @@ class TestCompleteAuditFlowAPI:
     @pytest.fixture
     def client(self):
         from database import engine, init_db
+
         init_db()
         _create_audit_jobs_table(engine)
         _reset_rate_limiters()
         from apps.api.main import app
+
         return TestClient(app)
 
     def test_complete_audit_flow_api(self, client: TestClient):
@@ -753,7 +753,7 @@ class TestCompleteAuditFlowAPI:
                     "company_name": fixture.company_name,
                     "keywords": fixture.keywords,
                     "tier": "basic",
-                }
+                },
             )
 
             assert audit_response.status_code == 200

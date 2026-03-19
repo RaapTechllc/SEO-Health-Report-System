@@ -51,29 +51,31 @@ def generate_robots_txt(audit_data: dict[str, Any]) -> str:
     for path in disallow_paths:
         lines.append(f"Disallow: {path}")
 
-    lines.extend([
-        "",
-        "# Allow important crawlers full access",
-        "User-agent: Googlebot",
-        "Allow: /",
-        "",
-        "User-agent: Bingbot",
-        "Allow: /",
-        "",
-        "# AI crawlers - allow for visibility",
-        "User-agent: ChatGPT-User",
-        "Allow: /",
-        "",
-        "User-agent: anthropic-ai",
-        "Allow: /",
-        "",
-        "User-agent: PerplexityBot",
-        "Allow: /",
-        "",
-        "User-agent: Google-Extended",
-        "Allow: /",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "# Allow important crawlers full access",
+            "User-agent: Googlebot",
+            "Allow: /",
+            "",
+            "User-agent: Bingbot",
+            "Allow: /",
+            "",
+            "# AI crawlers - allow for visibility",
+            "User-agent: ChatGPT-User",
+            "Allow: /",
+            "",
+            "User-agent: anthropic-ai",
+            "Allow: /",
+            "",
+            "User-agent: PerplexityBot",
+            "Allow: /",
+            "",
+            "User-agent: Google-Extended",
+            "Allow: /",
+            "",
+        ]
+    )
 
     # Add sitemap reference
     url = audit_data.get("url", "https://example.com")

@@ -36,12 +36,14 @@ class SmokeTest:
         print(f"   {icon} {test}{duration_str}")
         if message:
             print(f"      └─ {message}")
-        self.results.append({
-            "status": status,
-            "test": test,
-            "message": message,
-            "duration_ms": duration_ms,
-        })
+        self.results.append(
+            {
+                "status": status,
+                "test": test,
+                "message": message,
+                "duration_ms": duration_ms,
+            }
+        )
 
     def request(self, method: str, path: str, **kwargs) -> tuple[requests.Response | None, int]:
         """Make HTTP request and return response with duration."""
@@ -51,7 +53,7 @@ class SmokeTest:
             response = requests.request(method, url, timeout=self.timeout, **kwargs)
             duration_ms = int((time.time() - start) * 1000)
             return response, duration_ms
-        except requests.RequestException as e:
+        except requests.RequestException:
             duration_ms = int((time.time() - start) * 1000)
             return None, duration_ms
 
@@ -78,11 +80,7 @@ class SmokeTest:
 
     def test_audit_endpoint_rejects_invalid(self) -> bool:
         """Test /audit endpoint rejects invalid input."""
-        response, duration = self.request(
-            "POST",
-            "/audit",
-            json={"invalid": "data"}
-        )
+        response, duration = self.request("POST", "/audit", json={"invalid": "data"})
         if response and response.status_code in [400, 422]:
             self.log("PASS", "Audit validation", "Rejects invalid input", duration)
             return True
@@ -112,9 +110,7 @@ class SmokeTest:
     def test_cors_headers(self) -> bool:
         """Test CORS headers are configured."""
         response, duration = self.request(
-            "OPTIONS",
-            "/health",
-            headers={"Origin": "https://example.com"}
+            "OPTIONS", "/health", headers={"Origin": "https://example.com"}
         )
         if response:
             cors_header = response.headers.get("Access-Control-Allow-Origin")
@@ -190,10 +186,10 @@ class SmokeTest:
     def run(self) -> bool:
         """Run all smoke tests."""
         self.start_time = datetime.now()
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"🔥 Smoke Test: {self.base_url}")
         print(f"   Started: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         tests = [
             ("Health Check", self.test_health_endpoint),
@@ -208,7 +204,6 @@ class SmokeTest:
 
         passed = 0
         failed = 0
-        warned = 0
 
         for name, test_fn in tests:
             try:
@@ -222,10 +217,10 @@ class SmokeTest:
 
         # Summary
         duration = (datetime.now() - self.start_time).total_seconds()
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"📊 Results: {passed} passed, {failed} failed")
         print(f"   Duration: {duration:.2f}s")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         if failed > 0:
             print("❌ SMOKE TEST FAILED")
@@ -236,26 +231,17 @@ class SmokeTest:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Run smoke tests against SEO Health Report API"
-    )
+    parser = argparse.ArgumentParser(description="Run smoke tests against SEO Health Report API")
     parser.add_argument(
         "url",
         nargs="?",
         default="http://localhost:8000",
-        help="Base URL of the API (default: http://localhost:8000)"
+        help="Base URL of the API (default: http://localhost:8000)",
     )
     parser.add_argument(
-        "--timeout",
-        type=int,
-        default=30,
-        help="Request timeout in seconds (default: 30)"
+        "--timeout", type=int, default=30, help="Request timeout in seconds (default: 30)"
     )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON"
-    )
+    parser.add_argument("--json", action="store_true", help="Output results as JSON")
 
     args = parser.parse_args()
 
@@ -263,10 +249,15 @@ def main():
     success = tester.run()
 
     if args.json:
-        print(json.dumps({
-            "success": success,
-            "results": tester.results,
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "success": success,
+                    "results": tester.results,
+                },
+                indent=2,
+            )
+        )
 
     sys.exit(0 if success else 1)
 

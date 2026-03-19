@@ -17,6 +17,7 @@ from packages.seo_health_report.scripts.safe_fetch import FetchResult, safe_fetc
 @dataclass
 class RateLimiterConfig:
     """Rate limiting configuration."""
+
     max_concurrent_fetches: int = 5
     min_host_delay_seconds: float = 0.5
     max_requests_per_minute: int = 60
@@ -25,19 +26,13 @@ class RateLimiterConfig:
 # Tier-specific limits
 TIER_LIMITS = {
     "basic": RateLimiterConfig(
-        max_concurrent_fetches=3,
-        min_host_delay_seconds=1.0,
-        max_requests_per_minute=30
+        max_concurrent_fetches=3, min_host_delay_seconds=1.0, max_requests_per_minute=30
     ),
     "pro": RateLimiterConfig(
-        max_concurrent_fetches=5,
-        min_host_delay_seconds=0.5,
-        max_requests_per_minute=60
+        max_concurrent_fetches=5, min_host_delay_seconds=0.5, max_requests_per_minute=60
     ),
     "enterprise": RateLimiterConfig(
-        max_concurrent_fetches=10,
-        min_host_delay_seconds=0.25,
-        max_requests_per_minute=120
+        max_concurrent_fetches=10, min_host_delay_seconds=0.25, max_requests_per_minute=120
     ),
 }
 
@@ -82,11 +77,7 @@ class RateLimiter:
         return cls(config)
 
 
-async def rate_limited_fetch(
-    url: str,
-    limiter: RateLimiter,
-    **kwargs
-) -> FetchResult:
+async def rate_limited_fetch(url: str, limiter: RateLimiter, **kwargs) -> FetchResult:
     """
     Fetch URL with rate limiting applied.
 

@@ -21,6 +21,7 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+
 def get_url():
     """Get database URL from environment or config."""
     return os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))

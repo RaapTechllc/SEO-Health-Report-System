@@ -19,6 +19,7 @@ _EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
 
 class RegisterRequest(BaseModel):
     """Request model for user registration."""
+
     email: str
     password: str
 
@@ -39,15 +40,13 @@ class RegisterRequest(BaseModel):
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "email": "user@example.com",
-                "password": "securepassword123"
-            }
+            "example": {"email": "user@example.com", "password": "securepassword123"}
         }
 
 
 class LoginRequest(BaseModel):
     """Request model for user login."""
+
     email: str
     password: str
 
@@ -61,15 +60,13 @@ class LoginRequest(BaseModel):
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "email": "user@example.com",
-                "password": "securepassword123"
-            }
+            "example": {"email": "user@example.com", "password": "securepassword123"}
         }
 
 
 class TokenResponse(BaseModel):
     """Response model for authentication tokens."""
+
     access_token: str
     token_type: str = "bearer"
     user_id: str
@@ -88,7 +85,7 @@ class TokenResponse(BaseModel):
         200: {"description": "Registration successful"},
         400: ERROR_RESPONSES[400],
         422: ERROR_RESPONSES[422],
-    }
+    },
 )
 async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     """Register a new user."""
@@ -111,7 +108,7 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
         200: {"description": "Login successful"},
         401: ERROR_RESPONSES[401],
         422: ERROR_RESPONSES[422],
-    }
+    },
 )
 async def login(request: LoginRequest, db: Session = Depends(get_db)):
     """Login and get access token."""
@@ -132,12 +129,16 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
             "description": "Current user info",
             "content": {
                 "application/json": {
-                    "example": {"user_id": "user_xyz789", "email": "user@example.com", "role": "user"}
+                    "example": {
+                        "user_id": "user_xyz789",
+                        "email": "user@example.com",
+                        "role": "user",
+                    }
                 }
-            }
+            },
         },
         401: ERROR_RESPONSES[401],
-    }
+    },
 )
 async def get_me(user: User = Depends(require_auth)):
     """Get current user info."""

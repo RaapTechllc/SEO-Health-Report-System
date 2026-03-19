@@ -3,7 +3,6 @@ Tests for OpenAPI documentation enhancements.
 """
 
 
-
 class TestOpenAPIMetadata:
     """Test OpenAPI metadata and configuration."""
 

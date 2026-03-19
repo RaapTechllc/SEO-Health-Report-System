@@ -19,6 +19,7 @@ class TestAuditPipeline:
             handle_audit_failure,
             run_full_audit,
         )
+
         assert callable(run_full_audit)
         assert callable(handle_audit_failure)
 
@@ -28,6 +29,7 @@ class TestAuditPipeline:
             Issue,
             calculate_grade,
         )
+
         assert Issue is not None
         assert callable(calculate_grade)
 
@@ -96,6 +98,7 @@ class TestGeminiIntegration:
             GeminiClient,
             GeminiConfig,
         )
+
         assert GeminiClient is not None
         assert GeminiConfig is not None
 
@@ -129,6 +132,7 @@ class TestCacheIntegration:
             clear_cache,
             get_cache,
         )
+
         assert callable(get_cache)
         assert callable(clear_cache)
         assert callable(cached)

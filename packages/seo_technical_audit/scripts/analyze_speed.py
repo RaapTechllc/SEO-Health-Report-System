@@ -11,9 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 # Add parent directory to path for config import
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from seo_health_report.config import get_config
 
@@ -104,11 +102,7 @@ async def get_pagespeed_insights(
         Dict with PageSpeed Insights data
     """
     # Support multiple env var names for flexibility
-    api_key = (
-        api_key
-        or os.environ.get("PAGESPEED_API_KEY")
-        or os.environ.get("GOOGLE_API_KEY")
-    )
+    api_key = api_key or os.environ.get("PAGESPEED_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
     result = {
         "url": url,
@@ -129,9 +123,7 @@ async def get_pagespeed_insights(
             params = {"url": url, "strategy": strategy}
 
             # Add first category (primary is performance)
-            params["category"] = (
-                PAGESPEED_CATEGORIES[0] if PAGESPEED_CATEGORIES else "performance"
-            )
+            params["category"] = PAGESPEED_CATEGORIES[0] if PAGESPEED_CATEGORIES else "performance"
 
             if api_key:
                 params["key"] = api_key
@@ -228,9 +220,7 @@ async def get_pagespeed_insights(
                                 "id": audit_id,
                                 "title": audit.get("title"),
                                 "description": audit.get("description"),
-                                "savings_ms": audit.get("details", {}).get(
-                                    "overallSavingsMs"
-                                ),
+                                "savings_ms": audit.get("details", {}).get("overallSavingsMs"),
                                 "savings_bytes": audit.get("details", {}).get(
                                     "overallSavingsBytes"
                                 ),
@@ -238,9 +228,7 @@ async def get_pagespeed_insights(
                         )
 
             # Sort opportunities by potential savings
-            result["opportunities"].sort(
-                key=lambda x: x.get("savings_ms") or 0, reverse=True
-            )
+            result["opportunities"].sort(key=lambda x: x.get("savings_ms") or 0, reverse=True)
 
     except ImportError:
         result["error"] = "httpx package not installed. Install with: pip install httpx"
@@ -250,9 +238,7 @@ async def get_pagespeed_insights(
     return result
 
 
-async def get_pagespeed_insights_both(
-    url: str, api_key: Optional[str] = None
-) -> dict[str, Any]:
+async def get_pagespeed_insights_both(url: str, api_key: Optional[str] = None) -> dict[str, Any]:
     """
     Fetch PageSpeed Insights for both mobile and desktop in parallel.
 
@@ -382,9 +368,7 @@ def analyze_core_web_vitals(psi_data: dict[str, Any]) -> dict[str, Any]:
         if status == "good":
             result["findings"].append(f"{label}: {metric_data.get('display')} (Good)")
         elif status == "needs_improvement":
-            result["findings"].append(
-                f"{label}: {metric_data.get('display')} (Needs Improvement)"
-            )
+            result["findings"].append(f"{label}: {metric_data.get('display')} (Needs Improvement)")
             result["all_pass"] = False
             result["issues"].append(
                 {
@@ -495,9 +479,7 @@ def check_resource_optimization(psi_data: dict[str, Any]) -> dict[str, Any]:
                     "severity": "medium" if savings_ms > 1000 else "low",
                     "category": "speed",
                     "description": f"{opp.get('title')}: Could save {savings_ms}ms",
-                    "recommendation": opp.get(
-                        "description", "Implement suggested optimization"
-                    ),
+                    "recommendation": opp.get("description", "Implement suggested optimization"),
                 }
             )
 
@@ -611,9 +593,7 @@ def get_pagespeed_insights_sync(
     return asyncio.run(get_pagespeed_insights(url, strategy, api_key))
 
 
-def get_pagespeed_insights_both_sync(
-    url: str, api_key: Optional[str] = None
-) -> dict[str, Any]:
+def get_pagespeed_insights_both_sync(url: str, api_key: Optional[str] = None) -> dict[str, Any]:
     """
     Sync wrapper for get_pagespeed_insights_both for backwards compatibility.
     """

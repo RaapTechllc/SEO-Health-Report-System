@@ -37,9 +37,7 @@ class TestFetchUrlAsync:
     async def test_fetch_with_headers(self):
         """Test fetch with custom headers."""
         headers = {"User-Agent": "Test-Agent"}
-        result = await fetch_url_async(
-            "https://httpbin.org/get", headers=headers, timeout=10
-        )
+        result = await fetch_url_async("https://httpbin.org/get", headers=headers, timeout=10)
         assert result is not None
 
     async def test_fetch_timeout(self):

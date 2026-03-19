@@ -1,4 +1,5 @@
 """Finding block component for issues/recommendations."""
+
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, Spacer
@@ -7,10 +8,7 @@ from .colors import ReportColors
 
 
 def FindingBlock(  # noqa: N802
-    title: str,
-    description: str,
-    severity: str,
-    evidence: list[str] = None
+    title: str, description: str, severity: str, evidence: list[str] = None
 ) -> list:
     """Create a finding block with severity indicator and optional evidence.
 

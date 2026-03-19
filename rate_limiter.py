@@ -1,4 +1,5 @@
 """Root-level shim — canonical code lives in packages/rate_limiter/."""
+
 from packages.rate_limiter import *  # noqa: F401,F403
 from packages.rate_limiter import (  # noqa: F401
     RateLimitMiddleware,

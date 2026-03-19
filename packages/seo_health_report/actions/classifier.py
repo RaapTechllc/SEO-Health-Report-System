@@ -246,11 +246,7 @@ def classify_actions(audit_results: dict[str, Any]) -> list[dict[str, Any]]:
     return actions
 
 
-def _classify_issue(
-    issue: dict[str, Any],
-    audit_name: str,
-    seen: set
-) -> dict[str, Any] | None:
+def _classify_issue(issue: dict[str, Any], audit_name: str, seen: set) -> dict[str, Any] | None:
     """Classify a single issue into an action item."""
     category = issue.get("category", "").lower()
     description = issue.get("description", "")
@@ -337,9 +333,7 @@ def _classify_issue(
 
 
 def _classify_recommendation(
-    rec: dict[str, Any],
-    audit_name: str,
-    seen: set
+    rec: dict[str, Any], audit_name: str, seen: set
 ) -> dict[str, Any] | None:
     """Classify a recommendation into an action item."""
     action_text = rec.get("action", "")
@@ -437,9 +431,21 @@ def _severity_to_impact(severity: str) -> str:
 def _is_automatable(description: str) -> bool:
     """Check if an issue description suggests an automatable fix."""
     automatable_keywords = [
-        "missing", "add", "tag", "meta", "header", "redirect",
-        "robots", "sitemap", "canonical", "schema", "alt text",
-        "viewport", "https", "ssl", "security header"
+        "missing",
+        "add",
+        "tag",
+        "meta",
+        "header",
+        "redirect",
+        "robots",
+        "sitemap",
+        "canonical",
+        "schema",
+        "alt text",
+        "viewport",
+        "https",
+        "ssl",
+        "security header",
     ]
     desc_lower = description.lower()
     return any(kw in desc_lower for kw in automatable_keywords)

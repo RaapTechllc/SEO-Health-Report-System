@@ -93,6 +93,7 @@ def cached_memory(prefix: str = "", ttl: int = DEFAULT_TTL):
         def get_audit_status(audit_id: str) -> dict:
             ...
     """
+
     def decorator(func: Callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -111,7 +112,9 @@ def cached_memory(prefix: str = "", ttl: int = DEFAULT_TTL):
                 set(key, result, ttl)
 
             return result
+
         return wrapper
+
     return decorator
 
 
@@ -123,6 +126,7 @@ def cached_memory_async(prefix: str = "", ttl: int = DEFAULT_TTL):
         prefix: Cache key prefix (default: function name)
         ttl: Time-to-live in seconds
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -141,7 +145,9 @@ def cached_memory_async(prefix: str = "", ttl: int = DEFAULT_TTL):
                 set(key, result, ttl)
 
             return result
+
         return wrapper
+
     return decorator
 
 

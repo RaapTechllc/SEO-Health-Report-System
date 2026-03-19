@@ -16,7 +16,6 @@ from packages.core.safe_fetch import (
     SSRFProtectionError,
     is_private_ip,
     is_url_safe,
-    resolve_and_validate,
     validate_url,
 )
 
@@ -173,7 +172,7 @@ class TestDNSRebinding:
         # AWS metadata
         with pytest.raises(SSRFProtectionError):
             validate_url("http://169.254.169.254/latest/meta-data/")
-        
+
         # Azure metadata
         with pytest.raises(SSRFProtectionError):
             validate_url("http://169.254.169.254/metadata/instance")

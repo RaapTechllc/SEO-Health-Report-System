@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 # Optional playwright import - skip browser tests if not installed
 try:
     from playwright.sync_api import Page, expect
+
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
@@ -30,6 +31,7 @@ try:
         main,
         run_full_audit_sync,
     )
+
     SEO_MODULE_AVAILABLE = True
 except ImportError:
     SEO_MODULE_AVAILABLE = False
@@ -65,20 +67,34 @@ class TestReportGenerationFlow:
         # Mock return values
         mock_audit.return_value = {
             "audits": {
-                "technical": {"score": 80, "grade": "B", "components": {}, "issues": [], "recommendations": []},
-                "content": {"score": 75, "grade": "C", "components": {}, "issues": [], "recommendations": []},
-                "ai_visibility": {"score": 70, "grade": "C", "components": {}, "issues": [], "recommendations": []},
+                "technical": {
+                    "score": 80,
+                    "grade": "B",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "content": {
+                    "score": 75,
+                    "grade": "C",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "ai_visibility": {
+                    "score": 70,
+                    "grade": "C",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
             },
             "warnings": [],
-            "errors": []
+            "errors": [],
         }
 
         output_file = tmp_path / "test_report.docx"
-        mock_build.return_value = {
-            "success": True,
-            "output_path": str(output_file),
-            "pages": 5
-        }
+        mock_build.return_value = {"success": True, "output_path": str(output_file), "pages": 5}
 
         # Execute
         result = generate_report(
@@ -87,7 +103,7 @@ class TestReportGenerationFlow:
             logo_file="logo.png",
             primary_keywords=["test", "seo"],
             output_dir=str(tmp_path),
-            output_format="docx"
+            output_format="docx",
         )
 
         # Verify
@@ -107,14 +123,36 @@ class TestReportGenerationFlow:
         """Test report generation with competitor analysis."""
         mock_audit.return_value = {
             "audits": {
-                "technical": {"score": 85, "grade": "B", "components": {}, "issues": [], "recommendations": []},
-                "content": {"score": 80, "grade": "B", "components": {}, "issues": [], "recommendations": []},
-                "ai_visibility": {"score": 75, "grade": "C", "components": {}, "issues": [], "recommendations": []},
+                "technical": {
+                    "score": 85,
+                    "grade": "B",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "content": {
+                    "score": 80,
+                    "grade": "B",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "ai_visibility": {
+                    "score": 75,
+                    "grade": "C",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
             },
             "warnings": [],
-            "errors": []
+            "errors": [],
         }
-        mock_build.return_value = {"success": True, "output_path": str(tmp_path / "report.docx"), "pages": 8}
+        mock_build.return_value = {
+            "success": True,
+            "output_path": str(tmp_path / "report.docx"),
+            "pages": 8,
+        }
 
         result = generate_report(
             target_url="https://example.com",
@@ -123,7 +161,7 @@ class TestReportGenerationFlow:
             primary_keywords=["seo", "marketing"],
             competitor_urls=["https://competitor1.com", "https://competitor2.com"],
             output_dir=str(tmp_path),
-            output_format="docx"
+            output_format="docx",
         )
 
         assert result["overall_score"] > 0
@@ -131,7 +169,10 @@ class TestReportGenerationFlow:
 
         # Verify competitors were passed to audit
         call_kwargs = mock_audit.call_args[1]
-        assert call_kwargs["competitor_urls"] == ["https://competitor1.com", "https://competitor2.com"]
+        assert call_kwargs["competitor_urls"] == [
+            "https://competitor1.com",
+            "https://competitor2.com",
+        ]
 
     @pytest.mark.skipif(not SEO_MODULE_AVAILABLE, reason="seo_health_report module not available")
     @patch("seo_health_report.run_full_audit_sync")
@@ -140,14 +181,36 @@ class TestReportGenerationFlow:
         """Test that warnings from audit are propagated to result."""
         mock_audit.return_value = {
             "audits": {
-                "technical": {"score": 70, "grade": "C", "components": {}, "issues": [], "recommendations": []},
-                "content": {"score": 65, "grade": "D", "components": {}, "issues": [], "recommendations": []},
-                "ai_visibility": {"score": 60, "grade": "D", "components": {}, "issues": [], "recommendations": []},
+                "technical": {
+                    "score": 70,
+                    "grade": "C",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "content": {
+                    "score": 65,
+                    "grade": "D",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "ai_visibility": {
+                    "score": 60,
+                    "grade": "D",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
             },
             "warnings": ["API rate limit approached", "Some pages could not be crawled"],
-            "errors": []
+            "errors": [],
         }
-        mock_build.return_value = {"success": True, "output_path": str(tmp_path / "report.docx"), "pages": 5}
+        mock_build.return_value = {
+            "success": True,
+            "output_path": str(tmp_path / "report.docx"),
+            "pages": 5,
+        }
 
         result = generate_report(
             target_url="https://example.com",
@@ -155,7 +218,7 @@ class TestReportGenerationFlow:
             logo_file="logo.png",
             primary_keywords=["test"],
             output_dir=str(tmp_path),
-            output_format="docx"
+            output_format="docx",
         )
 
         assert len(result["warnings"]) >= 2
@@ -181,8 +244,8 @@ class TestAPIIntegration:
                 "audit_id": "audit_abc123",
                 "status": "pending",
                 "url": "https://example.com",
-                "company_name": "Test Corp"
-            }
+                "company_name": "Test Corp",
+            },
         )
 
         response = mock_api_client.post(
@@ -191,8 +254,8 @@ class TestAPIIntegration:
                 "url": "https://example.com",
                 "company_name": "Test Corp",
                 "keywords": ["seo"],
-                "tier": "basic"
-            }
+                "tier": "basic",
+            },
         )
 
         assert response.status_code == 201
@@ -206,7 +269,10 @@ class TestAPIIntegration:
         mock_api_client.get.side_effect = [
             MagicMock(status_code=200, json=lambda: {"status": "running", "progress": 30}),
             MagicMock(status_code=200, json=lambda: {"status": "running", "progress": 60}),
-            MagicMock(status_code=200, json=lambda: {"status": "completed", "overall_score": 75, "grade": "C"}),
+            MagicMock(
+                status_code=200,
+                json=lambda: {"status": "completed", "overall_score": 75, "grade": "C"},
+            ),
         ]
 
         # Poll until complete
@@ -295,6 +361,7 @@ class TestEndToEndAuditFlow:
 
         # Step 3: Calculate scores (using actual logic)
         from packages.seo_health_report.scripts.calculate_scores import calculate_composite_score
+
         scores = calculate_composite_score(mock_audit_result)
 
         assert scores["overall_score"] > 0
@@ -309,15 +376,34 @@ class TestEndToEndAuditFlow:
         # Simulate an audit with errors
         mock_audit_result = {
             "audits": {
-                "technical": {"score": 0, "grade": "F", "components": {}, "issues": [], "recommendations": []},
-                "content": {"score": 0, "grade": "F", "components": {}, "issues": [], "recommendations": []},
-                "ai_visibility": {"score": 0, "grade": "F", "components": {}, "issues": [], "recommendations": []},
+                "technical": {
+                    "score": 0,
+                    "grade": "F",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "content": {
+                    "score": 0,
+                    "grade": "F",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
+                "ai_visibility": {
+                    "score": 0,
+                    "grade": "F",
+                    "components": {},
+                    "issues": [],
+                    "recommendations": [],
+                },
             },
             "warnings": [],
             "errors": ["Failed to fetch URL: Connection timeout"],
         }
 
         from packages.seo_health_report.scripts.calculate_scores import calculate_composite_score
+
         scores = calculate_composite_score(mock_audit_result)
 
         # Even with errors, we should get valid structure

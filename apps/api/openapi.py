@@ -117,31 +117,26 @@ TAGS_METADATA = [
 
 # --- Error Response Models ---
 
+
 class ErrorDetail(BaseModel):
     """Standard error detail structure."""
+
     detail: str = Field(..., description="Human-readable error message")
 
     class Config:
-        json_schema_extra = {
-            "example": {
-                "detail": "Resource not found"
-            }
-        }
+        json_schema_extra = {"example": {"detail": "Resource not found"}}
 
 
 class ValidationErrorDetail(BaseModel):
     """Validation error with field details."""
+
     detail: list = Field(..., description="List of validation errors")
 
     class Config:
         json_schema_extra = {
             "example": {
                 "detail": [
-                    {
-                        "loc": ["body", "url"],
-                        "msg": "Invalid URL format",
-                        "type": "value_error"
-                    }
+                    {"loc": ["body", "url"], "msg": "Invalid URL format", "type": "value_error"}
                 ]
             }
         }
@@ -157,15 +152,15 @@ ERROR_RESPONSES = {
                 "examples": {
                     "validation_error": {
                         "summary": "Validation Error",
-                        "value": {"detail": "Invalid URL format"}
+                        "value": {"detail": "Invalid URL format"},
                     },
                     "invalid_tier": {
                         "summary": "Invalid Tier",
-                        "value": {"detail": "Tier must be basic, pro, or enterprise"}
-                    }
+                        "value": {"detail": "Tier must be basic, pro, or enterprise"},
+                    },
                 }
             }
-        }
+        },
     },
     401: {
         "description": "Unauthorized - Missing or invalid authentication token",
@@ -174,19 +169,19 @@ ERROR_RESPONSES = {
                 "examples": {
                     "missing_token": {
                         "summary": "Missing Token",
-                        "value": {"detail": "Not authenticated"}
+                        "value": {"detail": "Not authenticated"},
                     },
                     "invalid_token": {
                         "summary": "Invalid Token",
-                        "value": {"detail": "Could not validate credentials"}
+                        "value": {"detail": "Could not validate credentials"},
                     },
                     "expired_token": {
                         "summary": "Expired Token",
-                        "value": {"detail": "Token has expired"}
-                    }
+                        "value": {"detail": "Token has expired"},
+                    },
                 }
             }
-        }
+        },
     },
     404: {
         "description": "Not Found - Resource does not exist",
@@ -195,15 +190,15 @@ ERROR_RESPONSES = {
                 "examples": {
                     "audit_not_found": {
                         "summary": "Audit Not Found",
-                        "value": {"detail": "Audit not found"}
+                        "value": {"detail": "Audit not found"},
                     },
                     "report_not_found": {
                         "summary": "Report Not Found",
-                        "value": {"detail": "Report file not found"}
-                    }
+                        "value": {"detail": "Report file not found"},
+                    },
                 }
             }
-        }
+        },
     },
     422: {
         "description": "Validation Error - Request body validation failed",
@@ -214,33 +209,29 @@ ERROR_RESPONSES = {
                         {
                             "loc": ["body", "url"],
                             "msg": "field required",
-                            "type": "value_error.missing"
+                            "type": "value_error.missing",
                         }
                     ]
                 }
             }
-        }
+        },
     },
     429: {
         "description": "Too Many Requests - Rate limit exceeded",
         "content": {
             "application/json": {
-                "example": {
-                    "detail": "Rate limit exceeded. Try again in 60 seconds."
-                }
+                "example": {"detail": "Rate limit exceeded. Try again in 60 seconds."}
             }
-        }
+        },
     },
     500: {
         "description": "Internal Server Error - Unexpected server error",
         "content": {
             "application/json": {
-                "example": {
-                    "detail": "An unexpected error occurred. Please try again later."
-                }
+                "example": {"detail": "An unexpected error occurred. Please try again later."}
             }
-        }
-    }
+        },
+    },
 }
 
 
@@ -251,14 +242,14 @@ AUDIT_REQUEST_EXAMPLE = {
     "company_name": "Example Corp",
     "keywords": ["seo tools", "website audit", "search optimization"],
     "competitors": ["https://competitor1.com", "https://competitor2.com"],
-    "tier": "pro"
+    "tier": "pro",
 }
 
 AUDIT_RESPONSE_EXAMPLE = {
     "audit_id": "audit_abc123def456",
     "status": "queued",
     "url": "https://example.com",
-    "company_name": "Example Corp"
+    "company_name": "Example Corp",
 }
 
 AUDIT_STATUS_EXAMPLE = {
@@ -270,7 +261,7 @@ AUDIT_STATUS_EXAMPLE = {
     "overall_score": 78.5,
     "grade": "B+",
     "created_at": "2024-01-15T10:30:00Z",
-    "completed_at": "2024-01-15T10:32:45Z"
+    "completed_at": "2024-01-15T10:32:45Z",
 }
 
 AUDIT_FULL_EXAMPLE = {
@@ -280,19 +271,27 @@ AUDIT_FULL_EXAMPLE = {
         "content_score": 75,
         "ai_visibility_score": 79,
         "issues": [
-            {"severity": "high", "category": "performance", "message": "Page load time exceeds 3 seconds"},
-            {"severity": "medium", "category": "meta", "message": "Missing meta description on 5 pages"}
-        ]
+            {
+                "severity": "high",
+                "category": "performance",
+                "message": "Page load time exceeds 3 seconds",
+            },
+            {
+                "severity": "medium",
+                "category": "meta",
+                "message": "Missing meta description on 5 pages",
+            },
+        ],
     },
     "report_html_url": "/audits/audit_abc123def456/report/html",
-    "report_pdf_url": "/audits/audit_abc123def456/report/pdf"
+    "report_pdf_url": "/audits/audit_abc123def456/report/pdf",
 }
 
 TOKEN_RESPONSE_EXAMPLE = {
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "token_type": "bearer",
     "user_id": "user_xyz789",
-    "email": "user@example.com"
+    "email": "user@example.com",
 }
 
 COMPETITOR_EXAMPLE = {
@@ -302,7 +301,7 @@ COMPETITOR_EXAMPLE = {
     "monitoring_frequency": 3600,
     "alert_threshold": 10,
     "last_score": 72.5,
-    "last_audit_at": "2024-01-15T08:00:00Z"
+    "last_audit_at": "2024-01-15T08:00:00Z",
 }
 
 PRICING_EXAMPLE = {
@@ -311,20 +310,20 @@ PRICING_EXAMPLE = {
             "name": "Basic",
             "description": "Essential SEO analysis",
             "price": 29.00,
-            "currency": "USD"
+            "currency": "USD",
         },
         "pro": {
             "name": "Pro",
             "description": "Advanced SEO with AI visibility",
             "price": 79.00,
-            "currency": "USD"
+            "currency": "USD",
         },
         "enterprise": {
             "name": "Enterprise",
             "description": "Full suite with white-label reports",
             "price": 199.00,
-            "currency": "USD"
-        }
+            "currency": "USD",
+        },
     }
 }
 
@@ -334,7 +333,7 @@ WEBHOOK_EXAMPLE = {
     "events": ["audit.completed", "audit.failed"],
     "secret": "whsec_...",
     "active": True,
-    "created_at": "2024-01-10T12:00:00Z"
+    "created_at": "2024-01-10T12:00:00Z",
 }
 
 BRANDING_EXAMPLE = {
@@ -344,7 +343,7 @@ BRANDING_EXAMPLE = {
     "primary_color": "#2563eb",
     "secondary_color": "#1e40af",
     "accent_color": "#f59e0b",
-    "custom_css": ".report-header { background: linear-gradient(...) }"
+    "custom_css": ".report-header { background: linear-gradient(...) }",
 }
 
 
@@ -379,41 +378,32 @@ def create_custom_openapi(app: FastAPI) -> dict[str, Any]:
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
-            "description": "JWT token obtained from /auth/login or /auth/register"
+            "description": "JWT token obtained from /auth/login or /auth/register",
         }
     }
 
     # Add servers
     openapi_schema["servers"] = [
-        {
-            "url": "https://api.seohealthreport.com",
-            "description": "Production server"
-        },
-        {
-            "url": "https://staging-api.seohealthreport.com",
-            "description": "Staging server"
-        },
-        {
-            "url": "http://localhost:8000",
-            "description": "Local development"
-        }
+        {"url": "https://api.seohealthreport.com", "description": "Production server"},
+        {"url": "https://staging-api.seohealthreport.com", "description": "Staging server"},
+        {"url": "http://localhost:8000", "description": "Local development"},
     ]
 
     # Add contact and license info
     openapi_schema["info"]["contact"] = {
         "name": "RaapTech API Support",
         "url": "https://raaptech.com/support",
-        "email": "api-support@raaptech.com"
+        "email": "api-support@raaptech.com",
     }
     openapi_schema["info"]["license"] = {
         "name": "Proprietary",
-        "url": "https://seohealthreport.com/terms"
+        "url": "https://seohealthreport.com/terms",
     }
 
     # Add external docs link
     openapi_schema["externalDocs"] = {
         "description": "Full API Documentation",
-        "url": "https://docs.seohealthreport.com"
+        "url": "https://docs.seohealthreport.com",
     }
 
     app.openapi_schema = openapi_schema
@@ -425,6 +415,8 @@ def get_custom_openapi_function(app: FastAPI):
     Returns a function that generates the custom OpenAPI schema.
     Use this to set app.openapi = get_custom_openapi_function(app)
     """
+
     def custom_openapi():
         return create_custom_openapi(app)
+
     return custom_openapi

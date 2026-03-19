@@ -14,9 +14,7 @@ from enum import Enum
 from typing import Any, Optional
 
 # Add parent directory to path for config import
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 try:
     from seo_health_report.config import get_config
@@ -25,10 +23,13 @@ except ImportError:
     try:
         from mock_config import get_config
     except ImportError:
+
         def get_config():
             class MockConfig:
                 anthropic_model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
+
             return MockConfig()
+
 
 # Cache imports with fallback
 try:
@@ -243,9 +244,7 @@ def generate_test_queries(
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-async def query_claude(
-    query: str, brand_name: str, api_key: Optional[str] = None
-) -> AIResponse:
+async def query_claude(query: str, brand_name: str, api_key: Optional[str] = None) -> AIResponse:
     """
     Query Claude (Anthropic) API.
 
@@ -354,9 +353,7 @@ async def query_claude(
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-async def query_openai(
-    query: str, brand_name: str, api_key: Optional[str] = None
-) -> AIResponse:
+async def query_openai(query: str, brand_name: str, api_key: Optional[str] = None) -> AIResponse:
     """
     Query OpenAI (ChatGPT) API.
 
@@ -472,9 +469,7 @@ async def query_openai(
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-async def query_xai(
-    query: str, brand_name: str, api_key: Optional[str] = None
-) -> AIResponse:
+async def query_xai(query: str, brand_name: str, api_key: Optional[str] = None) -> AIResponse:
     """
     Query xAI (Grok) API.
 
@@ -712,9 +707,7 @@ async def query_perplexity(
 
 
 @cached("ai_responses", TTL_AI_RESPONSE)
-async def query_gemini(
-    query: str, brand_name: str, api_key: Optional[str] = None
-) -> AIResponse:
+async def query_gemini(query: str, brand_name: str, api_key: Optional[str] = None) -> AIResponse:
     """
     Query Google Gemini API.
 
@@ -752,13 +745,8 @@ async def query_gemini(
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
         data = {
-            "contents": [{
-                "parts": [{"text": query}]
-            }],
-            "generationConfig": {
-                "maxOutputTokens": 1024,
-                "temperature": 0.7
-            }
+            "contents": [{"parts": [{"text": query}]}],
+            "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.7},
         }
 
         async with httpx.AsyncClient(timeout=60) as client:

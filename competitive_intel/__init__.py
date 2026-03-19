@@ -24,6 +24,7 @@ try:
         generate_premium_executive_summary,
         generate_premium_executive_summary_sync,
     )
+
     HAS_MARKET_INTEL = True
 except ImportError as e:
     print(f"Warning: Market intelligence module not available: {e}")
@@ -35,33 +36,35 @@ from .models import ComparisonMatrix, CompetitiveAnalysis, TalkingPoint
 
 __all__ = [
     # Existing exports
-    'CompetitiveAnalyzer',
-    'analyzer',
-    'GapAnalyzer',
-    'gap_analyzer',
-    'CompetitiveAnalysis',
-    'ComparisonMatrix',
-    'TalkingPoint',
-    'HAS_MARKET_INTEL',
+    "CompetitiveAnalyzer",
+    "analyzer",
+    "GapAnalyzer",
+    "gap_analyzer",
+    "CompetitiveAnalysis",
+    "ComparisonMatrix",
+    "TalkingPoint",
+    "HAS_MARKET_INTEL",
 ]
 
 # Add market intelligence exports if available
 if HAS_MARKET_INTEL:
-    __all__.extend([
-        'IndustryClassification',
-        'DiscoveredCompetitor',
-        'MarketLandscape',
-        'CompetitorBenchmark',
-        'MarketBenchmarkReport',
-        'INDUSTRY_TAXONOMY',
-        'classify_industry',
-        'discover_competitors',
-        'analyze_market_landscape',
-        'benchmark_against_competitors',
-        'generate_premium_executive_summary',
-        'classify_industry_sync',
-        'discover_competitors_sync',
-        'analyze_market_landscape_sync',
-        'benchmark_against_competitors_sync',
-        'generate_premium_executive_summary_sync',
-    ])
+    __all__.extend(
+        [
+            "IndustryClassification",
+            "DiscoveredCompetitor",
+            "MarketLandscape",
+            "CompetitorBenchmark",
+            "MarketBenchmarkReport",
+            "INDUSTRY_TAXONOMY",
+            "classify_industry",
+            "discover_competitors",
+            "analyze_market_landscape",
+            "benchmark_against_competitors",
+            "generate_premium_executive_summary",
+            "classify_industry_sync",
+            "discover_competitors_sync",
+            "analyze_market_landscape_sync",
+            "benchmark_against_competitors_sync",
+            "generate_premium_executive_summary_sync",
+        ]
+    )

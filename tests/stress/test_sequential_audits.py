@@ -1,4 +1,5 @@
 """Stress test: 20 sequential audits without manual intervention."""
+
 import os
 import sys
 import time
@@ -34,6 +35,7 @@ def stress_client():
     os.environ["DATABASE_URL"] = "sqlite:///./test_stress.db"
 
     import database
+
     database.engine.dispose()
     database.engine = database.create_engine(
         "sqlite:///./test_stress.db",
@@ -69,6 +71,7 @@ def stress_client():
         from fastapi.testclient import TestClient
 
         from apps.api.main import app
+
         yield TestClient(app)
 
     for p in patches:

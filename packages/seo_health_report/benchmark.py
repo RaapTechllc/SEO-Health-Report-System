@@ -81,9 +81,7 @@ def measure_baseline(
         }
 
 
-def compare_with_async(
-    baseline_time: float, current_time: float, mode: str = "async"
-) -> dict:
+def compare_with_async(baseline_time: float, current_time: float, mode: str = "async") -> dict:
     """
     Compare async performance with baseline.
 
@@ -113,23 +111,15 @@ def compare_with_async(
 
 def main():
     """CLI entry point for benchmarking."""
-    parser = argparse.ArgumentParser(
-        description="Benchmark SEO Health Report performance"
-    )
+    parser = argparse.ArgumentParser(description="Benchmark SEO Health Report performance")
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Baseline command
-    baseline_parser = subparsers.add_parser(
-        "baseline", help="Measure baseline sync performance"
-    )
-    baseline_parser.add_argument(
-        "--url", default="https://example.com", help="URL to audit"
-    )
+    baseline_parser = subparsers.add_parser("baseline", help="Measure baseline sync performance")
+    baseline_parser.add_argument("--url", default="https://example.com", help="URL to audit")
     baseline_parser.add_argument("--company", default="Test Corp", help="Company name")
-    baseline_parser.add_argument(
-        "--keywords", default="test", help="Comma-separated keywords"
-    )
+    baseline_parser.add_argument("--keywords", default="test", help="Comma-separated keywords")
 
     # Compare command
     compare_parser = subparsers.add_parser("compare", help="Compare with baseline")
@@ -139,26 +129,20 @@ def main():
     compare_parser.add_argument(
         "--current", required=True, type=float, help="Current time in seconds"
     )
-    compare_parser.add_argument(
-        "--mode", default="async", help="Current mode (default: async)"
-    )
+    compare_parser.add_argument("--mode", default="async", help="Current mode (default: async)")
 
     args = parser.parse_args()
 
     if args.command == "baseline":
         keywords = [k.strip() for k in args.keywords.split(",")]
-        result = measure_baseline(
-            url=args.url, company_name=args.company, keywords=keywords
-        )
+        result = measure_baseline(url=args.url, company_name=args.company, keywords=keywords)
         print("\n[INFO] Save baseline time for comparison:")
         print(
             f"   python -m seo_health_report.benchmark compare --baseline {result['execution_time']:.2f} --current <NEW_TIME>\n"
         )
 
     elif args.command == "compare":
-        compare_with_async(
-            baseline_time=args.baseline, current_time=args.current, mode=args.mode
-        )
+        compare_with_async(baseline_time=args.baseline, current_time=args.current, mode=args.mode)
 
     else:
         parser.print_help()

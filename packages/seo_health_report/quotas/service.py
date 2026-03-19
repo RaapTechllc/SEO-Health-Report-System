@@ -10,7 +10,14 @@ from typing import Optional
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))))
+sys.path.insert(
+    0,
+    os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        )
+    ),
+)
 
 from database import Audit, TenantQuota
 
@@ -53,9 +60,7 @@ class QuotaService:
 
     def get_or_create_quota(self, tenant_id: str, tier: str = "basic") -> TenantQuota:
         """Get or create quota for tenant with tier defaults."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if quota:
             return quota
@@ -81,10 +86,12 @@ class QuotaService:
 
     def _get_concurrent_audit_count(self, tenant_id: str) -> int:
         """Get count of currently running audits for tenant."""
-        return self.db.query(func.count(Audit.id)).filter(
-            Audit.tenant_id == tenant_id,
-            Audit.status.in_(["pending", "running"])
-        ).scalar() or 0
+        return (
+            self.db.query(func.count(Audit.id))
+            .filter(Audit.tenant_id == tenant_id, Audit.status.in_(["pending", "running"]))
+            .scalar()
+            or 0
+        )
 
     def _calculate_reset_date(self, billing_cycle_start: Optional[datetime]) -> datetime:
         """Calculate the next billing cycle reset date."""
@@ -104,9 +111,7 @@ class QuotaService:
 
     def check_quota(self, tenant_id: str) -> QuotaStatus:
         """Check if tenant can start a new audit."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             quota = self.get_or_create_quota(tenant_id)
@@ -115,7 +120,8 @@ class QuotaService:
 
         is_unlimited = quota.monthly_audits_limit == -1
         monthly_remaining = (
-            float('inf') if is_unlimited
+            float("inf")
+            if is_unlimited
             else max(0, quota.monthly_audits_limit - quota.monthly_audits_used)
         )
 
@@ -127,7 +133,9 @@ class QuotaService:
             quota_exceeded_reason = f"Monthly audit limit reached ({quota.monthly_audits_limit})"
         elif concurrent_count >= quota.max_concurrent_audits:
             can_start = False
-            quota_exceeded_reason = f"Concurrent audit limit reached ({quota.max_concurrent_audits})"
+            quota_exceeded_reason = (
+                f"Concurrent audit limit reached ({quota.max_concurrent_audits})"
+            )
 
         reset_date = self._calculate_reset_date(quota.billing_cycle_start)
 
@@ -144,9 +152,7 @@ class QuotaService:
 
     def increment_usage(self, tenant_id: str) -> None:
         """Increment monthly audit usage."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             quota = self.get_or_create_quota(tenant_id)
@@ -165,9 +171,7 @@ class QuotaService:
 
     def check_page_limit(self, tenant_id: str, page_count: int) -> bool:
         """Check if page count is within limit."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             quota = self.get_or_create_quota(tenant_id)
@@ -176,9 +180,7 @@ class QuotaService:
 
     def check_ai_prompt_limit(self, tenant_id: str, prompt_count: int) -> bool:
         """Check if AI prompt count is within limit."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             quota = self.get_or_create_quota(tenant_id)
@@ -187,9 +189,7 @@ class QuotaService:
 
     def get_page_limit(self, tenant_id: str) -> int:
         """Get the page limit for a tenant."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             quota = self.get_or_create_quota(tenant_id)
@@ -198,9 +198,7 @@ class QuotaService:
 
     def get_ai_prompt_limit(self, tenant_id: str) -> int:
         """Get the AI prompt limit for a tenant."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             quota = self.get_or_create_quota(tenant_id)
@@ -209,9 +207,7 @@ class QuotaService:
 
     def reset_monthly_usage(self, tenant_id: str) -> None:
         """Reset monthly usage (called on billing cycle)."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             return
@@ -223,9 +219,7 @@ class QuotaService:
 
     def update_tier(self, tenant_id: str, tier: str) -> TenantQuota:
         """Update quota limits based on new tier."""
-        quota = self.db.query(TenantQuota).filter(
-            TenantQuota.tenant_id == tenant_id
-        ).first()
+        quota = self.db.query(TenantQuota).filter(TenantQuota.tenant_id == tenant_id).first()
 
         if not quota:
             return self.get_or_create_quota(tenant_id, tier)

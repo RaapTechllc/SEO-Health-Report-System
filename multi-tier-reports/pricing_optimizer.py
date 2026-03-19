@@ -7,9 +7,10 @@ from models import ReportTier, TierRecommendation
 try:
     from packages.core.formatting import pluralize
 except ImportError:
+
     def pluralize(value, singular, plural=None):
         if plural is None:
-            plural = singular + 's'
+            plural = singular + "s"
         return singular if value == 1 else plural
 
 
@@ -22,18 +23,19 @@ class PricingOptimizer:
             "competitor_pricing": {
                 "basic_seo_audit": {"min": 500, "max": 2000, "avg": 1200},
                 "comprehensive_audit": {"min": 2000, "max": 8000, "avg": 4500},
-                "enterprise_audit": {"min": 5000, "max": 15000, "avg": 9000}
+                "enterprise_audit": {"min": 5000, "max": 15000, "avg": 9000},
             },
             "value_multipliers": {
                 "ai_visibility": 1.3,  # 30% premium for AI focus
                 "competitive_analysis": 1.2,  # 20% premium for competitive intel
                 "custom_branding": 1.15,  # 15% premium for branding
-                "ongoing_monitoring": 1.25  # 25% premium for monitoring
-            }
+                "ongoing_monitoring": 1.25,  # 25% premium for monitoring
+            },
         }
 
-    def optimize_pricing(self, tier_recommendation: TierRecommendation,
-                        market_context: dict[str, Any] = None) -> dict[str, Any]:
+    def optimize_pricing(
+        self, tier_recommendation: TierRecommendation, market_context: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """Optimize pricing based on tier, complexity, and market context."""
 
         try:
@@ -57,7 +59,7 @@ class PricingOptimizer:
                 "value_proposition": value_prop,
                 "pricing_strategy": strategy,
                 "competitive_positioning": self._get_competitive_positioning(tier, market_adjusted),
-                "upsell_opportunities": self._identify_upsell_opportunities(tier, complexity)
+                "upsell_opportunities": self._identify_upsell_opportunities(tier, complexity),
             }
 
         except Exception as e:
@@ -70,7 +72,7 @@ class PricingOptimizer:
         base_prices = {
             ReportTier.BASIC: {"base": 800, "min": 500, "max": 1500},
             ReportTier.PRO: {"base": 2500, "min": 1500, "max": 4000},
-            ReportTier.ENTERPRISE: {"base": 6000, "min": 4000, "max": 10000}
+            ReportTier.ENTERPRISE: {"base": 6000, "min": 4000, "max": 10000},
         }
 
         tier_pricing = base_prices[tier]
@@ -82,14 +84,11 @@ class PricingOptimizer:
         adjusted_min = max(tier_pricing["min"], int(adjusted_base * 0.8))
         adjusted_max = min(tier_pricing["max"], int(adjusted_base * 1.3))
 
-        return {
-            "recommended": adjusted_base,
-            "min": adjusted_min,
-            "max": adjusted_max
-        }
+        return {"recommended": adjusted_base, "min": adjusted_min, "max": adjusted_max}
 
-    def _apply_market_adjustments(self, base_pricing: dict[str, int],
-                                 market_context: Optional[dict[str, Any]]) -> dict[str, int]:
+    def _apply_market_adjustments(
+        self, base_pricing: dict[str, int], market_context: Optional[dict[str, Any]]
+    ) -> dict[str, int]:
         """Apply market-based pricing adjustments."""
 
         if not market_context:
@@ -120,11 +119,12 @@ class PricingOptimizer:
         return {
             "recommended": int(base_pricing["recommended"] * multiplier),
             "min": int(base_pricing["min"] * multiplier),
-            "max": int(base_pricing["max"] * multiplier)
+            "max": int(base_pricing["max"] * multiplier),
         }
 
-    def _calculate_value_proposition(self, tier: ReportTier, complexity: int,
-                                   pricing: dict[str, int]) -> dict[str, Any]:
+    def _calculate_value_proposition(
+        self, tier: ReportTier, complexity: int, pricing: dict[str, int]
+    ) -> dict[str, Any]:
         """Calculate value proposition for the pricing."""
 
         # Estimate potential traffic/revenue impact
@@ -155,27 +155,34 @@ class PricingOptimizer:
             "estimated_monthly_revenue_increase": monthly_revenue_increase,
             "estimated_annual_revenue_increase": annual_revenue_increase,
             "roi_multiple": roi_multiple,
-            "payback_period_months": pricing["recommended"] / monthly_revenue_increase if monthly_revenue_increase > 0 else 12,
-            "implementation_timeline_days": implementation_time
+            "payback_period_months": pricing["recommended"] / monthly_revenue_increase
+            if monthly_revenue_increase > 0
+            else 12,
+            "implementation_timeline_days": implementation_time,
         }
 
-    def _generate_pricing_strategy(self, tier: ReportTier, pricing: dict[str, int],
-                                  value_prop: dict[str, Any]) -> dict[str, Any]:
+    def _generate_pricing_strategy(
+        self, tier: ReportTier, pricing: dict[str, int], value_prop: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate pricing strategy and messaging."""
 
         strategy = {
             "anchor_price": pricing["max"],  # Start high
             "recommended_price": pricing["recommended"],
             "minimum_acceptable": pricing["min"],
-            "negotiation_room": pricing["recommended"] - pricing["min"]
+            "negotiation_room": pricing["recommended"] - pricing["min"],
         }
 
         # Pricing justification
         if value_prop["roi_multiple"] > 5:
-            strategy["justification"] = f"Delivers {value_prop['roi_multiple']:.1f}x ROI - exceptional value"
+            strategy["justification"] = (
+                f"Delivers {value_prop['roi_multiple']:.1f}x ROI - exceptional value"
+            )
         elif value_prop["roi_multiple"] > 3:
-            payback_months = int(value_prop['payback_period_months'])
-            strategy["justification"] = f"Strong {value_prop['roi_multiple']:.1f}x ROI with {payback_months} {pluralize(payback_months, 'month')} payback"
+            payback_months = int(value_prop["payback_period_months"])
+            strategy["justification"] = (
+                f"Strong {value_prop['roi_multiple']:.1f}x ROI with {payback_months} {pluralize(payback_months, 'month')} payback"
+            )
         else:
             strategy["justification"] = "Comprehensive analysis with measurable business impact"
 
@@ -183,27 +190,35 @@ class PricingOptimizer:
         strategy["tactics"] = []
 
         if tier == ReportTier.BASIC:
-            strategy["tactics"].extend([
-                "Position as 'essential SEO foundation'",
-                "Emphasize quick wins and immediate fixes",
-                "Compare to cost of hiring SEO consultant ($150/hour)"
-            ])
+            strategy["tactics"].extend(
+                [
+                    "Position as 'essential SEO foundation'",
+                    "Emphasize quick wins and immediate fixes",
+                    "Compare to cost of hiring SEO consultant ($150/hour)",
+                ]
+            )
         elif tier == ReportTier.PRO:
-            strategy["tactics"].extend([
-                "Lead with AI visibility differentiator",
-                "Emphasize competitive advantage",
-                "Compare to traditional agency retainer ($3K-5K/month)"
-            ])
+            strategy["tactics"].extend(
+                [
+                    "Lead with AI visibility differentiator",
+                    "Emphasize competitive advantage",
+                    "Compare to traditional agency retainer ($3K-5K/month)",
+                ]
+            )
         else:  # Enterprise
-            strategy["tactics"].extend([
-                "Focus on executive-level insights",
-                "Emphasize custom branding and presentation",
-                "Compare to enterprise consulting ($10K-20K projects)"
-            ])
+            strategy["tactics"].extend(
+                [
+                    "Focus on executive-level insights",
+                    "Emphasize custom branding and presentation",
+                    "Compare to enterprise consulting ($10K-20K projects)",
+                ]
+            )
 
         return strategy
 
-    def _get_competitive_positioning(self, tier: ReportTier, pricing: dict[str, int]) -> dict[str, Any]:
+    def _get_competitive_positioning(
+        self, tier: ReportTier, pricing: dict[str, int]
+    ) -> dict[str, Any]:
         """Get competitive positioning for the pricing."""
 
         market_avg = self.market_data["competitor_pricing"]
@@ -228,58 +243,62 @@ class PricingOptimizer:
                 "Real-time competitive monitoring",
                 "AI search optimization (ChatGPT, Claude, Perplexity)",
                 "Automated battlecard generation",
-                "ROI projections with business impact"
-            ]
+                "ROI projections with business impact",
+            ],
         }
 
-    def _identify_upsell_opportunities(self, tier: ReportTier, complexity: int) -> list[dict[str, Any]]:
+    def _identify_upsell_opportunities(
+        self, tier: ReportTier, complexity: int
+    ) -> list[dict[str, Any]]:
         """Identify upsell opportunities."""
 
         opportunities = []
 
         # Add-on services
-        opportunities.extend([
-            {
-                "service": "Ongoing Monitoring Setup",
-                "price": 500,
-                "description": "3-month competitive monitoring with alerts",
-                "roi": "Catch competitive threats before they impact rankings"
-            },
-            {
-                "service": "Implementation Support",
-                "price": 1000,
-                "description": "30-day implementation guidance and support",
-                "roi": "Ensure recommendations are properly executed"
-            }
-        ])
+        opportunities.extend(
+            [
+                {
+                    "service": "Ongoing Monitoring Setup",
+                    "price": 500,
+                    "description": "3-month competitive monitoring with alerts",
+                    "roi": "Catch competitive threats before they impact rankings",
+                },
+                {
+                    "service": "Implementation Support",
+                    "price": 1000,
+                    "description": "30-day implementation guidance and support",
+                    "roi": "Ensure recommendations are properly executed",
+                },
+            ]
+        )
 
         # Tier upgrades
         if tier == ReportTier.BASIC and complexity > 40:
-            opportunities.append({
-                "service": "Upgrade to Pro",
-                "price": 1500,
-                "description": "Add AI visibility analysis and competitive benchmarking",
-                "roi": "AI optimization typically increases traffic by 20-40%"
-            })
+            opportunities.append(
+                {
+                    "service": "Upgrade to Pro",
+                    "price": 1500,
+                    "description": "Add AI visibility analysis and competitive benchmarking",
+                    "roi": "AI optimization typically increases traffic by 20-40%",
+                }
+            )
 
         if tier in [ReportTier.BASIC, ReportTier.PRO] and complexity > 60:
-            opportunities.append({
-                "service": "Enterprise Features",
-                "price": 2500,
-                "description": "Custom branding, executive presentation, ROI projections",
-                "roi": "Executive-ready materials for securing SEO budget approval"
-            })
+            opportunities.append(
+                {
+                    "service": "Enterprise Features",
+                    "price": 2500,
+                    "description": "Custom branding, executive presentation, ROI projections",
+                    "roi": "Executive-ready materials for securing SEO budget approval",
+                }
+            )
 
         return opportunities
 
     def _get_default_pricing(self, tier: ReportTier) -> dict[str, Any]:
         """Get default pricing if optimization fails."""
 
-        defaults = {
-            ReportTier.BASIC: 800,
-            ReportTier.PRO: 2500,
-            ReportTier.ENTERPRISE: 6000
-        }
+        defaults = {ReportTier.BASIC: 800, ReportTier.PRO: 2500, ReportTier.ENTERPRISE: 6000}
 
         price = defaults[tier]
 
@@ -287,16 +306,14 @@ class PricingOptimizer:
             "recommended_pricing": {
                 "recommended": price,
                 "min": int(price * 0.8),
-                "max": int(price * 1.3)
+                "max": int(price * 1.3),
             },
-            "value_proposition": {
-                "roi_multiple": 3.0,
-                "payback_period_months": 6
-            },
+            "value_proposition": {"roi_multiple": 3.0, "payback_period_months": 6},
             "pricing_strategy": {
                 "justification": "Standard market pricing for comprehensive SEO analysis"
-            }
+            },
         }
+
 
 # Global pricing optimizer
 pricing_optimizer = PricingOptimizer()

@@ -1,4 +1,5 @@
 """Typography scale for premium reports."""
+
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 
@@ -30,7 +31,6 @@ def get_report_styles() -> dict:
             textColor=ReportColors.text_primary,
             fontName="Helvetica-Bold",
         ),
-
         # Subsection - H2 equivalent
         "SubSection": ParagraphStyle(
             "SubSection",
@@ -42,7 +42,6 @@ def get_report_styles() -> dict:
             textColor=ReportColors.text_primary,
             fontName="Helvetica-Bold",
         ),
-
         # H3 equivalent
         "Heading3": ParagraphStyle(
             "Heading3",
@@ -54,7 +53,6 @@ def get_report_styles() -> dict:
             textColor=ReportColors.text_primary,
             fontName="Helvetica-Bold",
         ),
-
         # Body text
         "BodyText": ParagraphStyle(
             "BodyText",
@@ -65,7 +63,6 @@ def get_report_styles() -> dict:
             textColor=ReportColors.text_secondary,
             alignment=TA_JUSTIFY,
         ),
-
         # Caption/metadata
         "Caption": ParagraphStyle(
             "Caption",
@@ -75,7 +72,6 @@ def get_report_styles() -> dict:
             spaceAfter=TYPOGRAPHY["caption"]["spaceAfter"],
             textColor=ReportColors.text_muted,
         ),
-
         # Finding item (bullet point style)
         "Finding": ParagraphStyle(
             "Finding",
@@ -86,7 +82,6 @@ def get_report_styles() -> dict:
             leftIndent=15,
             textColor=ReportColors.text_secondary,
         ),
-
         # Centered text
         "Centered": ParagraphStyle(
             "Centered",

@@ -5,6 +5,7 @@ Revises: 002_audit_jobs
 Create Date: 2025-01-18
 
 """
+
 from collections.abc import Sequence
 from typing import Union
 
@@ -30,18 +31,16 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
         sa.CheckConstraint(
             "event_type IN ('status_changed', 'step_started', 'step_done', 'warning', 'error', 'metric')",
-            name="ck_event_type_valid"
+            name="ck_event_type_valid",
         ),
         sa.CheckConstraint(
             "progress_pct IS NULL OR (progress_pct >= 0 AND progress_pct <= 100)",
-            name="ck_progress_pct_range"
+            name="ck_progress_pct_range",
         ),
     )
 
     op.create_index(
-        "idx_events_audit_timeline",
-        "audit_progress_events",
-        ["audit_id", "created_at"]
+        "idx_events_audit_timeline", "audit_progress_events", ["audit_id", "created_at"]
     )
 
 

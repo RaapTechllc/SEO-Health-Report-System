@@ -12,6 +12,7 @@ from typing import Any, Optional
 
 class Severity(str, Enum):
     """Issue severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -20,6 +21,7 @@ class Severity(str, Enum):
 
 class Priority(str, Enum):
     """Recommendation priority levels."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -27,6 +29,7 @@ class Priority(str, Enum):
 
 class Effort(str, Enum):
     """Implementation effort levels."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -34,6 +37,7 @@ class Effort(str, Enum):
 
 class Grade(str, Enum):
     """Score grade mapping."""
+
     A = "A"
     B = "B"
     C = "C"
@@ -44,6 +48,7 @@ class Grade(str, Enum):
 
 class AuditStatus(str, Enum):
     """Audit execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -54,6 +59,7 @@ class AuditStatus(str, Enum):
 @dataclass
 class Issue:
     """Represents a single audit issue."""
+
     description: str
     severity: Severity = Severity.MEDIUM
     source: str = ""
@@ -64,7 +70,9 @@ class Issue:
     def to_dict(self) -> dict[str, Any]:
         return {
             "description": self.description,
-            "severity": self.severity.value if isinstance(self.severity, Severity) else self.severity,
+            "severity": self.severity.value
+            if isinstance(self.severity, Severity)
+            else self.severity,
             "source": self.source,
             "category": self.category,
             "url": self.url,
@@ -75,6 +83,7 @@ class Issue:
 @dataclass
 class Recommendation:
     """Represents a single recommendation."""
+
     action: str
     priority: Priority = Priority.MEDIUM
     impact: str = "medium"
@@ -86,7 +95,9 @@ class Recommendation:
     def to_dict(self) -> dict[str, Any]:
         return {
             "action": self.action,
-            "priority": self.priority.value if isinstance(self.priority, Priority) else self.priority,
+            "priority": self.priority.value
+            if isinstance(self.priority, Priority)
+            else self.priority,
             "impact": self.impact,
             "effort": self.effort.value if isinstance(self.effort, Effort) else self.effort,
             "source": self.source,
@@ -98,6 +109,7 @@ class Recommendation:
 @dataclass
 class ComponentScore:
     """Score for a single audit component."""
+
     name: str
     score: int
     max_score: int = 100
@@ -124,6 +136,7 @@ class ComponentScore:
 @dataclass
 class AuditResult:
     """Result from a single audit type."""
+
     audit_type: str
     score: Optional[int] = None
     grade: Grade = Grade.NA
@@ -153,6 +166,7 @@ class AuditResult:
 @dataclass
 class CompetitorData:
     """Competitor analysis data."""
+
     url: str
     name: str
     domain: str
@@ -174,6 +188,7 @@ class CompetitorData:
 @dataclass
 class FullAuditResult:
     """Complete audit result with all three audit types."""
+
     url: str
     company_name: str
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -192,7 +207,9 @@ class FullAuditResult:
             "company_name": self.company_name,
             "timestamp": self.timestamp,
             "overall_score": self.overall_score,
-            "overall_grade": self.overall_grade.value if isinstance(self.overall_grade, Grade) else self.overall_grade,
+            "overall_grade": self.overall_grade.value
+            if isinstance(self.overall_grade, Grade)
+            else self.overall_grade,
             "audits": {k: v.to_dict() for k, v in self.audits.items()},
             "competitors": [c.to_dict() for c in self.competitors],
             "quick_wins": [r.to_dict() for r in self.quick_wins],
@@ -205,6 +222,7 @@ class FullAuditResult:
 @dataclass
 class ReportConfig:
     """Configuration for report generation."""
+
     output_format: str = "pdf"
     include_competitors: bool = True
     include_recommendations: bool = True
@@ -234,7 +252,7 @@ def calculate_composite_score(
     technical: Optional[int],
     content: Optional[int],
     ai_visibility: Optional[int],
-    weights: dict[str, float] = None
+    weights: dict[str, float] = None,
 ) -> Optional[int]:
     """
     Calculate weighted composite score.

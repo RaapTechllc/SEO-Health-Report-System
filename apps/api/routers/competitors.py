@@ -15,6 +15,7 @@ router = APIRouter(prefix="/competitors", tags=["competitors"])
 
 class CompetitorRequest(BaseModel):
     """Request model for adding a competitor to monitor."""
+
     url: str
     company_name: str
     monitoring_frequency: int = 3600
@@ -26,7 +27,7 @@ class CompetitorRequest(BaseModel):
                 "url": "https://competitor.com",
                 "company_name": "Competitor Inc",
                 "monitoring_frequency": 3600,
-                "alert_threshold": 10
+                "alert_threshold": 10,
             }
         }
 
@@ -38,14 +39,10 @@ class CompetitorRequest(BaseModel):
     responses={
         200: {
             "description": "Competitor added",
-            "content": {
-                "application/json": {
-                    "example": COMPETITOR_EXAMPLE
-                }
-            }
+            "content": {"application/json": {"example": COMPETITOR_EXAMPLE}},
         },
         422: ERROR_RESPONSES[422],
-    }
+    },
 )
 async def add_competitor(
     request: CompetitorRequest,
@@ -72,7 +69,7 @@ async def add_competitor(
         "company_name": request.company_name,
         "monitoring_frequency": request.monitoring_frequency,
         "alert_threshold": request.alert_threshold,
-        "created_at": competitor.created_at.isoformat()
+        "created_at": competitor.created_at.isoformat(),
     }
 
 
@@ -83,15 +80,9 @@ async def add_competitor(
     responses={
         200: {
             "description": "List of competitors",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "competitors": [COMPETITOR_EXAMPLE]
-                    }
-                }
-            }
+            "content": {"application/json": {"example": {"competitors": [COMPETITOR_EXAMPLE]}}},
         }
-    }
+    },
 )
 async def list_competitors(
     user: User = Depends(require_auth),
@@ -100,12 +91,18 @@ async def list_competitors(
     """List monitored competitors for the authenticated user."""
     competitors = db.query(Competitor).filter(Competitor.user_id == user.id).all()
     return {
-        "competitors": [{
-            "competitor_id": c.id, "url": c.url, "company_name": c.company_name,
-            "monitoring_frequency": c.monitoring_frequency, "alert_threshold": c.alert_threshold,
-            "last_score": c.last_score,
-            "last_audit_at": c.last_audit_at.isoformat() if c.last_audit_at else None
-        } for c in competitors]
+        "competitors": [
+            {
+                "competitor_id": c.id,
+                "url": c.url,
+                "company_name": c.company_name,
+                "monitoring_frequency": c.monitoring_frequency,
+                "alert_threshold": c.alert_threshold,
+                "last_score": c.last_score,
+                "last_audit_at": c.last_audit_at.isoformat() if c.last_audit_at else None,
+            }
+            for c in competitors
+        ]
     }
 
 
@@ -116,7 +113,7 @@ async def list_competitors(
     responses={
         200: {"description": "Competitor removed"},
         404: ERROR_RESPONSES[404],
-    }
+    },
 )
 async def delete_competitor(
     competitor_id: str,
@@ -124,10 +121,14 @@ async def delete_competitor(
     db: Session = Depends(get_db),
 ):
     """Remove a competitor from monitoring."""
-    competitor = db.query(Competitor).filter(
-        Competitor.id == competitor_id,
-        Competitor.user_id == user.id,
-    ).first()
+    competitor = (
+        db.query(Competitor)
+        .filter(
+            Competitor.id == competitor_id,
+            Competitor.user_id == user.id,
+        )
+        .first()
+    )
     if not competitor:
         raise HTTPException(status_code=404, detail="Competitor not found")
     db.delete(competitor)

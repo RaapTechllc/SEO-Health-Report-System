@@ -219,21 +219,25 @@ def send_slack_alert(webhook_url: str, summary: MetricsSummary) -> bool:
     ]
 
     if summary.issues:
-        fields.append({
-            "title": "Issues",
-            "value": "\n".join(f"• {issue}" for issue in summary.issues),
-            "short": False,
-        })
+        fields.append(
+            {
+                "title": "Issues",
+                "value": "\n".join(f"• {issue}" for issue in summary.issues),
+                "short": False,
+            }
+        )
 
     payload = {
-        "attachments": [{
-            "color": color,
-            "title": "Post-Deploy Metrics Check",
-            "title_link": summary.url,
-            "fields": fields,
-            "footer": "Post-Deploy Monitor",
-            "ts": int(datetime.now(timezone.utc).timestamp()),
-        }]
+        "attachments": [
+            {
+                "color": color,
+                "title": "Post-Deploy Metrics Check",
+                "title_link": summary.url,
+                "fields": fields,
+                "footer": "Post-Deploy Monitor",
+                "ts": int(datetime.now(timezone.utc).timestamp()),
+            }
+        ]
     }
 
     try:
@@ -262,21 +266,25 @@ def send_discord_alert(webhook_url: str, summary: MetricsSummary) -> bool:
     ]
 
     if summary.issues:
-        fields.append({
-            "name": "Issues",
-            "value": "\n".join(f"• {issue}" for issue in summary.issues),
-            "inline": False,
-        })
+        fields.append(
+            {
+                "name": "Issues",
+                "value": "\n".join(f"• {issue}" for issue in summary.issues),
+                "inline": False,
+            }
+        )
 
     payload = {
-        "embeds": [{
-            "title": "Post-Deploy Metrics Check",
-            "url": summary.url,
-            "color": color,
-            "fields": fields,
-            "footer": {"text": "Post-Deploy Monitor"},
-            "timestamp": summary.timestamp,
-        }]
+        "embeds": [
+            {
+                "title": "Post-Deploy Metrics Check",
+                "url": summary.url,
+                "color": color,
+                "fields": fields,
+                "footer": {"text": "Post-Deploy Monitor"},
+                "timestamp": summary.timestamp,
+            }
+        ]
     }
 
     try:
@@ -313,7 +321,9 @@ def print_summary(summary: MetricsSummary, use_color: bool = True) -> None:
 
     # Error rate
     error_status = f"{GREEN}✓{RESET}" if summary.error_rate_ok else f"{RED}✗{RESET}"
-    print(f"  Error Rate: {summary.error_rate:.2f}% {error_status} (threshold: {summary.error_rate_threshold}%)")
+    print(
+        f"  Error Rate: {summary.error_rate:.2f}% {error_status} (threshold: {summary.error_rate_threshold}%)"
+    )
     print(f"  Total Requests: {summary.total_requests}")
     print(f"  Error Requests (5xx): {summary.error_requests}")
     print()
@@ -359,7 +369,7 @@ Environment Variables:
   SLACK_WEBHOOK_URL     Slack webhook for alerts
   DISCORD_WEBHOOK_URL   Discord webhook for alerts
   ERROR_RATE_THRESHOLD  Default error rate threshold (default: 5.0)
-        """
+        """,
     )
 
     parser.add_argument(

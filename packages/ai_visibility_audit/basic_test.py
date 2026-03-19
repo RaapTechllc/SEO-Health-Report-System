@@ -20,7 +20,7 @@ def test_basic_functionality():
     queries = [
         TestQuery("What is Tesla?", QueryCategory.BRAND),
         TestQuery("Best electric vehicles", QueryCategory.PRODUCT),
-        TestQuery("Tesla vs BMW", QueryCategory.COMPARISON)
+        TestQuery("Tesla vs BMW", QueryCategory.COMPARISON),
     ]
 
     print(f"Created {len(queries)} test queries")
@@ -39,7 +39,7 @@ def test_basic_functionality():
         total_mentions=50,
         share_percentage=20.0,
         rank=2,
-        competitors={"BMW": 15, "Mercedes": 12}
+        competitors={"BMW": 15, "Mercedes": 12},
     )
     assert sov.share_percentage == 20.0
     print("Share of voice calculations working")
@@ -51,7 +51,7 @@ def test_basic_functionality():
         title="Low AI Visibility",
         description="Brand mentioned in only 40% of responses",
         recommendation="Optimize content for AI consumption",
-        impact="Increase brand visibility"
+        impact="Increase brand visibility",
     )
     assert insight.priority == "high"
     print("Insight generation working")
@@ -68,6 +68,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Any
 
 # Load branding prompt
-BRANDING_PROMPT_PATH = Path(__file__).parent.parent.parent / ".kiro" / "prompts" / "raaptech-report-writer.md"
+BRANDING_PROMPT_PATH = (
+    Path(__file__).parent.parent.parent / ".kiro" / "prompts" / "raaptech-report-writer.md"
+)
 
 
 def load_branding_prompt() -> str:
@@ -34,13 +36,13 @@ def apply_raaptech_voice(text: str, context: dict[str, Any] = None) -> str:
 
     # Replace startup-speak with construction language
     replacements = {
-        r'\bfounder(s)?\b': 'operator\\1',
-        r'\bscale\b': 'grow',
-        r'\bleverage\b': 'use',
-        r'\bdisrupt\b': 'change',
-        r'\bautomate\b': 'systematize',
-        r'\boffice\b': 'shop',
-        r'\buser(s)?\b': 'customer\\1',
+        r"\bfounder(s)?\b": "operator\\1",
+        r"\bscale\b": "grow",
+        r"\bleverage\b": "use",
+        r"\bdisrupt\b": "change",
+        r"\bautomate\b": "systematize",
+        r"\boffice\b": "shop",
+        r"\buser(s)?\b": "customer\\1",
     }
 
     for pattern, replacement in replacements.items():
@@ -48,15 +50,20 @@ def apply_raaptech_voice(text: str, context: dict[str, Any] = None) -> str:
 
     # Remove hedging language
     hedging = [
-        r'\bmight\b', r'\bcould\b', r'\bseems?\b', r'\bperhaps\b',
-        r'\bpossibly\b', r'\bmaybe\b', r'\bprobably\b'
+        r"\bmight\b",
+        r"\bcould\b",
+        r"\bseems?\b",
+        r"\bperhaps\b",
+        r"\bpossibly\b",
+        r"\bmaybe\b",
+        r"\bprobably\b",
     ]
 
     for pattern in hedging:
-        text = re.sub(pattern, '', text, flags=re.IGNORECASE)
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
 
     # Clean up extra spaces
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
 
     return text
 
@@ -68,7 +75,7 @@ def generate_executive_summary_raaptech(
     market_position: int = None,
     competitors_count: int = None,
     revenue_impact: tuple = None,
-    company_name: str = "Your company"
+    company_name: str = "Your company",
 ) -> str:
     """
     Generate executive summary with RaapTech voice.
@@ -129,12 +136,12 @@ def generate_executive_summary_raaptech(
         )
 
     # PROOF: Their actual numbers
-    proof_lines = [
-        f"Your overall SEO health score: {score}/100 (Grade: {grade})"
-    ]
+    proof_lines = [f"Your overall SEO health score: {score}/100 (Grade: {grade})"]
 
     if market_position and competitors_count:
-        proof_lines.append(f"Market position: #{market_position} out of {competitors_count} competitors")
+        proof_lines.append(
+            f"Market position: #{market_position} out of {competitors_count} competitors"
+        )
 
     if critical_issues:
         proof_lines.append(f"Critical issues: {len(critical_issues)}")
@@ -169,12 +176,7 @@ def generate_executive_summary_raaptech(
 
 
 def format_recommendation_raaptech(
-    priority: str,
-    action: str,
-    impact: str,
-    effort: str,
-    roi: str = None,
-    mechanism: str = None
+    priority: str, action: str, impact: str, effort: str, roi: str = None, mechanism: str = None
 ) -> str:
     """
     Format a recommendation with RaapTech voice.
@@ -190,11 +192,7 @@ def format_recommendation_raaptech(
     Returns:
         Formatted recommendation text
     """
-    lines = [
-        f"**{priority.upper()} PRIORITY** {action}",
-        f"Impact: {impact}",
-        f"Effort: {effort}"
-    ]
+    lines = [f"**{priority.upper()} PRIORITY** {action}", f"Impact: {impact}", f"Effort: {effort}"]
 
     if roi:
         lines.append(f"ROI: {roi}")
@@ -206,9 +204,7 @@ def format_recommendation_raaptech(
 
 
 def translate_technical_finding(
-    technical_term: str,
-    business_impact: str,
-    specific_data: str = None
+    technical_term: str, business_impact: str, specific_data: str = None
 ) -> str:
     """
     Translate technical SEO finding to business language.
@@ -233,7 +229,7 @@ def translate_technical_finding(
         "alt text": "image descriptions for search engines",
         "canonical tags": "signals that prevent duplicate content issues",
         "robots.txt": "instructions for search engine crawlers",
-        "sitemap": "map of all your pages for search engines"
+        "sitemap": "map of all your pages for search engines",
     }
 
     translated = translations.get(technical_term.lower(), technical_term)
@@ -256,7 +252,7 @@ if __name__ == "__main__":
         market_position=9,
         competitors_count=9,
         revenue_impact=(26250, 48750),
-        company_name="Sheet Metal Werks"
+        company_name="Sheet Metal Werks",
     )
 
     print("=" * 60)
@@ -277,7 +273,7 @@ if __name__ == "__main__":
             "customers leave before seeing your services. That's 4 bids you "
             "never get to submit. Every month. Your competitors' sites load "
             "in 2-3 seconds. They're getting those bids."
-        )
+        ),
     )
 
     print("=" * 60)

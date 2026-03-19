@@ -5,17 +5,23 @@ import pytest
 
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(project_root)
-sys.path.append(os.path.join(project_root, '.kiro', 'lib'))
+sys.path.append(os.path.join(project_root, ".kiro", "lib"))
+
 
 @pytest.mark.smoke
 def test_path_traversal_protection():
     """Ensure path traversal attacks are blocked."""
     try:
         from evolution_engine import EvolutionEngine
+
         engine = EvolutionEngine()
 
         # Test malicious agent names
-        malicious_names = ["../../../etc/passwd", "..\\..\\windows\\system32", "agent/../../../secret"]
+        malicious_names = [
+            "../../../etc/passwd",
+            "..\\..\\windows\\system32",
+            "agent/../../../secret",
+        ]
 
         for malicious_name in malicious_names:
             result = engine.apply_evolution(malicious_name, {"test": "change"})
@@ -24,11 +30,13 @@ def test_path_traversal_protection():
     except ImportError:
         pytest.skip("evolution_engine not available")
 
+
 @pytest.mark.smoke
 def test_handoff_path_validation():
     """Ensure handoff creation validates paths."""
     try:
         from handoff_protocol import HandoffProtocol
+
         protocol = HandoffProtocol()
 
         # Test malicious agent names
@@ -41,6 +49,7 @@ def test_handoff_path_validation():
     except ImportError:
         pytest.skip("handoff_protocol not available")
 
+
 @pytest.mark.smoke
 def test_agent_name_validation():
     """Ensure agent names are properly validated."""
@@ -52,7 +61,7 @@ def test_agent_name_validation():
             "name": "../../../malicious",
             "description": "x",  # Too short
             "model": "",  # Empty
-            "tools": ["invalid-tool!@#"]
+            "tools": ["invalid-tool!@#"],
         }
 
         config = parse_agent_config(malicious_config)
@@ -64,20 +73,22 @@ def test_agent_name_validation():
     except ImportError:
         pytest.skip("agent_schema not available")
 
+
 @pytest.mark.smoke
 def test_subprocess_safety():
     """Ensure subprocess calls are safe."""
     try:
         from verification_layer import VerificationLayer
+
         verifier = VerificationLayer()
 
         # This should not crash or allow injection
         result = verifier.run_smoke_tests()
 
         # Should return a TestResult object
-        assert hasattr(result, 'status')
-        assert hasattr(result, 'test_count')
-        assert hasattr(result, 'duration_seconds')
+        assert hasattr(result, "status")
+        assert hasattr(result, "test_count")
+        assert hasattr(result, "duration_seconds")
 
     except ImportError:
         pytest.skip("verification_layer not available")

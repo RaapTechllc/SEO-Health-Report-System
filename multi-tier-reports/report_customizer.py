@@ -14,18 +14,14 @@ class ReportCustomizer:
                 "include_sections": [
                     "executive_summary",
                     "technical_audit",
-                    "basic_recommendations"
+                    "basic_recommendations",
                 ],
                 "analysis_depth": "basic",
                 "branding_level": "none",
                 "competitive_analysis": False,
                 "ai_visibility_focus": False,
                 "estimated_time": 30,
-                "features": [
-                    "Technical SEO audit",
-                    "Basic recommendations",
-                    "PDF report"
-                ]
+                "features": ["Technical SEO audit", "Basic recommendations", "PDF report"],
             },
             ReportTier.PRO: {
                 "include_sections": [
@@ -35,7 +31,7 @@ class ReportCustomizer:
                     "ai_visibility_audit",
                     "competitive_overview",
                     "prioritized_recommendations",
-                    "implementation_roadmap"
+                    "implementation_roadmap",
                 ],
                 "analysis_depth": "standard",
                 "branding_level": "basic",
@@ -47,8 +43,8 @@ class ReportCustomizer:
                     "AI search visibility analysis",
                     "Competitive benchmarking",
                     "Branded PDF report",
-                    "Implementation roadmap"
-                ]
+                    "Implementation roadmap",
+                ],
             },
             ReportTier.ENTERPRISE: {
                 "include_sections": [
@@ -61,7 +57,7 @@ class ReportCustomizer:
                     "roi_projections",
                     "detailed_recommendations",
                     "implementation_roadmap",
-                    "ongoing_monitoring_setup"
+                    "ongoing_monitoring_setup",
                 ],
                 "analysis_depth": "comprehensive",
                 "branding_level": "custom",
@@ -75,13 +71,14 @@ class ReportCustomizer:
                     "Custom branded reports",
                     "ROI projections",
                     "Ongoing monitoring setup",
-                    "Executive presentation deck"
-                ]
-            }
+                    "Executive presentation deck",
+                ],
+            },
         }
 
-    def customize_report_config(self, tier_recommendation: TierRecommendation,
-                               custom_requirements: dict[str, Any] = None) -> ReportConfig:
+    def customize_report_config(
+        self, tier_recommendation: TierRecommendation, custom_requirements: dict[str, Any] = None
+    ) -> ReportConfig:
         """Create customized report configuration based on tier and requirements."""
 
         try:
@@ -93,7 +90,9 @@ class ReportCustomizer:
                 base_config = self._apply_custom_requirements(base_config, custom_requirements)
 
             # Adjust based on site complexity
-            base_config = self._adjust_for_complexity(base_config, tier_recommendation.site_complexity_score)
+            base_config = self._adjust_for_complexity(
+                base_config, tier_recommendation.site_complexity_score
+            )
 
             return ReportConfig(
                 tier=tier,
@@ -103,7 +102,7 @@ class ReportCustomizer:
                 competitive_analysis=base_config["competitive_analysis"],
                 ai_visibility_focus=base_config["ai_visibility_focus"],
                 estimated_time=base_config["estimated_time"],
-                target_price=tier_recommendation.pricing_suggestion["recommended"]
+                target_price=tier_recommendation.pricing_suggestion["recommended"],
             )
 
         except Exception as e:
@@ -117,10 +116,12 @@ class ReportCustomizer:
                 competitive_analysis=True,
                 ai_visibility_focus=True,
                 estimated_time=60,
-                target_price=2500
+                target_price=2500,
             )
 
-    def _apply_custom_requirements(self, config: dict[str, Any], requirements: dict[str, Any]) -> dict[str, Any]:
+    def _apply_custom_requirements(
+        self, config: dict[str, Any], requirements: dict[str, Any]
+    ) -> dict[str, Any]:
         """Apply custom requirements to base configuration."""
 
         # Budget constraints
@@ -157,7 +158,11 @@ class ReportCustomizer:
                     config["include_sections"].append("competitive_overview")
 
             if "technical_only" in focus_areas:
-                config["include_sections"] = ["executive_summary", "technical_audit", "basic_recommendations"]
+                config["include_sections"] = [
+                    "executive_summary",
+                    "technical_audit",
+                    "basic_recommendations",
+                ]
                 config["competitive_analysis"] = False
                 config["ai_visibility_focus"] = False
 
@@ -167,7 +172,9 @@ class ReportCustomizer:
 
         return config
 
-    def _adjust_for_complexity(self, config: dict[str, Any], complexity_score: int) -> dict[str, Any]:
+    def _adjust_for_complexity(
+        self, config: dict[str, Any], complexity_score: int
+    ) -> dict[str, Any]:
         """Adjust configuration based on site complexity."""
 
         # High complexity sites need more time
@@ -198,7 +205,7 @@ class ReportCustomizer:
                 "includes_ai_visibility": config["ai_visibility_focus"],
                 "includes_competitive": config["competitive_analysis"],
                 "branding_level": config["branding_level"].title(),
-                "best_for": self._get_best_for_description(tier)
+                "best_for": self._get_best_for_description(tier),
             }
 
         return comparison
@@ -209,13 +216,14 @@ class ReportCustomizer:
         descriptions = {
             ReportTier.BASIC: "Small businesses and startups needing essential SEO insights",
             ReportTier.PRO: "Growing companies wanting comprehensive analysis with AI optimization",
-            ReportTier.ENTERPRISE: "Large organizations requiring detailed competitive intelligence and custom reporting"
+            ReportTier.ENTERPRISE: "Large organizations requiring detailed competitive intelligence and custom reporting",
         }
 
         return descriptions.get(tier, "Standard SEO analysis")
 
-    def calculate_upsell_opportunities(self, current_tier: ReportTier,
-                                     complexity_score: int) -> list[dict[str, Any]]:
+    def calculate_upsell_opportunities(
+        self, current_tier: ReportTier, complexity_score: int
+    ) -> list[dict[str, Any]]:
         """Calculate upsell opportunities to higher tiers."""
 
         opportunities = []
@@ -226,15 +234,17 @@ class ReportCustomizer:
                 "AI search visibility analysis (capture ChatGPT/Claude traffic)",
                 "Competitive benchmarking against top competitors",
                 "Branded report with your logo and colors",
-                "Implementation roadmap with priorities"
+                "Implementation roadmap with priorities",
             ]
 
-            opportunities.append({
-                "target_tier": "Pro",
-                "additional_cost": 1000,
-                "benefits": pro_benefits,
-                "roi_justification": "AI visibility alone can increase traffic by 20-40%"
-            })
+            opportunities.append(
+                {
+                    "target_tier": "Pro",
+                    "additional_cost": 1000,
+                    "benefits": pro_benefits,
+                    "roi_justification": "AI visibility alone can increase traffic by 20-40%",
+                }
+            )
 
             # Upsell to Enterprise
             if complexity_score > 60:
@@ -242,15 +252,17 @@ class ReportCustomizer:
                     "Comprehensive competitive intelligence",
                     "ROI projections and business impact analysis",
                     "Custom executive presentation deck",
-                    "Ongoing monitoring setup"
+                    "Ongoing monitoring setup",
                 ]
 
-                opportunities.append({
-                    "target_tier": "Enterprise",
-                    "additional_cost": 3000,
-                    "benefits": enterprise_benefits,
-                    "roi_justification": "Enterprise analysis typically delivers 3-6x ROI in first year"
-                })
+                opportunities.append(
+                    {
+                        "target_tier": "Enterprise",
+                        "additional_cost": 3000,
+                        "benefits": enterprise_benefits,
+                        "roi_justification": "Enterprise analysis typically delivers 3-6x ROI in first year",
+                    }
+                )
 
         elif current_tier == ReportTier.PRO:
             # Upsell to Enterprise
@@ -259,17 +271,20 @@ class ReportCustomizer:
                     "Advanced competitive intelligence with market positioning",
                     "Detailed ROI projections and business case",
                     "Custom branded executive presentation",
-                    "Ongoing competitive monitoring setup"
+                    "Ongoing competitive monitoring setup",
                 ]
 
-                opportunities.append({
-                    "target_tier": "Enterprise",
-                    "additional_cost": 2000,
-                    "benefits": enterprise_benefits,
-                    "roi_justification": "Enterprise features help secure executive buy-in and budget"
-                })
+                opportunities.append(
+                    {
+                        "target_tier": "Enterprise",
+                        "additional_cost": 2000,
+                        "benefits": enterprise_benefits,
+                        "roi_justification": "Enterprise features help secure executive buy-in and budget",
+                    }
+                )
 
         return opportunities
+
 
 # Global report customizer
 report_customizer = ReportCustomizer()

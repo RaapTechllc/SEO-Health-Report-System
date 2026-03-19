@@ -13,6 +13,7 @@ from playwright.async_api import Browser, Page, async_playwright
 @dataclass
 class SEOData:
     """Extracted SEO data from a page."""
+
     url: str
     title: str = ""
     meta_description: str = ""
@@ -140,6 +141,7 @@ class BrowserCrawler:
     async def _extract_links(self, page: Page, base_url: str) -> dict:
         try:
             from urllib.parse import urlparse
+
             base_domain = urlparse(base_url).netloc
 
             links = await page.evaluate("""
@@ -180,7 +182,11 @@ async def test_crawler(url: str = "https://www.sheetmetalwerks.com"):
         return data
 
     print(f"✅ Title: {data.title}")
-    print(f"📝 Meta Description: {data.meta_description[:100]}..." if data.meta_description else "📝 Meta Description: (none)")
+    print(
+        f"📝 Meta Description: {data.meta_description[:100]}..."
+        if data.meta_description
+        else "📝 Meta Description: (none)"
+    )
     print(f"🔗 Canonical: {data.canonical_url}")
     print(f"📰 H1 Tags: {data.h1_tags}")
     print(f"🖼️ Images: {data.total_images} total, {data.images_without_alt} without alt")

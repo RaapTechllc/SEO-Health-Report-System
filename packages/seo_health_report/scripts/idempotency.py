@@ -54,10 +54,7 @@ def canonicalize_url(url: str) -> str:
 
 
 def compute_idempotency_key(
-    tenant_id: str,
-    target_url: str,
-    options: dict,
-    recipe_version: str = "v1"
+    tenant_id: str, target_url: str, options: dict, recipe_version: str = "v1"
 ) -> str:
     """
     Compute deterministic hash for audit request deduplication.

@@ -54,14 +54,16 @@ Current Score: {alert.current_score}/100
 Direction: Score {direction}
 
 Trigger Reason: {safe_reason}
-Timestamp: {alert.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+Timestamp: {alert.created_at.strftime("%Y-%m-%d %H:%M:%S")}
 
 This alert was triggered because the score change exceeded the configured threshold.
 Please review the competitor's recent changes and consider adjusting your strategy.
 """
 
             # Log the alert (always)
-            self.logger.warning(f"COMPETITOR ALERT: {alert.competitor_url} score {direction} by {abs(alert.score_change)} points")
+            self.logger.warning(
+                f"COMPETITOR ALERT: {alert.competitor_url} score {direction} by {abs(alert.score_change)} points"
+            )
 
             # Try to send email (may fail in development)
             try:
@@ -77,16 +79,16 @@ Please review the competitor's recent changes and consider adjusting your strate
         """Send email alert (may fail in development environments)."""
         try:
             msg = MIMEMultipart()
-            msg['From'] = SMTP_FROM
-            msg['Subject'] = subject
+            msg["From"] = SMTP_FROM
+            msg["Subject"] = subject
 
-            msg.attach(MIMEText(body, 'plain'))
+            msg.attach(MIMEText(body, "plain"))
 
             # Try to connect to SMTP server
             server = smtplib.SMTP(self.smtp_host, self.smtp_port)
 
             for recipient in recipients:
-                msg['To'] = recipient
+                msg["To"] = recipient
                 server.send_message(msg)
 
             server.quit()
@@ -104,6 +106,7 @@ Please review the competitor's recent changes and consider adjusting your strate
         except Exception as e:
             self.logger.error(f"Failed to get recent alerts: {e}")
             return []
+
 
 # Global alert system
 alert_system = AlertSystem()

@@ -1,4 +1,5 @@
 """Section title component."""
+
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph
 

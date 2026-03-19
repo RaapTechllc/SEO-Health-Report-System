@@ -20,11 +20,9 @@ MODEL_PRICING = {
     "gpt-5": {"input": 0.625, "output": 2.50},
     "gpt-5.1": {"input": 1.25, "output": 5.00},
     "gpt-image-1-mini": {"flat": 0.02},  # per image
-
     # Anthropic
     "claude-4-haiku-20251120": {"input": 0.25, "output": 1.25},
     "claude-sonnet-4-5-20250929": {"input": 3.00, "output": 15.00},
-
     # Google
     "gemini-1.5-flash": {"input": 0.075, "output": 0.30},
     "gemini-3.0-flash": {"input": 0.10, "output": 0.40},
@@ -32,11 +30,9 @@ MODEL_PRICING = {
     "imagen-4.0-fast-generate-001": {"flat": 0.02},
     "imagen-4.0-generate-001": {"flat": 0.04},
     "imagen-4.0-ultra-generate-001": {"flat": 0.08},
-
     # xAI
     "grok-4-1-fast": {"input": 0.50, "output": 2.00},
     "grok-4-1": {"input": 2.00, "output": 8.00},
-
     # Perplexity
     "sonar": {"input": 0.20, "output": 0.80},
     "sonar-pro": {"input": 1.00, "output": 4.00},
@@ -47,7 +43,7 @@ def calculate_cost(
     model: str,
     prompt_tokens: Optional[int] = None,
     completion_tokens: Optional[int] = None,
-    operation: str = "chat"
+    operation: str = "chat",
 ) -> float:
     """
     Calculate cost in USD for a model call.
@@ -127,7 +123,7 @@ def record_cost_event(
             model=model,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
-            operation=operation
+            operation=operation,
         )
 
     # Get pricing for snapshot
@@ -174,39 +170,39 @@ def get_audit_cost_summary(db: Session, audit_id: str) -> dict[str, Any]:
     from database import CostEvent
 
     # Total cost
-    total = db.query(func.sum(CostEvent.cost_usd)).filter(
-        CostEvent.audit_id == audit_id
-    ).scalar() or 0.0
+    total = (
+        db.query(func.sum(CostEvent.cost_usd)).filter(CostEvent.audit_id == audit_id).scalar()
+        or 0.0
+    )
 
     # By provider
     by_provider = {}
-    provider_results = db.query(
-        CostEvent.provider,
-        func.sum(CostEvent.cost_usd),
-        func.sum(CostEvent.total_tokens)
-    ).filter(
-        CostEvent.audit_id == audit_id
-    ).group_by(CostEvent.provider).all()
+    provider_results = (
+        db.query(CostEvent.provider, func.sum(CostEvent.cost_usd), func.sum(CostEvent.total_tokens))
+        .filter(CostEvent.audit_id == audit_id)
+        .group_by(CostEvent.provider)
+        .all()
+    )
 
     for provider, cost, tokens in provider_results:
         by_provider[provider] = {"cost_usd": cost or 0.0, "total_tokens": tokens or 0}
 
     # By phase
     by_phase = {}
-    phase_results = db.query(
-        CostEvent.phase,
-        func.sum(CostEvent.cost_usd)
-    ).filter(
-        CostEvent.audit_id == audit_id
-    ).group_by(CostEvent.phase).all()
+    phase_results = (
+        db.query(CostEvent.phase, func.sum(CostEvent.cost_usd))
+        .filter(CostEvent.audit_id == audit_id)
+        .group_by(CostEvent.phase)
+        .all()
+    )
 
     for phase, cost in phase_results:
         by_phase[phase or "unknown"] = cost or 0.0
 
     # Count of events
-    event_count = db.query(func.count(CostEvent.id)).filter(
-        CostEvent.audit_id == audit_id
-    ).scalar() or 0
+    event_count = (
+        db.query(func.count(CostEvent.id)).filter(CostEvent.audit_id == audit_id).scalar() or 0
+    )
 
     return {
         "audit_id": audit_id,
@@ -218,10 +214,7 @@ def get_audit_cost_summary(db: Session, audit_id: str) -> dict[str, Any]:
 
 
 def check_cost_ceiling(
-    db: Session,
-    audit_id: str,
-    tier: str = "medium",
-    buffer_multiplier: float = 1.5
+    db: Session, audit_id: str, tier: str = "medium", buffer_multiplier: float = 1.5
 ) -> tuple[bool, float, float]:
     """
     Check if audit has exceeded cost ceiling for its tier.
@@ -248,8 +241,9 @@ def check_cost_ceiling(
 
     from database import CostEvent
 
-    current = db.query(func.sum(CostEvent.cost_usd)).filter(
-        CostEvent.audit_id == audit_id
-    ).scalar() or 0.0
+    current = (
+        db.query(func.sum(CostEvent.cost_usd)).filter(CostEvent.audit_id == audit_id).scalar()
+        or 0.0
+    )
 
     return (current > ceiling, current, ceiling)

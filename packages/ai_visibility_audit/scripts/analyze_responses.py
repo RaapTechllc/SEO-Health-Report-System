@@ -15,6 +15,7 @@ from .query_ai_systems import AIResponse
 @dataclass
 class AccuracyIssue:
     """An accuracy issue found in AI responses."""
+
     claim: str
     actual: str
     source: str  # Which AI system
@@ -25,6 +26,7 @@ class AccuracyIssue:
 @dataclass
 class SentimentResult:
     """Sentiment analysis result for a response."""
+
     query: str
     system: str
     sentiment: str  # "positive", "neutral", "negative"
@@ -33,9 +35,7 @@ class SentimentResult:
 
 
 def analyze_brand_presence(
-    responses: dict[str, list[AIResponse]],
-    brand_name: str,
-    competitors: Optional[list[str]] = None
+    responses: dict[str, list[AIResponse]], brand_name: str, competitors: Optional[list[str]] = None
 ) -> dict[str, Any]:
     """
     Analyze brand presence across AI responses.
@@ -78,16 +78,24 @@ def analyze_brand_presence(
     # Generate findings
     if total_responses > 0:
         mention_rate = brand_mentions / total_responses
-        findings.append(f"Brand mentioned in {brand_mentions}/{total_responses} responses ({mention_rate:.0%})")
+        findings.append(
+            f"Brand mentioned in {brand_mentions}/{total_responses} responses ({mention_rate:.0%})"
+        )
 
         if position_distribution["first"] > 0:
-            first_rate = position_distribution["first"] / brand_mentions if brand_mentions > 0 else 0
-            findings.append(f"Mentioned first in {position_distribution['first']} responses ({first_rate:.0%} of mentions)")
+            first_rate = (
+                position_distribution["first"] / brand_mentions if brand_mentions > 0 else 0
+            )
+            findings.append(
+                f"Mentioned first in {position_distribution['first']} responses ({first_rate:.0%} of mentions)"
+            )
 
         # Compare with competitors
         for competitor, count in competitor_mentions.items():
             if count > brand_mentions:
-                findings.append(f"CONCERN: {competitor} mentioned more often ({count} vs {brand_mentions})")
+                findings.append(
+                    f"CONCERN: {competitor} mentioned more often ({count} vs {brand_mentions})"
+                )
             elif count > 0:
                 findings.append(f"{competitor} mentioned {count} times")
 
@@ -117,15 +125,13 @@ def analyze_brand_presence(
             "total_responses": total_responses,
             "brand_mentions": brand_mentions,
             "position_distribution": position_distribution,
-            "competitor_mentions": competitor_mentions
-        }
+            "competitor_mentions": competitor_mentions,
+        },
     }
 
 
 def check_accuracy(
-    responses: dict[str, list[AIResponse]],
-    ground_truth: dict[str, Any],
-    brand_name: str
+    responses: dict[str, list[AIResponse]], ground_truth: dict[str, Any], brand_name: str
 ) -> dict[str, Any]:
     """
     Check accuracy of AI responses against known facts.
@@ -154,16 +160,16 @@ def check_accuracy(
             r"founded in (\d{4})",
             r"established in (\d{4})",
             r"started in (\d{4})",
-            r"launched in (\d{4})"
+            r"launched in (\d{4})",
         ],
         "founder": [
             r"founded by ([A-Z][a-z]+ [A-Z][a-z]+)",
-            r"co-founded by ([A-Z][a-z]+ [A-Z][a-z]+)"
+            r"co-founded by ([A-Z][a-z]+ [A-Z][a-z]+)",
         ],
         "headquarters": [
             r"based in ([A-Z][a-z]+(?:,? [A-Z][a-z]+)?)",
-            r"headquartered in ([A-Z][a-z]+(?:,? [A-Z][a-z]+)?)"
-        ]
+            r"headquartered in ([A-Z][a-z]+(?:,? [A-Z][a-z]+)?)",
+        ],
     }
 
     checked_facts = 0
@@ -192,18 +198,22 @@ def check_accuracy(
                                 else:
                                     severity = "medium"
 
-                                issues.append(AccuracyIssue(
-                                    claim=f"{fact_key}: {match}",
-                                    actual=f"{fact_key}: {fact_value}",
-                                    source=system,
-                                    query=response.query,
-                                    severity=severity
-                                ))
+                                issues.append(
+                                    AccuracyIssue(
+                                        claim=f"{fact_key}: {match}",
+                                        actual=f"{fact_key}: {fact_value}",
+                                        source=system,
+                                        query=response.query,
+                                        severity=severity,
+                                    )
+                                )
 
     # Generate findings
     if checked_facts > 0:
         accuracy_rate = accurate_facts / checked_facts
-        findings.append(f"Verified {accurate_facts}/{checked_facts} facts ({accuracy_rate:.0%} accurate)")
+        findings.append(
+            f"Verified {accurate_facts}/{checked_facts} facts ({accuracy_rate:.0%} accurate)"
+        )
 
     if issues:
         critical_count = sum(1 for i in issues if i.severity == "critical")
@@ -219,7 +229,9 @@ def check_accuracy(
 
         # Add specific issues
         for issue in issues[:5]:  # Top 5 issues
-            findings.append(f"  - {issue.source}: Claims '{issue.claim}', actual is '{issue.actual}'")
+            findings.append(
+                f"  - {issue.source}: Claims '{issue.claim}', actual is '{issue.actual}'"
+            )
     else:
         findings.append("No accuracy issues detected in verifiable claims")
 
@@ -252,22 +264,19 @@ def check_accuracy(
                 "actual": i.actual,
                 "source": i.source,
                 "query": i.query,
-                "severity": i.severity
+                "severity": i.severity,
             }
             for i in issues
         ],
         "details": {
             "checked_facts": checked_facts,
             "accurate_facts": accurate_facts,
-            "accuracy_rate": accurate_facts / checked_facts if checked_facts > 0 else None
-        }
+            "accuracy_rate": accurate_facts / checked_facts if checked_facts > 0 else None,
+        },
     }
 
 
-def analyze_sentiment(
-    responses: dict[str, list[AIResponse]],
-    brand_name: str
-) -> dict[str, Any]:
+def analyze_sentiment(responses: dict[str, list[AIResponse]], brand_name: str) -> dict[str, Any]:
     """
     Analyze sentiment of AI responses about the brand.
 
@@ -283,19 +292,48 @@ def analyze_sentiment(
     """
     # Sentiment keywords (basic approach - can be enhanced with NLP)
     positive_keywords = [
-        "excellent", "great", "best", "leading", "innovative", "trusted",
-        "reliable", "quality", "recommended", "popular", "successful",
-        "top", "premier", "outstanding", "exceptional", "impressive",
-        "well-known", "respected", "reputable", "highly rated"
+        "excellent",
+        "great",
+        "best",
+        "leading",
+        "innovative",
+        "trusted",
+        "reliable",
+        "quality",
+        "recommended",
+        "popular",
+        "successful",
+        "top",
+        "premier",
+        "outstanding",
+        "exceptional",
+        "impressive",
+        "well-known",
+        "respected",
+        "reputable",
+        "highly rated",
     ]
 
     negative_keywords = [
-        "poor", "bad", "worst", "complaints", "issues", "problems",
-        "concerns", "criticized", "controversial", "failed", "struggling",
-        "unreliable", "expensive", "overpriced", "disappointing",
-        "lawsuit", "scandal", "avoid"
+        "poor",
+        "bad",
+        "worst",
+        "complaints",
+        "issues",
+        "problems",
+        "concerns",
+        "criticized",
+        "controversial",
+        "failed",
+        "struggling",
+        "unreliable",
+        "expensive",
+        "overpriced",
+        "disappointing",
+        "lawsuit",
+        "scandal",
+        "avoid",
     ]
-
 
     results: list[SentimentResult] = []
     sentiment_counts = {"positive": 0, "neutral": 0, "negative": 0}
@@ -337,13 +375,15 @@ def analyze_sentiment(
                 if kw in response_lower:
                     key_phrases.append(kw)
 
-            results.append(SentimentResult(
-                query=response.query,
-                system=system,
-                sentiment=sentiment,
-                confidence=confidence,
-                key_phrases=key_phrases[:5]
-            ))
+            results.append(
+                SentimentResult(
+                    query=response.query,
+                    system=system,
+                    sentiment=sentiment,
+                    confidence=confidence,
+                    key_phrases=key_phrases[:5],
+                )
+            )
 
     # Generate findings
     total = sum(sentiment_counts.values())
@@ -390,18 +430,16 @@ def analyze_sentiment(
                     "system": r.system,
                     "sentiment": r.sentiment,
                     "confidence": r.confidence,
-                    "key_phrases": r.key_phrases
+                    "key_phrases": r.key_phrases,
                 }
                 for r in results
-            ]
-        }
+            ],
+        },
     }
 
 
 def analyze_competitor_comparison(
-    responses: dict[str, list[AIResponse]],
-    brand_name: str,
-    competitors: list[str]
+    responses: dict[str, list[AIResponse]], brand_name: str, competitors: list[str]
 ) -> dict[str, Any]:
     """
     Analyze how the brand compares to competitors in AI responses.
@@ -456,7 +494,10 @@ def analyze_competitor_comparison(
 
     # Rank by mentions
     sorted_mentions = sorted(mention_counts.items(), key=lambda x: x[1], reverse=True)
-    rank = next((i + 1 for i, (name, _) in enumerate(sorted_mentions) if name == brand_name), len(sorted_mentions))
+    rank = next(
+        (i + 1 for i, (name, _) in enumerate(sorted_mentions) if name == brand_name),
+        len(sorted_mentions),
+    )
 
     findings.append(f"Brand ranks #{rank} in mention frequency among competitors")
 
@@ -467,7 +508,9 @@ def analyze_competitor_comparison(
     # First mention analysis
     if first_mentions[brand_name] > 0:
         first_rate = first_mentions[brand_name] / total_responses if total_responses > 0 else 0
-        findings.append(f"Brand mentioned first in {first_mentions[brand_name]} responses ({first_rate:.0%})")
+        findings.append(
+            f"Brand mentioned first in {first_mentions[brand_name]} responses ({first_rate:.0%})"
+        )
 
     return {
         "findings": findings,
@@ -475,16 +518,16 @@ def analyze_competitor_comparison(
             "mention_counts": mention_counts,
             "first_mentions": first_mentions,
             "brand_rank": rank,
-            "total_responses": total_responses
-        }
+            "total_responses": total_responses,
+        },
     }
 
 
 __all__ = [
-    'AccuracyIssue',
-    'SentimentResult',
-    'analyze_brand_presence',
-    'check_accuracy',
-    'analyze_sentiment',
-    'analyze_competitor_comparison'
+    "AccuracyIssue",
+    "SentimentResult",
+    "analyze_brand_presence",
+    "check_accuracy",
+    "analyze_sentiment",
+    "analyze_competitor_comparison",
 ]

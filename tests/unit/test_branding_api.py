@@ -16,6 +16,7 @@ app.include_router(router)
 
 class MockUser:
     """Mock user for testing."""
+
     def __init__(self, tenant_id=None):
         self.id = "user_123"
         self.email = "test@example.com"
@@ -105,8 +106,7 @@ class TestUpdateBranding:
         with patch("apps.api.routers.branding.BrandingService") as MockService:
             MockService.return_value.update_branding.return_value = mock_branding
             response = client_with_tenant.patch(
-                "/tenant/branding",
-                json={"primary_color": "#FF5733"}
+                "/tenant/branding", json={"primary_color": "#FF5733"}
             )
 
         assert response.status_code == 200
@@ -115,16 +115,14 @@ class TestUpdateBranding:
 
     def test_validates_color_format(self, client_with_tenant):
         response = client_with_tenant.patch(
-            "/tenant/branding",
-            json={"primary_color": "invalid-color"}
+            "/tenant/branding", json={"primary_color": "invalid-color"}
         )
 
         assert response.status_code == 422  # Validation error
 
     def test_returns_400_when_no_tenant(self, client_without_tenant):
         response = client_without_tenant.patch(
-            "/tenant/branding",
-            json={"primary_color": "#FF5733"}
+            "/tenant/branding", json={"primary_color": "#FF5733"}
         )
 
         assert response.status_code == 400
@@ -143,8 +141,7 @@ class TestUpdateBranding:
         with patch("apps.api.routers.branding.BrandingService") as MockService:
             MockService.return_value.update_branding.return_value = mock_branding
             response = client_with_tenant.patch(
-                "/tenant/branding",
-                json={"logo_url": "https://example.com/logo.png"}
+                "/tenant/branding", json={"logo_url": "https://example.com/logo.png"}
             )
 
         assert response.status_code == 200
@@ -164,8 +161,7 @@ class TestUpdateBranding:
         with patch("apps.api.routers.branding.BrandingService") as MockService:
             MockService.return_value.update_branding.return_value = mock_branding
             response = client_with_tenant.patch(
-                "/tenant/branding",
-                json={"footer_text": "Custom Footer"}
+                "/tenant/branding", json={"footer_text": "Custom Footer"}
             )
 
         assert response.status_code == 200
@@ -197,13 +193,16 @@ class TestColorValidation:
         for color in valid_colors:
             with patch("apps.api.routers.branding.BrandingService") as MockService:
                 MockService.return_value.update_branding.return_value = {
-                    "id": "x", "tenant_id": "t", "logo_url": None,
-                    "primary_color": color, "secondary_color": "#000000",
-                    "footer_text": None, "is_custom": True
+                    "id": "x",
+                    "tenant_id": "t",
+                    "logo_url": None,
+                    "primary_color": color,
+                    "secondary_color": "#000000",
+                    "footer_text": None,
+                    "is_custom": True,
                 }
                 response = client_with_tenant.patch(
-                    "/tenant/branding",
-                    json={"primary_color": color}
+                    "/tenant/branding", json={"primary_color": color}
                 )
 
             assert response.status_code == 200, f"Color {color} should be valid"
@@ -212,9 +211,6 @@ class TestColorValidation:
         invalid_colors = ["red", "1E3A8A", "#1E3A8", "#GGGGGG", "rgb(0,0,0)"]
 
         for color in invalid_colors:
-            response = client_with_tenant.patch(
-                "/tenant/branding",
-                json={"primary_color": color}
-            )
+            response = client_with_tenant.patch("/tenant/branding", json={"primary_color": color})
 
             assert response.status_code == 422, f"Color {color} should be invalid"

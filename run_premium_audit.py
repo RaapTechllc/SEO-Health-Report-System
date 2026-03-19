@@ -29,7 +29,7 @@ sys.path.insert(0, str(project_root))
 
 from dotenv import load_dotenv
 
-load_dotenv('.env')
+load_dotenv(".env")
 
 
 def parse_args():
@@ -42,7 +42,7 @@ Examples:
     python run_premium_audit.py --url https://example.com --company "Example Co" --services "web design,seo"
     python run_premium_audit.py --config premium_config.json
     python run_premium_audit.py --url https://example.com --company "Example" --location "Chicago, IL"
-        """
+        """,
     )
 
     parser.add_argument("--url", help="Target URL to audit")
@@ -51,8 +51,14 @@ Examples:
     parser.add_argument("--location", help="Geographic location/service area")
     parser.add_argument("--competitors", help="Comma-separated known competitor URLs (optional)")
     parser.add_argument("--config", help="Path to JSON config file")
-    parser.add_argument("--output", default="./reports", help="Output directory (default: ./reports)")
-    parser.add_argument("--skip-market-intel", action="store_true", help="Skip market intelligence (faster, basic report)")
+    parser.add_argument(
+        "--output", default="./reports", help="Output directory (default: ./reports)"
+    )
+    parser.add_argument(
+        "--skip-market-intel",
+        action="store_true",
+        help="Skip market intelligence (faster, basic report)",
+    )
 
     return parser.parse_args()
 
@@ -70,7 +76,7 @@ async def run_premium_audit(
     location: str = None,
     competitor_urls: list = None,
     output_dir: Path = None,
-    skip_market_intel: bool = False
+    skip_market_intel: bool = False,
 ) -> dict:
     """
     Run the complete premium audit workflow.
@@ -106,7 +112,9 @@ async def run_premium_audit(
     audit_result["grade"] = scores.get("grade", "N/A")
     audit_result["component_scores"] = scores.get("component_scores", {})
 
-    print(f"    Overall Score: {audit_result['overall_score']}/100 (Grade: {audit_result['grade']})")
+    print(
+        f"    Overall Score: {audit_result['overall_score']}/100 (Grade: {audit_result['grade']})"
+    )
 
     # Step 2: Run market intelligence (unless skipped)
     if not skip_market_intel:
@@ -128,34 +136,44 @@ async def run_premium_audit(
                 company_name=company_name,
                 url=target_url,
                 products_services=products_services,
-                location=location
+                location=location,
             )
 
-            print(f"    - Industry: {market_landscape.classification.industry} > {market_landscape.classification.vertical}")
+            print(
+                f"    - Industry: {market_landscape.classification.industry} > {market_landscape.classification.vertical}"
+            )
             print(f"    - Niche: {market_landscape.classification.niche}")
             print(f"    - Found {len(market_landscape.competitors)} competitors")
 
             # Run REAL audits on competitors (limited to 5 for performance)
             max_competitors = 5
             competitors_to_audit = market_landscape.competitors[:max_competitors]
-            print(f"    - Running REAL audits on {len(competitors_to_audit)} competitors (this may take a few minutes)...")
+            print(
+                f"    - Running REAL audits on {len(competitors_to_audit)} competitors (this may take a few minutes)..."
+            )
             competitor_audits = []
             for comp in competitors_to_audit:
                 comp_audit = await _run_real_competitor_audit(comp, market_landscape.classification)
                 competitor_audits.append(comp_audit)
 
             # Filter out failed audits for benchmarking
-            successful_audits = [a for a in competitor_audits if a.get("data_source") == "real_audit"]
-            print(f"    - Successfully audited {len(successful_audits)} of {len(competitors_to_audit)} competitors")
+            successful_audits = [
+                a for a in competitor_audits if a.get("data_source") == "real_audit"
+            ]
+            print(
+                f"    - Successfully audited {len(successful_audits)} of {len(competitors_to_audit)} competitors"
+            )
 
             # Benchmark
             benchmark_report = await benchmark_against_competitors(
                 client_audit=audit_result,
                 competitor_audits=competitor_audits,
-                classification=market_landscape.classification
+                classification=market_landscape.classification,
             )
 
-            print(f"    - Market Position: #{benchmark_report.market_position_rank} of {len(competitor_audits) + 1}")
+            print(
+                f"    - Market Position: #{benchmark_report.market_position_rank} of {len(competitor_audits) + 1}"
+            )
             print(f"    - AI Visibility Rank: #{benchmark_report.ai_visibility_rank}")
 
             # Generate premium summary
@@ -163,7 +181,7 @@ async def run_premium_audit(
             executive_summary = await generate_premium_executive_summary(
                 client_audit=audit_result,
                 benchmark_report=benchmark_report,
-                market_landscape=market_landscape
+                market_landscape=market_landscape,
             )
 
             # Add market intelligence to audit result
@@ -222,12 +240,14 @@ async def run_premium_audit(
             print("    - Calculating ROI projections...")
             try:
                 from roi_calculator import calculate_roi_projection, format_roi_for_report
+
                 roi_projection = calculate_roi_projection(
-                    audit_data=audit_result,
-                    market_intel=audit_result["market_intelligence"]
+                    audit_data=audit_result, market_intel=audit_result["market_intelligence"]
                 )
                 audit_result["roi_projection"] = format_roi_for_report(roi_projection)
-                print(f"    - Estimated monthly lost revenue: {roi_projection.estimated_monthly_lost_revenue}")
+                print(
+                    f"    - Estimated monthly lost revenue: {roi_projection.estimated_monthly_lost_revenue}"
+                )
             except Exception as roi_err:
                 print(f"    [WARNING] ROI calculation failed: {roi_err}")
 
@@ -256,6 +276,7 @@ async def run_premium_audit(
     print("\n[4/4] Generating Premium PDF Report...")
     try:
         from generate_premium_report import generate_premium_report
+
         pdf_path = str(json_path).replace(".json", "_PREMIUM.pdf")
         generate_premium_report(str(json_path), pdf_path)
         print(f"    PDF: {pdf_path}")
@@ -273,7 +294,7 @@ async def run_premium_audit(
         mi = audit_result["market_intelligence"]
         print(f"Market Position: #{mi['benchmark']['market_position_rank']}")
         print(f"AI Visibility Rank: #{mi['benchmark']['ai_visibility_rank']}")
-        if mi['benchmark']['critical_gaps']:
+        if mi["benchmark"]["critical_gaps"]:
             print(f"Critical Gaps: {len(mi['benchmark']['critical_gaps'])}")
 
     print(f"\nReports saved to: {output_dir}")
@@ -333,7 +354,7 @@ async def _run_real_competitor_audit(competitor, classification, rate_limiter_de
                 "technical": {"score": tech_score},
                 "content": {"score": content_score},
                 "ai_visibility": {"score": ai_score},
-            }
+            },
         }
 
     except Exception as e:
@@ -350,7 +371,7 @@ async def _run_real_competitor_audit(competitor, classification, rate_limiter_de
                 "technical": {"score": None},
                 "content": {"score": None},
                 "ai_visibility": {"score": None},
-            }
+            },
         }
 
 
@@ -377,15 +398,17 @@ def main():
     output_dir = Path(args.output)
 
     # Run the premium audit
-    asyncio.run(run_premium_audit(
-        target_url=config["target_url"],
-        company_name=config["company_name"],
-        products_services=config.get("products_services", ["services"]),
-        location=config.get("location"),
-        competitor_urls=config.get("competitor_urls", []),
-        output_dir=output_dir,
-        skip_market_intel=args.skip_market_intel,
-    ))
+    asyncio.run(
+        run_premium_audit(
+            target_url=config["target_url"],
+            company_name=config["company_name"],
+            products_services=config.get("products_services", ["services"]),
+            location=config.get("location"),
+            competitor_urls=config.get("competitor_urls", []),
+            output_dir=output_dir,
+            skip_market_intel=args.skip_market_intel,
+        )
+    )
 
     return 0
 

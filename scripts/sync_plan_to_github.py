@@ -21,15 +21,16 @@ from typing import Optional
 # --- Configuration ---
 PLAN_PATH = os.path.join(os.path.dirname(__file__), "../PLAN.md")
 
+
 # ANSI Colors for Output
 class Colors:
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
 
     @staticmethod
     def print(text, color=None):
@@ -38,20 +39,22 @@ class Colors:
         else:
             print(text)
 
+
 # --- Data Structures ---
 class Milestone:
     def __init__(self, number: int, title: str, raw_title: str):
         self.number = number
         self.title = title
-        self.raw_title = raw_title # e.g., "Milestone 1 — Foundation..."
+        self.raw_title = raw_title  # e.g., "Milestone 1 — Foundation..."
         self.issues: list[Issue] = []
 
     def __repr__(self):
         return f"<Milestone {self.number}: {self.title}>"
 
+
 class Issue:
     def __init__(self, number_id: str, title: str):
-        self.number_id = number_id # e.g., "1.1"
+        self.number_id = number_id  # e.g., "1.1"
         self.title = title
         self.body_lines: list[str] = []
         self.labels: list[str] = []
@@ -64,13 +67,14 @@ class Issue:
     def __repr__(self):
         return f"<Issue {self.number_id}: {self.title}>"
 
+
 # --- Parser ---
 def parse_plan(path: str) -> list[Milestone]:
     if not os.path.exists(path):
         Colors.print(f"Error: PLAN.md not found at {path}", Colors.RED)
         sys.exit(1)
 
-    with open(path, encoding='utf-8') as f:
+    with open(path, encoding="utf-8") as f:
         lines = f.readlines()
 
     milestones: list[Milestone] = []
@@ -78,9 +82,9 @@ def parse_plan(path: str) -> list[Milestone]:
     current_issue: Optional[Issue] = None
 
     # Regex patterns
-    milestone_pattern = re.compile(r'^#\s+(Milestone\s+(\d+)\s+—\s+(.+))')
-    issue_pattern = re.compile(r'^##\s+(Issue\s+(\d+\.\d+)\s+—\s+(.+))')
-    labels_pattern = re.compile(r'^\*\*Labels:\*\*\s+(.+)')
+    milestone_pattern = re.compile(r"^#\s+(Milestone\s+(\d+)\s+—\s+(.+))")
+    issue_pattern = re.compile(r"^##\s+(Issue\s+(\d+\.\d+)\s+—\s+(.+))")
+    labels_pattern = re.compile(r"^\*\*Labels:\*\*\s+(.+)")
 
     for line in lines:
         line = line.rstrip()
@@ -130,7 +134,7 @@ def parse_plan(path: str) -> list[Milestone]:
                 # Find all code-ticked items or just split?
                 # The format is `P0`, `area:ops`, ...
                 # Let's extract between backticks
-                labels = re.findall(r'`([^`]+)`', raw_labels)
+                labels = re.findall(r"`([^`]+)`", raw_labels)
                 current_issue.labels.extend(labels)
                 # We also add the Labels line to the body so it's visible in the issue description
                 current_issue.body_lines.append(line)
@@ -142,6 +146,7 @@ def parse_plan(path: str) -> list[Milestone]:
         current_milestone.issues.append(current_issue)
 
     return milestones
+
 
 # --- GitHub CLI Wrapper ---
 def run_gh_command(args: list[str], dry_run: bool = False) -> Optional[str]:
@@ -161,6 +166,7 @@ def run_gh_command(args: list[str], dry_run: bool = False) -> Optional[str]:
         # Don't exit immediately, allow caller to handle or fail
         raise e
 
+
 def check_gh_auth():
     try:
         subprocess.run(["gh", "auth", "status"], capture_output=True, check=True)
@@ -168,35 +174,39 @@ def check_gh_auth():
     except subprocess.CalledProcessError:
         return False
 
+
 # --- Sync Logic ---
 def get_existing_milestones(dry_run: bool) -> dict[str, str]:
     """Returns map of Title -> NodeID or Number"""
     if dry_run:
-        return {} # Assume none exist
+        return {}  # Assume none exist
 
     try:
         output = run_gh_command(["milestone", "list", "--json", "title,number"], dry_run)
         if output:
             data = json.loads(output)
-            return {m['title']: m['number'] for m in data}
+            return {m["title"]: m["number"] for m in data}
     except Exception:
         pass
     return {}
 
+
 def get_existing_labels(dry_run: bool) -> list[str]:
-    if dry_run: return []
+    if dry_run:
+        return []
     try:
         output = run_gh_command(["label", "list", "--json", "name"], dry_run)
         if output:
             data = json.loads(output)
-            return [l['name'] for l in data]
+            return [l["name"] for l in data]
     except Exception:
         pass
     return []
 
+
 def ensure_label(name: str, color: str, dry_run: bool, existing_labels: list[str]):
     if name in existing_labels:
-        return # Already exists
+        return  # Already exists
 
     # Create label
     args = ["label", "create", name, "--color", color, "--description", "Synced from PLAN.md"]
@@ -204,7 +214,8 @@ def ensure_label(name: str, color: str, dry_run: bool, existing_labels: list[str
         run_gh_command(args, dry_run)
         Colors.print(f"Created label: {name}", Colors.GREEN)
     except Exception as e:
-         Colors.print(f"Failed to create label {name}: {e}", Colors.RED)
+        Colors.print(f"Failed to create label {name}: {e}", Colors.RED)
+
 
 def sync(dry_run: bool = False):
     Colors.print(f"--- Parsing {PLAN_PATH} ---", Colors.HEADER)
@@ -215,7 +226,10 @@ def sync(dry_run: bool = False):
 
     if not dry_run:
         if not check_gh_auth():
-            Colors.print("❌ Not authenticated with GitHub CLI. Please run 'gh auth login' first.", Colors.RED)
+            Colors.print(
+                "❌ Not authenticated with GitHub CLI. Please run 'gh auth login' first.",
+                Colors.RED,
+            )
             return
 
     # 1. Sync Milestones
@@ -235,12 +249,22 @@ def sync(dry_run: bool = False):
                 # Actually, capturing stdout gives the URL usually.
                 # Let's assume we can fetch it again or parse output.
                 # Output format: https://github.com/org/repo/milestone/1
-                out = run_gh_command(["milestone", "create", "--title", m.title, "--description", f"Imported from {PLAN_PATH}"], dry_run)
+                out = run_gh_command(
+                    [
+                        "milestone",
+                        "create",
+                        "--title",
+                        m.title,
+                        "--description",
+                        f"Imported from {PLAN_PATH}",
+                    ],
+                    dry_run,
+                )
                 if dry_run:
-                    milestone_title_to_number[m.title] = 999 # Placeholder
+                    milestone_title_to_number[m.title] = 999  # Placeholder
                 elif out:
                     # simplistic parse
-                    match = re.search(r'/milestone/(\d+)', out)
+                    match = re.search(r"/milestone/(\d+)", out)
                     if match:
                         milestone_title_to_number[m.title] = int(match.group(1))
             except Exception:
@@ -264,31 +288,46 @@ def sync(dry_run: bool = False):
     # We can embed "PLAN_ID: X.Y" in the body text (hidden comment?).
 
     # Let's perform a search for "PLAN_ID: X.Y" to check existence.
-    existing_issue_map = {} # "1.1" -> issue_number
+    existing_issue_map = {}  # "1.1" -> issue_number
 
     if not dry_run:
         Colors.print("Fetching existing issues to check for duplicates...", Colors.BLUE)
         try:
-             # Search for all issues created by me? or just list all
-             # limit 1000
-             out = run_gh_command(["issue", "list", "--state", "all", "--limit", "1000", "--json", "title,body,number"], dry_run)
-             if out:
-                 issues_json = json.loads(out)
-                 for i_json in issues_json:
-                     # Check body for identifier
-                     body = i_json.get('body', '') or ''
-                     match = re.search(r'<!-- PLAN_ID: (\d+\.\d+) -->', body)
-                     if match:
-                         existing_issue_map[match.group(1)] = i_json['number']
+            # Search for all issues created by me? or just list all
+            # limit 1000
+            out = run_gh_command(
+                [
+                    "issue",
+                    "list",
+                    "--state",
+                    "all",
+                    "--limit",
+                    "1000",
+                    "--json",
+                    "title,body,number",
+                ],
+                dry_run,
+            )
+            if out:
+                issues_json = json.loads(out)
+                for i_json in issues_json:
+                    # Check body for identifier
+                    body = i_json.get("body", "") or ""
+                    match = re.search(r"<!-- PLAN_ID: (\d+\.\d+) -->", body)
+                    if match:
+                        existing_issue_map[match.group(1)] = i_json["number"]
         except Exception:
-             Colors.print("Could not fetch existing issues. Proceeding carelessly.", Colors.YELLOW)
+            Colors.print("Could not fetch existing issues. Proceeding carelessly.", Colors.YELLOW)
 
     for m in milestones:
         m_number = milestone_title_to_number.get(m.title)
 
         for issue in m.issues:
             if issue.number_id in existing_issue_map:
-                Colors.print(f"Skipping Issue {issue.number_id} (already exists as #{existing_issue_map[issue.number_id]})", Colors.BLUE)
+                Colors.print(
+                    f"Skipping Issue {issue.number_id} (already exists as #{existing_issue_map[issue.number_id]})",
+                    Colors.BLUE,
+                )
                 continue
 
             Colors.print(f"Creating Issue {issue.number_id}: {issue.title}", Colors.GREEN)
@@ -299,9 +338,9 @@ def sync(dry_run: bool = False):
             cmd_args = ["issue", "create", "--title", issue.title, "--body", final_body]
 
             if issue.labels:
-                 # gh expects --label "l1" --label "l2"
-                 for l in issue.labels:
-                     cmd_args.extend(["--label", l])
+                # gh expects --label "l1" --label "l2"
+                for l in issue.labels:
+                    cmd_args.extend(["--label", l])
 
             if m_number:
                 cmd_args.extend(["--milestone", str(m_number)])
@@ -311,9 +350,12 @@ def sync(dry_run: bool = False):
             except Exception:
                 Colors.print(f"Failed to create issue {issue.number_id}", Colors.RED)
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Sync PLAN.md to GitHub')
-    parser.add_argument('--dry-run', action='store_true', help='Do not actually create things in GitHub')
+    parser = argparse.ArgumentParser(description="Sync PLAN.md to GitHub")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Do not actually create things in GitHub"
+    )
     args = parser.parse_args()
 
     try:

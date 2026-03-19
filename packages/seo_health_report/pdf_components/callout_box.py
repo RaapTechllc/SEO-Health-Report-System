@@ -1,4 +1,5 @@
 """Callout box component with accent bar."""
+
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, Table, TableStyle
@@ -34,17 +35,20 @@ def CalloutBox(title: str, content: str, severity: str = "info") -> Table:  # no
     )
 
     inner_content = Paragraph(
-        f'<font color="{accent.hexval()}"><b>{title}</b></font><br/>{content}',
-        style
+        f'<font color="{accent.hexval()}"><b>{title}</b></font><br/>{content}', style
     )
 
     table = Table([[inner_content]], colWidths=[6.5 * inch])
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), ReportColors.background),
-        ("LEFTPADDING", (0, 0), (-1, -1), 12),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-        ("TOPPADDING", (0, 0), (-1, -1), 10),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
-        ("LINEBEFORE", (0, 0), (0, -1), 4, accent),
-    ]))
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), ReportColors.background),
+                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                ("TOPPADDING", (0, 0), (-1, -1), 10),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+                ("LINEBEFORE", (0, 0), (0, -1), 4, accent),
+            ]
+        )
+    )
     return table

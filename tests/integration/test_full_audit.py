@@ -12,9 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 
 # Add project root to path
-project_root = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
@@ -238,9 +236,7 @@ class TestFullAuditPipeline:
 
         critical_issues = [{"description": "Missing HTTPS", "severity": "critical"}]
 
-        quick_wins = [
-            {"action": "Add meta descriptions", "impact": "medium", "effort": "low"}
-        ]
+        quick_wins = [{"action": "Add meta descriptions", "impact": "medium", "effort": "low"}]
 
         summary = generate_executive_summary(
             scores=scores,
@@ -303,9 +299,7 @@ class TestAuditComponentIntegration:
                     ],
                     "components": {
                         "security": {
-                            "issues": [
-                                {"severity": "high", "description": "Missing headers"}
-                            ]
+                            "issues": [{"severity": "high", "description": "Missing headers"}]
                         }
                     },
                 },

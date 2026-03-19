@@ -28,6 +28,7 @@ app.include_router(router, prefix="/dashboard")
 
 class MockUser:
     """Mock user for testing."""
+
     def __init__(self, id="user_123", email="test@example.com", tenant_id=None, role="user"):
         self.id = id
         self.email = email
@@ -123,6 +124,7 @@ class TestSetSessionCookie:
 
     def test_sets_cookie_with_correct_attributes(self):
         from fastapi.responses import Response
+
         response = Response()
 
         set_session_cookie(response, "test-session-id")
@@ -139,6 +141,7 @@ class TestClearSessionCookie:
 
     def test_clears_cookie(self):
         from fastapi.responses import Response
+
         response = Response()
 
         clear_session_cookie(response)
@@ -278,9 +281,7 @@ class TestDashboardRoutesIntegration:
         session_id = create_session("user_123", None, "user")
 
         response = client.post(
-            "/dashboard/logout",
-            cookies={SESSION_COOKIE_NAME: session_id},
-            follow_redirects=False
+            "/dashboard/logout", cookies={SESSION_COOKIE_NAME: session_id}, follow_redirects=False
         )
 
         assert response.status_code == 302
@@ -294,7 +295,7 @@ class TestDashboardRoutesIntegration:
             response = client.post(
                 "/dashboard/login",
                 data={"email": "test@example.com", "password": "password123"},
-                follow_redirects=False
+                follow_redirects=False,
             )
 
         assert response.status_code == 302
@@ -308,7 +309,7 @@ class TestDashboardRoutesIntegration:
             response = client.post(
                 "/dashboard/login",
                 data={"email": "test@example.com", "password": "wrongpassword"},
-                follow_redirects=False
+                follow_redirects=False,
             )
 
         assert response.status_code == 401

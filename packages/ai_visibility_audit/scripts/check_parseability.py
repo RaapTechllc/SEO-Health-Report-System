@@ -13,9 +13,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 # Add parent directory to path for logger import
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from seo_health_report.scripts.logger import get_logger
 
@@ -94,9 +92,7 @@ def check_semantic_html(html: str) -> dict[str, Any]:
     if len(found_semantic) >= 5:
         findings.append(f"Good: Uses semantic elements: {', '.join(found_semantic)}")
     elif len(found_semantic) >= 3:
-        findings.append(
-            f"Fair: Uses some semantic elements: {', '.join(found_semantic)}"
-        )
+        findings.append(f"Fair: Uses some semantic elements: {', '.join(found_semantic)}")
         score -= 2
     else:
         findings.append(
@@ -143,9 +139,7 @@ def check_semantic_html(html: str) -> dict[str, Any]:
         score -= 2
 
     if h2_count > 0 and h3_count > 0:
-        findings.append(
-            f"Good: Proper heading hierarchy (H2: {h2_count}, H3: {h3_count})"
-        )
+        findings.append(f"Good: Proper heading hierarchy (H2: {h2_count}, H3: {h3_count})")
     elif h2_count > 0:
         findings.append(f"Fair: Has H2 tags ({h2_count}) but no H3")
     else:
@@ -203,9 +197,7 @@ def check_structured_data(html: str) -> dict[str, Any]:
     score_bonus = 0
 
     # Check for JSON-LD
-    json_ld_pattern = (
-        r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>'
-    )
+    json_ld_pattern = r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>'
     json_ld_matches = re.findall(json_ld_pattern, html, re.DOTALL | re.IGNORECASE)
 
     if json_ld_matches:
@@ -223,9 +215,7 @@ def check_structured_data(html: str) -> dict[str, Any]:
                     for item in data:
                         if isinstance(item, dict):
                             schema_type = item.get("@type", "Unknown")
-                            structured_data.append(
-                                {"format": "JSON-LD", "type": schema_type}
-                            )
+                            structured_data.append({"format": "JSON-LD", "type": schema_type})
                             findings.append(f"  - JSON-LD: {schema_type}")
             except json.JSONDecodeError:
                 findings.append("  - JSON-LD: Parse error (invalid JSON)")
@@ -237,9 +227,7 @@ def check_structured_data(html: str) -> dict[str, Any]:
         score_bonus += 2
 
         # Try to extract itemtype
-        itemtype_matches = re.findall(
-            r'itemtype=["\']([^"\']+)["\']', html, re.IGNORECASE
-        )
+        itemtype_matches = re.findall(r'itemtype=["\']([^"\']+)["\']', html, re.IGNORECASE)
         for itemtype in itemtype_matches[:5]:  # Limit to 5
             structured_data.append({"format": "Microdata", "type": itemtype})
             findings.append(f"  - Microdata: {itemtype}")
@@ -249,16 +237,12 @@ def check_structured_data(html: str) -> dict[str, Any]:
     typeof_count = len(re.findall(r"typeof=", html, re.IGNORECASE))
 
     if vocab_count > 0 or typeof_count > 0:
-        findings.append(
-            f"Found RDFa markup (vocab: {vocab_count}, typeof: {typeof_count})"
-        )
+        findings.append(f"Found RDFa markup (vocab: {vocab_count}, typeof: {typeof_count})")
         score_bonus += 1
 
     if not structured_data:
         findings.append("No structured data found - this limits AI understanding")
-        findings.append(
-            "Recommendation: Add JSON-LD schema for Organization, Product, FAQ, etc."
-        )
+        findings.append("Recommendation: Add JSON-LD schema for Organization, Product, FAQ, etc.")
 
     # Check for common important schemas
     important_schemas = [
@@ -270,9 +254,7 @@ def check_structured_data(html: str) -> dict[str, Any]:
         "HowTo",
     ]
     found_important = [
-        sd["type"]
-        for sd in structured_data
-        if any(s in sd["type"] for s in important_schemas)
+        sd["type"] for sd in structured_data if any(s in sd["type"] for s in important_schemas)
     ]
 
     if found_important:
@@ -349,12 +331,8 @@ def check_content_extraction(html: str) -> dict[str, Any]:
 
     # Check for readable content (text to HTML ratio)
     # Remove scripts and styles
-    clean_html = re.sub(
-        r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE
-    )
-    clean_html = re.sub(
-        r"<style[^>]*>.*?</style>", "", clean_html, flags=re.DOTALL | re.IGNORECASE
-    )
+    clean_html = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
+    clean_html = re.sub(r"<style[^>]*>.*?</style>", "", clean_html, flags=re.DOTALL | re.IGNORECASE)
 
     # Extract text
     text = re.sub(r"<[^>]+>", " ", clean_html)
@@ -384,14 +362,10 @@ def check_content_extraction(html: str) -> dict[str, Any]:
     if img_tags:
         alt_ratio = imgs_with_alt / len(img_tags)
         if alt_ratio >= 0.9:
-            findings.append(
-                f"Good: {imgs_with_alt}/{len(img_tags)} images have alt text"
-            )
+            findings.append(f"Good: {imgs_with_alt}/{len(img_tags)} images have alt text")
             score += 1
         else:
-            findings.append(
-                f"Issue: Only {imgs_with_alt}/{len(img_tags)} images have alt text"
-            )
+            findings.append(f"Issue: Only {imgs_with_alt}/{len(img_tags)} images have alt text")
             issues.append("Add alt text to all images")
 
     return {
@@ -442,27 +416,19 @@ def check_javascript_dependency(html: str) -> dict[str, Any]:
 
         # Check if there's actual content or just JS shell
         # Remove script tags and check remaining content
-        clean_html = re.sub(
-            r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE
-        )
+        clean_html = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
         text = re.sub(r"<[^>]+>", " ", clean_html)
         text = re.sub(r"\s+", " ", text).strip()
 
         if len(text) < 500:
-            findings.append(
-                "WARNING: Very little server-rendered content - may be JS-dependent"
-            )
+            findings.append("WARNING: Very little server-rendered content - may be JS-dependent")
             issues.append("Implement Server-Side Rendering (SSR) for AI accessibility")
             score -= 3
         elif len(text) < 2000:
-            findings.append(
-                "Moderate server-rendered content - some content may require JS"
-            )
+            findings.append("Moderate server-rendered content - some content may require JS")
             score -= 1
         else:
-            findings.append(
-                "Good: Substantial content renders without JS (SSR working)"
-            )
+            findings.append("Good: Substantial content renders without JS (SSR working)")
     else:
         findings.append("No SPA framework detected - content likely server-rendered")
 

@@ -1,6 +1,5 @@
 """Tests for the redaction utility module."""
 
-
 from packages.seo_health_report.scripts.redaction import (
     REDACTION_PATTERNS,
     SENSITIVE_KEYS,
@@ -161,26 +160,13 @@ class TestRedactDict:
 
     # Nested dict handling
     def test_nested_dict_redaction(self):
-        data = {
-            "config": {
-                "api_key": "secret123",
-                "url": "https://example.com"
-            }
-        }
+        data = {"config": {"api_key": "secret123", "url": "https://example.com"}}
         result = redact_dict(data)
         assert result["config"]["api_key"] == "[REDACTED]"
         assert result["config"]["url"] == "https://example.com"
 
     def test_deeply_nested_dict(self):
-        data = {
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "token": "deep_secret"
-                    }
-                }
-            }
-        }
+        data = {"level1": {"level2": {"level3": {"token": "deep_secret"}}}}
         result = redact_dict(data)
         assert result["level1"]["level2"]["level3"]["token"] == "[REDACTED]"
 
@@ -189,7 +175,7 @@ class TestRedactDict:
         data = {
             "users": [
                 {"name": "user1", "password": "pass1"},
-                {"name": "user2", "password": "pass2"}
+                {"name": "user2", "password": "pass2"},
             ]
         }
         result = redact_dict(data)
@@ -199,27 +185,14 @@ class TestRedactDict:
         assert result["users"][1]["password"] == "[REDACTED]"
 
     def test_list_of_strings_with_sensitive_data(self):
-        data = {
-            "logs": [
-                "api_key=abc123",
-                "normal log message",
-                "token: xyz789"
-            ]
-        }
+        data = {"logs": ["api_key=abc123", "normal log message", "token: xyz789"]}
         result = redact_dict(data)
         assert "abc123" not in result["logs"][0]
         assert result["logs"][1] == "normal log message"
         assert "xyz789" not in result["logs"][2]
 
     def test_list_with_mixed_types(self):
-        data = {
-            "items": [
-                {"secret": "hidden"},
-                "api_key=visible",
-                123,
-                None
-            ]
-        }
+        data = {"items": [{"secret": "hidden"}, "api_key=visible", 123, None]}
         result = redact_dict(data)
         assert result["items"][0]["secret"] == "[REDACTED]"
         assert "visible" not in result["items"][1]
@@ -237,9 +210,7 @@ class TestRedactDict:
         assert redact_dict([1, 2, 3]) == [1, 2, 3]
 
     def test_string_value_with_sensitive_pattern(self):
-        data = {
-            "message": "Response contained api_key=abc123 in body"
-        }
+        data = {"message": "Response contained api_key=abc123 in body"}
         result = redact_dict(data)
         assert "abc123" not in result["message"]
 

@@ -52,17 +52,32 @@ class TestAuditMetricsIntegration:
         fresh_metrics.inc_counter("audit_total", labels={"tier": "pro", "status": "completed"})
         fresh_metrics.inc_counter("audit_total", labels={"tier": "basic", "status": "completed"})
 
-        assert fresh_metrics.get_counter("audit_total", {"tier": "basic", "status": "completed"}) == 2.0
-        assert fresh_metrics.get_counter("audit_total", {"tier": "pro", "status": "completed"}) == 1.0
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": "basic", "status": "completed"})
+            == 2.0
+        )
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": "pro", "status": "completed"}) == 1.0
+        )
 
     def test_audit_counter_separates_by_status(self, fresh_metrics):
         """Test audit_total counter separates by status."""
-        fresh_metrics.inc_counter("audit_total", labels={"tier": "enterprise", "status": "completed"})
+        fresh_metrics.inc_counter(
+            "audit_total", labels={"tier": "enterprise", "status": "completed"}
+        )
         fresh_metrics.inc_counter("audit_total", labels={"tier": "enterprise", "status": "failed"})
-        fresh_metrics.inc_counter("audit_total", labels={"tier": "enterprise", "status": "completed"})
+        fresh_metrics.inc_counter(
+            "audit_total", labels={"tier": "enterprise", "status": "completed"}
+        )
 
-        assert fresh_metrics.get_counter("audit_total", {"tier": "enterprise", "status": "completed"}) == 2.0
-        assert fresh_metrics.get_counter("audit_total", {"tier": "enterprise", "status": "failed"}) == 1.0
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": "enterprise", "status": "completed"})
+            == 2.0
+        )
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": "enterprise", "status": "failed"})
+            == 1.0
+        )
 
     def test_audit_duration_histogram_records(self, fresh_metrics):
         """Test audit_duration_seconds histogram records duration."""
@@ -132,7 +147,9 @@ class TestAuditMetricsPrometheusFormat:
         )
         registry.register_gauge("active_audits", "Number of currently running audits")
 
-        registry.inc_counter("audit_total", labels={"tier": "basic", "status": "completed"}, value=10)
+        registry.inc_counter(
+            "audit_total", labels={"tier": "basic", "status": "completed"}, value=10
+        )
         registry.inc_counter("audit_total", labels={"tier": "pro", "status": "failed"}, value=2)
         registry.observe_histogram("audit_duration_seconds", 15.0, labels={"tier": "basic"})
         registry.observe_histogram("audit_duration_seconds", 25.0, labels={"tier": "basic"})
@@ -225,7 +242,9 @@ class TestAuditMetricsLifecycle:
         fresh_metrics.observe_histogram("audit_duration_seconds", duration, labels={"tier": tier})
 
         assert fresh_metrics.get_gauge("active_audits") == 0.0
-        assert fresh_metrics.get_counter("audit_total", {"tier": tier, "status": "completed"}) == 1.0
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": tier, "status": "completed"}) == 1.0
+        )
 
         stats = fresh_metrics.get_histogram_stats("audit_duration_seconds", {"tier": tier})
         assert stats["count"] == 1
@@ -268,12 +287,20 @@ class TestAuditMetricsLifecycle:
         assert fresh_metrics.get_gauge("active_audits") == 1.0
 
         fresh_metrics.dec_gauge("active_audits")
-        fresh_metrics.inc_counter("audit_total", labels={"tier": "enterprise", "status": "completed"})
+        fresh_metrics.inc_counter(
+            "audit_total", labels={"tier": "enterprise", "status": "completed"}
+        )
         assert fresh_metrics.get_gauge("active_audits") == 0.0
 
-        assert fresh_metrics.get_counter("audit_total", {"tier": "basic", "status": "completed"}) == 1.0
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": "basic", "status": "completed"})
+            == 1.0
+        )
         assert fresh_metrics.get_counter("audit_total", {"tier": "pro", "status": "failed"}) == 1.0
-        assert fresh_metrics.get_counter("audit_total", {"tier": "enterprise", "status": "completed"}) == 1.0
+        assert (
+            fresh_metrics.get_counter("audit_total", {"tier": "enterprise", "status": "completed"})
+            == 1.0
+        )
 
     def test_audit_metrics_with_all_tiers(self, fresh_metrics):
         """Test metrics work with all tier values."""
@@ -284,6 +311,9 @@ class TestAuditMetricsLifecycle:
             fresh_metrics.observe_histogram("audit_duration_seconds", 10.0, labels={"tier": tier})
 
         for tier in ["basic", "pro", "enterprise"]:
-            assert fresh_metrics.get_counter("audit_total", {"tier": tier, "status": "completed"}) == 1.0
+            assert (
+                fresh_metrics.get_counter("audit_total", {"tier": tier, "status": "completed"})
+                == 1.0
+            )
             stats = fresh_metrics.get_histogram_stats("audit_duration_seconds", {"tier": tier})
             assert stats["count"] == 1

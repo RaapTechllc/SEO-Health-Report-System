@@ -101,7 +101,9 @@ def get_tenant_override(tenant_id: str) -> Optional[dict]:
     return _tenant_overrides.get(tenant_id)
 
 
-def check_rate_limit(request: Request, tier: str = "default", tenant_id: Optional[str] = None) -> dict:
+def check_rate_limit(
+    request: Request, tier: str = "default", tenant_id: Optional[str] = None
+) -> dict:
     """
     Check if request is within rate limits.
 
@@ -114,9 +116,7 @@ def check_rate_limit(request: Request, tier: str = "default", tenant_id: Optiona
     limits = get_tier_limits(tier, tenant_id)
 
     # Clean up old entries (1 minute window)
-    _request_counts[key] = _cleanup_old_entries(
-        _request_counts[key], 60
-    )
+    _request_counts[key] = _cleanup_old_entries(_request_counts[key], 60)
 
     requests_limit = limits["requests_per_minute"]
     requests_used = len(_request_counts[key])
@@ -149,7 +149,7 @@ def check_rate_limit(request: Request, tier: str = "default", tenant_id: Optiona
                 "X-RateLimit-Remaining": "0",
                 "X-RateLimit-Reset": str(reset_time),
                 "Retry-After": str(reset_time),
-            }
+            },
         )
 
     # Record request
@@ -159,7 +159,9 @@ def check_rate_limit(request: Request, tier: str = "default", tenant_id: Optiona
     return rate_info
 
 
-def get_remaining_requests(request: Request, tier: str = "default", tenant_id: Optional[str] = None) -> int:
+def get_remaining_requests(
+    request: Request, tier: str = "default", tenant_id: Optional[str] = None
+) -> int:
     """Get remaining requests in current window without incrementing count."""
     client_ip = get_client_ip(request)
     key = f"{tenant_id}:{client_ip}" if tenant_id else client_ip
@@ -220,7 +222,7 @@ def check_endpoint_limit(request: Request) -> Optional[dict]:
                 "X-RateLimit-Remaining": "0",
                 "X-RateLimit-Reset": "60",
                 "Retry-After": "60",
-            }
+            },
         )
 
     _endpoint_counts[key].append(current_time)
@@ -272,7 +274,7 @@ def check_audit_limit(user_id: str, tier: str = "default") -> dict:
                 "X-RateLimit-Audit-Remaining": "0",
                 "X-RateLimit-Audit-Reset": str(reset_time),
                 "Retry-After": str(reset_time),
-            }
+            },
         )
 
     # Record audit
@@ -282,7 +284,9 @@ def check_audit_limit(user_id: str, tier: str = "default") -> dict:
     return audit_info
 
 
-def get_rate_limit_status(request: Request, tier: str = "default", tenant_id: Optional[str] = None) -> dict:
+def get_rate_limit_status(
+    request: Request, tier: str = "default", tenant_id: Optional[str] = None
+) -> dict:
     """Get current rate limit status for client."""
     client_ip = get_client_ip(request)
     key = f"{tenant_id}:{client_ip}" if tenant_id else client_ip

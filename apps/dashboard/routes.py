@@ -100,20 +100,13 @@ async def dashboard_index():
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_page(
-    request: Request,
-    error: str = None,
-    db: Session = Depends(get_db)
-):
+async def login_page(request: Request, error: str = None, db: Session = Depends(get_db)):
     """Display login page. Redirects to audits if already logged in."""
     user = get_current_dashboard_user(request, db)
     if user:
         return RedirectResponse(url="/dashboard/audits", status_code=302)
 
-    return templates.TemplateResponse(
-        "login.html",
-        {"request": request, "error": error}
-    )
+    return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -121,7 +114,7 @@ async def login_submit(
     request: Request,
     email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Handle login form submission."""
     user = authenticate_user(db, email, password)
@@ -129,13 +122,11 @@ async def login_submit(
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Invalid email or password"},
-            status_code=401
+            status_code=401,
         )
 
     session_id = create_session(
-        user_id=user.id,
-        tenant_id=getattr(user, 'tenant_id', None),
-        role=user.role
+        user_id=user.id, tenant_id=getattr(user, "tenant_id", None), role=user.role
     )
 
     response = RedirectResponse(url="/dashboard/audits", status_code=302)
@@ -174,28 +165,25 @@ async def audit_list(
     if search:
         search_term = f"%{search}%"
         query = query.filter(
-            or_(
-                Audit.url.ilike(search_term),
-                Audit.company_name.ilike(search_term)
-            )
+            or_(Audit.url.ilike(search_term), Audit.company_name.ilike(search_term))
         )
 
     if status:
-        if status == 'pending':
-            query = query.filter(Audit.status.in_(['pending', 'queued']))
+        if status == "pending":
+            query = query.filter(Audit.status.in_(["pending", "queued"]))
         else:
             query = query.filter(Audit.status == status)
 
     if date_from:
         try:
-            from_date = datetime.strptime(date_from, '%Y-%m-%d')
+            from_date = datetime.strptime(date_from, "%Y-%m-%d")
             query = query.filter(Audit.created_at >= from_date)
         except ValueError:
             pass
 
     if date_to:
         try:
-            to_date = datetime.strptime(date_to, '%Y-%m-%d')
+            to_date = datetime.strptime(date_to, "%Y-%m-%d")
             to_date = to_date.replace(hour=23, minute=59, second=59)
             query = query.filter(Audit.created_at <= to_date)
         except ValueError:
@@ -206,7 +194,9 @@ async def audit_list(
 
     page = min(page, total_pages)
 
-    audits = query.order_by(Audit.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    audits = (
+        query.order_by(Audit.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    )
 
     tenant_name = get_tenant_name(db, user.get("tenant_id"))
     quota = get_quota_for_user(db, user.get("tenant_id"))
@@ -235,22 +225,20 @@ async def audit_list(
             "quota": quota,
             "filters": filters,
             "pagination": pagination,
-        }
+        },
     )
 
 
 @router.get("/audits/new", response_class=HTMLResponse)
 async def audit_new(
-    request: Request,
-    user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    request: Request, user: dict = Depends(require_dashboard_auth), db: Session = Depends(get_db)
 ):
     """Display new audit intake form."""
     tenant_name = get_tenant_name(db, user.get("tenant_id"))
     quota = get_quota_for_user(db, user.get("tenant_id"))
     return templates.TemplateResponse(
         "audit_new.html",
-        {"request": request, "user": user, "tenant_name": tenant_name, "quota": quota}
+        {"request": request, "user": user, "tenant_name": tenant_name, "quota": quota},
     )
 
 
@@ -260,10 +248,10 @@ def validate_url(url: str) -> tuple[bool, str, str]:
         return False, "Website URL is required", ""
 
     url = url.strip().lower()
-    url = re.sub(r'^(https?://)?(www\.)?', '', url)
-    url = url.rstrip('/')
+    url = re.sub(r"^(https?://)?(www\.)?", "", url)
+    url = url.rstrip("/")
 
-    domain_pattern = r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'
+    domain_pattern = r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
     if not re.match(domain_pattern, url, re.IGNORECASE):
         return False, "Please enter a valid domain (e.g., example.com)", ""
 
@@ -276,7 +264,7 @@ def enqueue_audit_job(
     tenant_id: str,
     url: str,
     options: dict,
-    job_type: str = "dashboard_audit"
+    job_type: str = "dashboard_audit",
 ) -> str:
     """Create job record for async processing."""
     job_id = str(uuid.uuid4())
@@ -284,29 +272,25 @@ def enqueue_audit_job(
 
     existing = db.execute(
         text("SELECT audit_id FROM audit_jobs WHERE idempotency_key = :key"),
-        {"key": idempotency_key}
+        {"key": idempotency_key},
     ).fetchone()
 
     if existing:
         return existing[0]
 
     db.execute(
-        text('''
+        text("""
             INSERT INTO audit_jobs
             (job_id, tenant_id, audit_id, status, idempotency_key, payload_json, queued_at)
             VALUES (:job_id, :tenant_id, :audit_id, 'queued', :idempotency_key, :payload, CURRENT_TIMESTAMP)
-        '''),
+        """),
         {
             "job_id": job_id,
             "tenant_id": tenant_id or "default",
             "audit_id": audit_id,
             "idempotency_key": idempotency_key,
-            "payload": json.dumps({
-                "url": url,
-                "job_type": job_type,
-                **options
-            })
-        }
+            "payload": json.dumps({"url": url, "job_type": job_type, **options}),
+        },
     )
     db.commit()
     return audit_id
@@ -321,7 +305,7 @@ async def audit_create(
     tier: str = Form("basic"),
     service_areas: str = Form(""),
     user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Handle new audit form submission with quota checking and validation."""
     tenant_id = user.get("tenant_id")
@@ -356,9 +340,9 @@ async def audit_create(
                     "trade_type": trade_type,
                     "tier": tier,
                     "service_areas": service_areas,
-                }
+                },
             },
-            status_code=422
+            status_code=422,
         )
 
     if tenant_id:
@@ -384,14 +368,14 @@ async def audit_create(
                         "trade_type": trade_type,
                         "tier": tier,
                         "service_areas": service_areas,
-                    }
+                    },
                 },
-                status_code=429
+                status_code=429,
             )
 
     parsed_service_areas = None
     if service_areas and service_areas.strip():
-        areas = [a.strip() for a in re.split(r'[;,]', service_areas) if a.strip()]
+        areas = [a.strip() for a in re.split(r"[;,]", service_areas) if a.strip()]
         if areas:
             parsed_service_areas = areas
 
@@ -426,7 +410,7 @@ async def audit_create(
             tenant_id=tenant_id,
             url=normalized_url,
             options=options,
-            job_type="dashboard_audit"
+            job_type="dashboard_audit",
         )
 
         if result_audit_id != audit_id:
@@ -460,9 +444,9 @@ async def audit_create(
                     "trade_type": trade_type,
                     "tier": tier,
                     "service_areas": service_areas,
-                }
+                },
             },
-            status_code=500
+            status_code=500,
         )
 
     return RedirectResponse(url=f"/dashboard/audits/{audit.id}", status_code=302)
@@ -473,7 +457,7 @@ async def audit_detail(
     request: Request,
     audit_id: str,
     user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Display single audit details with progress and results."""
     audit = db.query(Audit).filter(Audit.id == audit_id).first()
@@ -481,13 +465,19 @@ async def audit_detail(
         return templates.TemplateResponse(
             "audit_detail.html",
             {"request": request, "audit": None, "error": "Audit not found", "user": user},
-            status_code=404
+            status_code=404,
         )
     tenant_name = get_tenant_name(db, user.get("tenant_id"))
     quota = get_quota_for_user(db, user.get("tenant_id"))
     return templates.TemplateResponse(
         "audit_detail.html",
-        {"request": request, "audit": audit, "user": user, "tenant_name": tenant_name, "quota": quota}
+        {
+            "request": request,
+            "audit": audit,
+            "user": user,
+            "tenant_name": tenant_name,
+            "quota": quota,
+        },
     )
 
 
@@ -496,7 +486,7 @@ async def download_audit_report(
     audit_id: str,
     format: str,
     user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Download audit report in HTML or PDF format with company name in filename."""
     audit = db.query(Audit).filter(Audit.id == audit_id).first()
@@ -506,17 +496,17 @@ async def download_audit_report(
     if audit.status != "completed":
         raise HTTPException(status_code=400, detail="Report not ready - audit still in progress")
 
-    safe_company_name = re.sub(r'[^\w\s-]', '', audit.company_name or 'Report')
-    safe_company_name = re.sub(r'\s+', '_', safe_company_name.strip())
+    safe_company_name = re.sub(r"[^\w\s-]", "", audit.company_name or "Report")
+    safe_company_name = re.sub(r"\s+", "_", safe_company_name.strip())
 
     if format == "html":
-        path = getattr(audit, 'report_html_path', None)
+        path = getattr(audit, "report_html_path", None)
         media_type = "text/html"
         filename = f"{safe_company_name}_SEO_Report.html"
     elif format == "pdf":
-        path = getattr(audit, 'report_pdf_path', None)
+        path = getattr(audit, "report_pdf_path", None)
         if not path:
-            json_path = getattr(audit, 'report_path', None)
+            json_path = getattr(audit, "report_path", None)
             if json_path:
                 path = json_path.replace(".json", "_PREMIUM.pdf")
         media_type = "application/pdf"
@@ -531,22 +521,22 @@ async def download_audit_report(
         path,
         media_type=media_type,
         filename=filename,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
 @router.get("/tenants")
 async def list_tenants(
-    request: Request,
-    user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    request: Request, user: dict = Depends(require_dashboard_auth), db: Session = Depends(get_db)
 ):
     """List all tenants the user has access to. Returns JSON."""
     tenants = get_user_tenants(db, user["id"])
-    return JSONResponse(content={
-        "tenants": tenants,
-        "current_tenant_id": user.get("tenant_id"),
-    })
+    return JSONResponse(
+        content={
+            "tenants": tenants,
+            "current_tenant_id": user.get("tenant_id"),
+        }
+    )
 
 
 @router.post("/switch-tenant")
@@ -554,7 +544,7 @@ async def switch_tenant(
     request: Request,
     body: SwitchTenantRequest,
     user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Switch the active tenant for the current session."""
     tenants = get_user_tenants(db, user["id"])
@@ -562,65 +552,62 @@ async def switch_tenant(
 
     if body.tenant_id not in tenant_ids:
         return JSONResponse(
-            status_code=403,
-            content={"detail": "You do not have access to this tenant"}
+            status_code=403, content={"detail": "You do not have access to this tenant"}
         )
 
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     if not session_id:
-        return JSONResponse(
-            status_code=401,
-            content={"detail": "No active session"}
-        )
+        return JSONResponse(status_code=401, content={"detail": "No active session"})
 
     success = update_session_tenant(session_id, body.tenant_id)
     if not success:
-        return JSONResponse(
-            status_code=400,
-            content={"detail": "Failed to update session"}
-        )
+        return JSONResponse(status_code=400, content={"detail": "Failed to update session"})
 
     tenant = db.query(Tenant).filter(Tenant.id == body.tenant_id).first()
-    return JSONResponse(content={
-        "success": True,
-        "tenant_id": body.tenant_id,
-        "tenant_name": tenant.name if tenant else None,
-    })
+    return JSONResponse(
+        content={
+            "success": True,
+            "tenant_id": body.tenant_id,
+            "tenant_name": tenant.name if tenant else None,
+        }
+    )
 
 
 @router.get("/quota")
 async def get_quota_status(
-    request: Request,
-    user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    request: Request, user: dict = Depends(require_dashboard_auth), db: Session = Depends(get_db)
 ):
     """Get current quota status for the authenticated user's tenant."""
     tenant_id = user.get("tenant_id")
     if not tenant_id:
-        return JSONResponse(content={
-            "monthly_audits_used": 0,
-            "monthly_audits_limit": -1,
-            "monthly_audits_remaining": -1,
-            "concurrent_audits": 0,
-            "max_concurrent": 1,
-            "can_start_audit": True,
-            "quota_exceeded_reason": None,
-            "reset_date": None,
-        })
+        return JSONResponse(
+            content={
+                "monthly_audits_used": 0,
+                "monthly_audits_limit": -1,
+                "monthly_audits_remaining": -1,
+                "concurrent_audits": 0,
+                "max_concurrent": 1,
+                "can_start_audit": True,
+                "quota_exceeded_reason": None,
+                "reset_date": None,
+            }
+        )
 
     quota_service = QuotaService(db)
     status = quota_service.check_quota(tenant_id)
 
-    return JSONResponse(content={
-        "monthly_audits_used": status.monthly_audits_used,
-        "monthly_audits_limit": status.monthly_audits_limit,
-        "monthly_audits_remaining": status.monthly_audits_remaining,
-        "concurrent_audits": status.concurrent_audits,
-        "max_concurrent": status.max_concurrent,
-        "can_start_audit": status.can_start_audit,
-        "quota_exceeded_reason": status.quota_exceeded_reason,
-        "reset_date": status.reset_date.isoformat() if status.reset_date else None,
-    })
+    return JSONResponse(
+        content={
+            "monthly_audits_used": status.monthly_audits_used,
+            "monthly_audits_limit": status.monthly_audits_limit,
+            "monthly_audits_remaining": status.monthly_audits_remaining,
+            "concurrent_audits": status.concurrent_audits,
+            "max_concurrent": status.max_concurrent,
+            "can_start_audit": status.can_start_audit,
+            "quota_exceeded_reason": status.quota_exceeded_reason,
+            "reset_date": status.reset_date.isoformat() if status.reset_date else None,
+        }
+    )
 
 
 @router.get("/settings", response_class=HTMLResponse)
@@ -629,7 +616,7 @@ async def settings_page(
     success: str = None,
     error: str = None,
     user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Display user settings page."""
     user_record = db.query(User).filter(User.id == user["id"]).first()
@@ -665,7 +652,7 @@ async def settings_page(
             "quota": quota,
             "success": success,
             "error": error,
-        }
+        },
     )
 
 
@@ -676,38 +663,31 @@ async def change_password(
     new_password: str = Form(...),
     confirm_password: str = Form(...),
     user: dict = Depends(require_dashboard_auth),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Handle password change form submission."""
     if new_password != confirm_password:
         return RedirectResponse(
-            url="/dashboard/settings?error=Passwords+do+not+match",
-            status_code=302
+            url="/dashboard/settings?error=Passwords+do+not+match", status_code=302
         )
 
     if len(new_password) < 8:
         return RedirectResponse(
-            url="/dashboard/settings?error=Password+must+be+at+least+8+characters",
-            status_code=302
+            url="/dashboard/settings?error=Password+must+be+at+least+8+characters", status_code=302
         )
 
     user_record = db.query(User).filter(User.id == user["id"]).first()
     if not user_record:
-        return RedirectResponse(
-            url="/dashboard/settings?error=User+not+found",
-            status_code=302
-        )
+        return RedirectResponse(url="/dashboard/settings?error=User+not+found", status_code=302)
 
     if not verify_password(current_password, user_record.password_hash):
         return RedirectResponse(
-            url="/dashboard/settings?error=Current+password+is+incorrect",
-            status_code=302
+            url="/dashboard/settings?error=Current+password+is+incorrect", status_code=302
         )
 
     user_record.password_hash = hash_password(new_password)
     db.commit()
 
     return RedirectResponse(
-        url="/dashboard/settings?success=Password+updated+successfully",
-        status_code=302
+        url="/dashboard/settings?success=Password+updated+successfully", status_code=302
     )

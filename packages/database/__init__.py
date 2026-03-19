@@ -62,7 +62,11 @@ class User(Base):
     role = Column(String(50), default="user")
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=True, index=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     tenant = relationship("Tenant", back_populates="users")
     audits = relationship("Audit", back_populates="user")
@@ -78,7 +82,9 @@ class Audit(Base):
     url = Column(String(500), nullable=False)
     company_name = Column(String(255), nullable=False)
     tier = Column(String(50), default="basic")
-    status = Column(String(50), default="pending", index=True)  # pending, running, completed, failed
+    status = Column(
+        String(50), default="pending", index=True
+    )  # pending, running, completed, failed
     overall_score = Column(Integer, nullable=True)
     grade = Column(String(5), nullable=True)
     result = Column(JSON, nullable=True)
@@ -130,29 +136,41 @@ class Competitor(Base):
 
 class TenantBranding(Base):
     """Tenant branding configuration for report customization."""
+
     __tablename__ = "tenant_branding"
 
     id = Column(String(36), primary_key=True)
-    tenant_id = Column(String(36), ForeignKey("tenants.id"), unique=True, nullable=False, index=True)
+    tenant_id = Column(
+        String(36), ForeignKey("tenants.id"), unique=True, nullable=False, index=True
+    )
     logo_url = Column(String(500), nullable=True)
     primary_color = Column(String(7), default="#1E3A8A")  # hex color
     secondary_color = Column(String(7), default="#3B82F6")  # hex color
     footer_text = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     tenant = relationship("Tenant", back_populates="branding")
 
 
 class TenantQuota(Base):
     """Per-tenant usage quotas and limits."""
+
     __tablename__ = "tenant_quotas"
 
     id = Column(String(36), primary_key=True)
-    tenant_id = Column(String(36), ForeignKey("tenants.id"), unique=True, nullable=False, index=True)
+    tenant_id = Column(
+        String(36), ForeignKey("tenants.id"), unique=True, nullable=False, index=True
+    )
 
     # Monthly limits
-    monthly_audits_limit = Column(Integer, default=10)  # basic=10, pro=50, enterprise=-1 (unlimited)
+    monthly_audits_limit = Column(
+        Integer, default=10
+    )  # basic=10, pro=50, enterprise=-1 (unlimited)
     monthly_audits_used = Column(Integer, default=0)
     billing_cycle_start = Column(DateTime, nullable=True)
 
@@ -164,13 +182,18 @@ class TenantQuota(Base):
     max_ai_prompts_per_audit = Column(Integer, default=10)  # basic=10, pro=50, enterprise=200
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     tenant = relationship("Tenant", back_populates="quota")
 
 
 class Webhook(Base):
     """Webhook subscription for event notifications."""
+
     __tablename__ = "webhooks"
 
     id = Column(String(36), primary_key=True)
@@ -180,18 +203,27 @@ class Webhook(Base):
     events = Column(JSON, nullable=False)  # ["audit.completed", "audit.failed"]
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     tenant = relationship("Tenant", back_populates="webhooks")
-    deliveries = relationship("WebhookDelivery", back_populates="webhook", cascade="all, delete-orphan")
+    deliveries = relationship(
+        "WebhookDelivery", back_populates="webhook", cascade="all, delete-orphan"
+    )
 
 
 class WebhookDelivery(Base):
     """Tracks individual webhook delivery attempts."""
+
     __tablename__ = "webhook_deliveries"
 
     id = Column(String(36), primary_key=True)
-    webhook_id = Column(String(36), ForeignKey("webhooks.id", ondelete="CASCADE"), nullable=False, index=True)
+    webhook_id = Column(
+        String(36), ForeignKey("webhooks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     event_type = Column(String(50), nullable=False)
     payload = Column(JSON, nullable=False)
     status = Column(String(20), default="pending", index=True)  # pending, delivered, failed
@@ -206,15 +238,17 @@ class WebhookDelivery(Base):
     webhook = relationship("Webhook", back_populates="deliveries")
 
 
-
 class AuditJob(Base):
     """Async audit job queue."""
+
     __tablename__ = "audit_jobs"
 
     job_id = Column(String(36), primary_key=True)
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=True, index=True)
     audit_id = Column(String(36), ForeignKey("audits.id"), nullable=False, index=True)
-    status = Column(String(50), default="queued", index=True)  # queued, processing, completed, failed
+    status = Column(
+        String(50), default="queued", index=True
+    )  # queued, processing, completed, failed
     idempotency_key = Column(String(64), unique=True, nullable=True, index=True)
     payload_json = Column(JSON, nullable=False)
     queued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -231,19 +265,26 @@ class CostEvent(Base):
     Append-only cost ledger entry for any billable API call during an audit.
     Tracks AI provider usage, tokens, and costs for per-report cost analysis.
     """
+
     __tablename__ = "cost_events"
 
     id = Column(String(36), primary_key=True)
-    audit_id = Column(String(36), ForeignKey("audits.id", ondelete="CASCADE"), nullable=False, index=True)
+    audit_id = Column(
+        String(36), ForeignKey("audits.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=True, index=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
 
     tier = Column(String(50), nullable=True, index=True)  # low/medium/high as executed
-    phase = Column(String(80), nullable=True, index=True)  # e.g., "ai_visibility", "exec_summary", "image_header"
+    phase = Column(
+        String(80), nullable=True, index=True
+    )  # e.g., "ai_visibility", "exec_summary", "image_header"
 
-    provider = Column(String(50), nullable=False, index=True)  # openai/google/anthropic/xai/perplexity
-    model = Column(String(120), nullable=True, index=True)     # e.g., gpt-5-mini, gemini-3.0-pro
-    operation = Column(String(80), nullable=False, index=True) # "chat", "image", "search", "crawl"
+    provider = Column(
+        String(50), nullable=False, index=True
+    )  # openai/google/anthropic/xai/perplexity
+    model = Column(String(120), nullable=True, index=True)  # e.g., gpt-5-mini, gemini-3.0-pro
+    operation = Column(String(80), nullable=False, index=True)  # "chat", "image", "search", "crawl"
 
     # Usage accounting
     prompt_tokens = Column(Integer, nullable=True)
@@ -268,7 +309,9 @@ class CostEvent(Base):
 
 
 # Composite index for common queries
-Index("ix_cost_events_audit_provider_model", CostEvent.audit_id, CostEvent.provider, CostEvent.model)
+Index(
+    "ix_cost_events_audit_provider_model", CostEvent.audit_id, CostEvent.provider, CostEvent.model
+)
 
 
 def init_db():

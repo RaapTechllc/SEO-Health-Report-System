@@ -21,25 +21,27 @@ class TierClassifier:
                 "max_pages": 100,
                 "max_da": 30,
                 "report_time": 30,
-                "price_range": (500, 1500)
+                "price_range": (500, 1500),
             },
             ReportTier.PRO: {
                 "max_complexity": 70,
                 "max_pages": 1000,
                 "max_da": 70,
                 "report_time": 60,
-                "price_range": (1500, 4000)
+                "price_range": (1500, 4000),
             },
             ReportTier.ENTERPRISE: {
                 "max_complexity": 100,
                 "max_pages": 10000,
                 "max_da": 100,
                 "report_time": 90,
-                "price_range": (4000, 10000)
-            }
+                "price_range": (4000, 10000),
+            },
         }
 
-    def classify_site_tier(self, target_url: str, budget_range: Optional[str] = None) -> TierRecommendation:
+    def classify_site_tier(
+        self, target_url: str, budget_range: Optional[str] = None
+    ) -> TierRecommendation:
         """Classify site and recommend appropriate tier."""
 
         try:
@@ -66,7 +68,7 @@ class TierClassifier:
                 reasoning=reasoning,
                 site_complexity_score=complexity.complexity_score,
                 estimated_report_time=self.tier_thresholds[recommended_tier]["report_time"],
-                pricing_suggestion=pricing
+                pricing_suggestion=pricing,
             )
 
         except Exception as e:
@@ -78,7 +80,7 @@ class TierClassifier:
                 reasoning=["Unable to analyze site complexity, recommending standard tier"],
                 site_complexity_score=50,
                 estimated_report_time=60,
-                pricing_suggestion={"min": 1500, "max": 4000, "recommended": 2500}
+                pricing_suggestion={"min": 1500, "max": 4000, "recommended": 2500},
             )
 
     def _analyze_site_complexity(self, target_url: str) -> SiteComplexity:
@@ -105,8 +107,11 @@ class TierClassifier:
 
             # Calculate overall complexity score
             complexity_score = self._calculate_complexity_score(
-                estimated_pages, domain_authority, technical_issues,
-                content_volume, competitive_landscape
+                estimated_pages,
+                domain_authority,
+                technical_issues,
+                content_volume,
+                competitive_landscape,
             )
 
             return SiteComplexity(
@@ -115,7 +120,7 @@ class TierClassifier:
                 technical_issues_count=technical_issues,
                 content_volume=content_volume,
                 competitive_landscape=competitive_landscape,
-                complexity_score=complexity_score
+                complexity_score=complexity_score,
             )
 
         except Exception as e:
@@ -126,7 +131,7 @@ class TierClassifier:
                 technical_issues_count=10,
                 content_volume="medium",
                 competitive_landscape="medium",
-                complexity_score=50
+                complexity_score=50,
             )
 
     def _estimate_page_count(self, url: str) -> int:
@@ -136,12 +141,12 @@ class TierClassifier:
             domain = urlparse(url).netloc
 
             # Simple heuristic based on domain characteristics
-            if any(indicator in domain.lower() for indicator in ['blog', 'news', 'shop', 'store']):
+            if any(indicator in domain.lower() for indicator in ["blog", "news", "shop", "store"]):
                 return 2000  # Content-heavy sites
-            elif any(indicator in domain.lower() for indicator in ['corp', 'company', 'business']):
-                return 500   # Corporate sites
+            elif any(indicator in domain.lower() for indicator in ["corp", "company", "business"]):
+                return 500  # Corporate sites
             else:
-                return 100   # Small sites
+                return 100  # Small sites
 
         except Exception:
             return 500  # Default
@@ -155,7 +160,9 @@ class TierClassifier:
         """
         # TODO: Integrate real DA API (Moz, Ahrefs, SEMrush)
         # For now, return a conservative baseline with disclosure
-        self.logger.warning(f"Using baseline DA estimate for {domain} - integrate DA API for accuracy")
+        self.logger.warning(
+            f"Using baseline DA estimate for {domain} - integrate DA API for accuracy"
+        )
         return 40  # Conservative baseline - actual DA requires API integration
 
     def _count_technical_issues(self, url: str) -> int:
@@ -166,7 +173,9 @@ class TierClassifier:
         run the actual technical audit module.
         """
         # TODO: Run actual technical audit for real issue count
-        self.logger.warning(f"Using baseline issue estimate for {url} - run full audit for accuracy")
+        self.logger.warning(
+            f"Using baseline issue estimate for {url} - run full audit for accuracy"
+        )
         return 10  # Conservative baseline - actual count requires full audit
 
     def _assess_content_volume(self, page_count: int) -> str:
@@ -187,8 +196,9 @@ class TierClassifier:
         else:
             return "high"
 
-    def _calculate_complexity_score(self, pages: int, da: int, issues: int,
-                                   content: str, competition: str) -> int:
+    def _calculate_complexity_score(
+        self, pages: int, da: int, issues: int, content: str, competition: str
+    ) -> int:
         """Calculate overall complexity score (0-100)."""
 
         # Page count factor (0-30 points)
@@ -211,7 +221,9 @@ class TierClassifier:
         total_score = page_score + da_score + issue_score + content_score + comp_score
         return min(100, int(total_score))
 
-    def _determine_tier(self, complexity: SiteComplexity, budget_range: Optional[str]) -> ReportTier:
+    def _determine_tier(
+        self, complexity: SiteComplexity, budget_range: Optional[str]
+    ) -> ReportTier:
         """Determine recommended tier based on complexity and budget."""
 
         score = complexity.complexity_score
@@ -293,7 +305,9 @@ class TierClassifier:
 
         return reasoning
 
-    def _get_pricing_suggestion(self, tier: ReportTier, complexity: SiteComplexity) -> dict[str, int]:
+    def _get_pricing_suggestion(
+        self, tier: ReportTier, complexity: SiteComplexity
+    ) -> dict[str, int]:
         """Get pricing suggestion for the tier."""
 
         base_range = self.tier_thresholds[tier]["price_range"]
@@ -305,11 +319,8 @@ class TierClassifier:
         max_price = int(base_range[1] * complexity_multiplier)
         recommended_price = int((min_price + max_price) / 2)
 
-        return {
-            "min": min_price,
-            "max": max_price,
-            "recommended": recommended_price
-        }
+        return {"min": min_price, "max": max_price, "recommended": recommended_price}
+
 
 # Global tier classifier
 tier_classifier = TierClassifier()

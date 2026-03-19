@@ -97,9 +97,7 @@ def generate_premium_docx_report(
         info_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
         info_para.space_before = Pt(48)
         info_para.add_run(f"Prepared by: {agency_name}\n").font.size = Pt(12)
-        info_para.add_run(
-            f"Date: {datetime.now().strftime('%B %d, %Y')}\n"
-        ).font.size = Pt(12)
+        info_para.add_run(f"Date: {datetime.now().strftime('%B %d, %Y')}\n").font.size = Pt(12)
         info_para.add_run(f"Website: {target_url}").font.size = Pt(10)
 
         doc.add_page_break()
@@ -193,18 +191,14 @@ def generate_premium_docx_report(
         ).bold = True
 
         ai_systems_para = doc.add_paragraph()
-        ai_systems_para.add_run(
-            "We tested your brand visibility across the top AI systems:\n"
-        )
+        ai_systems_para.add_run("We tested your brand visibility across the top AI systems:\n")
         ai_systems_para.add_run("• Google AI Search (Bard/Gemini)\n")
         ai_systems_para.add_run("• Perplexity AI Search\n")
         ai_systems_para.add_run("• OpenAI Search (ChatGPT)\n\n")
 
         # AI score with context
         ai_score_para = doc.add_paragraph()
-        ai_score_para.add_run(
-            f"Your AI Visibility Score: {ai.get('score', 0)}/100\n"
-        ).bold = True
+        ai_score_para.add_run(f"Your AI Visibility Score: {ai.get('score', 0)}/100\n").bold = True
 
         if ai.get("score", 0) >= 70:
             ai_context = "🎯 EXCELLENT: Your brand consistently appears in AI responses with accurate information."
@@ -244,9 +238,7 @@ def generate_premium_docx_report(
 
         # === TECHNICAL SEO SECTION ===
         doc.add_heading("🔧 Technical SEO Analysis", level=1)
-        doc.add_paragraph(
-            f"Technical Foundation Score: {technical.get('score', 0)}/100"
-        )
+        doc.add_paragraph(f"Technical Foundation Score: {technical.get('score', 0)}/100")
 
         # Technical components
         if technical.get("components"):
@@ -326,14 +318,14 @@ def generate_premium_docx_report(
         # Footer with branding
         footer = doc.sections[0].footer
         footer_para = footer.paragraphs[0]
-        footer_para.text = f"© {datetime.now().year} {agency_name} | Premium SEO Health Report for {company_name}"
+        footer_para.text = (
+            f"© {datetime.now().year} {agency_name} | Premium SEO Health Report for {company_name}"
+        )
         footer_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
         footer_para.runs[0].font.size = Pt(9)
 
         # Save document
-        project_root = os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        )
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         reports_dir = os.path.join(project_root, "reports")
         os.makedirs(reports_dir, exist_ok=True)
 

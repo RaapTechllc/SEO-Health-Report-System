@@ -105,19 +105,21 @@ class MetricsMiddleware(BaseHTTPMiddleware):
                 continue
 
             # UUID pattern
-            if re.match(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', part, re.I):
+            if re.match(
+                r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", part, re.I
+            ):
                 normalized.append("{id}")
             # Hex ID (12+ chars)
-            elif re.match(r'^[0-9a-f]{12,}$', part, re.I):
+            elif re.match(r"^[0-9a-f]{12,}$", part, re.I):
                 normalized.append("{id}")
             # Numeric ID
-            elif re.match(r'^\d+$', part):
+            elif re.match(r"^\d+$", part):
                 normalized.append("{id}")
             # Prefixed ID (e.g., audit_abc123, pay_xyz789)
-            elif re.match(r'^[a-z]+_[a-z0-9]+$', part, re.I):
+            elif re.match(r"^[a-z]+_[a-z0-9]+$", part, re.I):
                 normalized.append("{id}")
             # Date pattern (YYYY-MM-DD or YYYY/MM/DD)
-            elif re.match(r'^\d{4}[-/]\d{2}[-/]\d{2}$', part):
+            elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", part):
                 normalized.append("{date}")
             else:
                 normalized.append(part)
@@ -139,6 +141,7 @@ def create_metrics_endpoint():
     Returns:
         Async function that returns Prometheus-formatted metrics
     """
+
     async def metrics_endpoint() -> Response:
         from starlette.responses import PlainTextResponse
 

@@ -48,9 +48,9 @@ def markdown_to_reportlab(text: str) -> str:
     if not text:
         return ""
     # Convert **bold** to <b>bold</b>
-    text = re.sub(r'\*\*([^*]+)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", text)
     # Convert numbered lists like "1. **Item**" to proper format
-    text = re.sub(r'^\d+\.\s+', '• ', text, flags=re.MULTILINE)
+    text = re.sub(r"^\d+\.\s+", "• ", text, flags=re.MULTILINE)
     return text
 
 
@@ -82,7 +82,7 @@ class PremiumReportGenerator:
         score = self.data.get("overall_score", 0) or 0
         grade = self.data.get("grade", "F")
 
-        self.story.append(Spacer(1, 1.5*inch))
+        self.story.append(Spacer(1, 1.5 * inch))
 
         # Title with proper spacing
         title_style = ParagraphStyle(
@@ -166,7 +166,7 @@ class PremiumReportGenerator:
         )
         self.story.append(Paragraph(f"Grade: {grade}", grade_disp_style))
 
-        self.story.append(Spacer(1, 0.5*inch))
+        self.story.append(Spacer(1, 0.5 * inch))
 
         # Date
         info_style = ParagraphStyle(
@@ -216,7 +216,7 @@ class PremiumReportGenerator:
     def _add_table_of_contents(self):
         """Add table of contents."""
         self.story.append(SectionTitle("Table of Contents"))
-        self.story.append(Spacer(1, 0.3*inch))
+        self.story.append(Spacer(1, 0.3 * inch))
 
         has_market_intel = "market_intelligence" in self.data
 
@@ -281,27 +281,27 @@ class PremiumReportGenerator:
             ("AI Visibility", str(ai_score), "up" if ai_score >= 50 else "down"),
         ]
         self.story.append(KpiCardRow(kpis))
-        self.story.append(Spacer(1, 0.25*inch))
+        self.story.append(Spacer(1, 0.25 * inch))
 
         # Score gauge chart
         gauge_path = str(self.charts_dir / "score_gauge.png")
         charts.create_score_gauge(score, grade, self.company_name, gauge_path)
         if os.path.exists(gauge_path):
-            img = Image(gauge_path, width=3.5*inch, height=2.4*inch)
-            img.hAlign = 'CENTER'
+            img = Image(gauge_path, width=3.5 * inch, height=2.4 * inch)
+            img.hAlign = "CENTER"
             self.story.append(img)
 
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Spacer(1, 0.2 * inch))
 
         # Component bars chart
         bars_path = str(self.charts_dir / "component_bars.png")
         charts.create_component_bars(tech_score, content_score, ai_score, bars_path)
         if os.path.exists(bars_path):
-            img = Image(bars_path, width=5.5*inch, height=2*inch)
-            img.hAlign = 'CENTER'
+            img = Image(bars_path, width=5.5 * inch, height=2 * inch)
+            img.hAlign = "CENTER"
             self.story.append(img)
 
-        self.story.append(Spacer(1, 0.25*inch))
+        self.story.append(Spacer(1, 0.25 * inch))
 
         # Executive summary text - convert markdown to proper formatting
         exec_summary = self.data.get("executive_summary", "")
@@ -314,12 +314,14 @@ class PremiumReportGenerator:
         # Quick wins
         quick_wins = self.data.get("quick_wins", [])
         if quick_wins:
-            self.story.append(Spacer(1, 0.2*inch))
-            self.story.append(Paragraph("<b>Quick Wins (High Impact, Low Effort)</b>", self.styles["SubSection"]))
+            self.story.append(Spacer(1, 0.2 * inch))
+            self.story.append(
+                Paragraph("<b>Quick Wins (High Impact, Low Effort)</b>", self.styles["SubSection"])
+            )
             for win in quick_wins[:5]:
                 clean_win = clean_ai_copy(win)
                 # Remove any emoji-like characters
-                clean_win = re.sub(r'[^\x00-\x7F]+', '', clean_win).strip()
+                clean_win = re.sub(r"[^\x00-\x7F]+", "", clean_win).strip()
                 if clean_win:
                     self.story.append(Paragraph(f"• {clean_win}", self.styles["Finding"]))
 
@@ -329,11 +331,13 @@ class PremiumReportGenerator:
         """Add score breakdown and methodology section."""
         self.story.append(SectionTitle("Score Breakdown", number=2))
 
-        intro = ("The SEO Health Score combines three key areas, weighted by their "
-                "impact on modern search visibility. AI Visibility receives higher weight (35%) "
-                "because AI-powered search is rapidly changing how customers discover businesses.")
+        intro = (
+            "The SEO Health Score combines three key areas, weighted by their "
+            "impact on modern search visibility. AI Visibility receives higher weight (35%) "
+            "because AI-powered search is rapidly changing how customers discover businesses."
+        )
         self.story.append(Paragraph(intro, self.styles["BodyText"]))
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Spacer(1, 0.2 * inch))
 
         # Methodology table - full width
         method_data = [
@@ -343,26 +347,30 @@ class PremiumReportGenerator:
             ["AI Visibility", "35%", "Presence in ChatGPT, Claude, Perplexity responses"],
         ]
 
-        method_table = Table(method_data, colWidths=[2*inch, 1*inch, 4*inch])
-        method_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ReportColors.background]),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ]))
+        method_table = Table(method_data, colWidths=[2 * inch, 1 * inch, 4 * inch])
+        method_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ReportColors.background]),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ]
+            )
+        )
         self.story.append(method_table)
-        self.story.append(Spacer(1, 0.3*inch))
+        self.story.append(Spacer(1, 0.3 * inch))
 
         # Grade scale
         self.story.append(Paragraph("<b>Grade Scale</b>", self.styles["SubSection"]))
-        self.story.append(Spacer(1, 0.1*inch))
+        self.story.append(Spacer(1, 0.1 * inch))
 
         grade_data = [
             ["Grade", "Score", "Interpretation"],
@@ -373,27 +381,31 @@ class PremiumReportGenerator:
             ["F", "0-59", "Poor - Urgent attention needed"],
         ]
 
-        grade_table = Table(grade_data, colWidths=[1*inch, 1.2*inch, 4.8*inch])
-        grade_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 10),
-            ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
-            ("ALIGN", (0, 0), (1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            # Grade colors
-            ("TEXTCOLOR", (0, 1), (0, 1), ReportColors.grade("A")),
-            ("TEXTCOLOR", (0, 2), (0, 2), ReportColors.grade("B")),
-            ("TEXTCOLOR", (0, 3), (0, 3), ReportColors.grade("C")),
-            ("TEXTCOLOR", (0, 4), (0, 4), ReportColors.grade("D")),
-            ("TEXTCOLOR", (0, 5), (0, 5), ReportColors.grade("F")),
-            ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
-        ]))
+        grade_table = Table(grade_data, colWidths=[1 * inch, 1.2 * inch, 4.8 * inch])
+        grade_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
+                    ("ALIGN", (0, 0), (1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 8),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    # Grade colors
+                    ("TEXTCOLOR", (0, 1), (0, 1), ReportColors.grade("A")),
+                    ("TEXTCOLOR", (0, 2), (0, 2), ReportColors.grade("B")),
+                    ("TEXTCOLOR", (0, 3), (0, 3), ReportColors.grade("C")),
+                    ("TEXTCOLOR", (0, 4), (0, 4), ReportColors.grade("D")),
+                    ("TEXTCOLOR", (0, 5), (0, 5), ReportColors.grade("F")),
+                    ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
+                ]
+            )
+        )
         self.story.append(grade_table)
 
         self.story.append(PageBreak())
@@ -417,19 +429,27 @@ class PremiumReportGenerator:
 
         class_text = f"<b>Industry:</b> {industry} > {vertical} > {niche}"
         self.story.append(Paragraph(class_text, self.styles["BodyText"]))
-        self.story.append(Spacer(1, 0.15*inch))
+        self.story.append(Spacer(1, 0.15 * inch))
 
         # Market position
         rank = benchmark.get("market_position_rank", 0)
         total = len(market_intel.get("competitors", [])) + 1
 
         if rank > 0:
-            position_color = ReportColors.grade("A") if rank <= 2 else ReportColors.grade("C") if rank <= 4 else ReportColors.grade("F")
-            self.story.append(Paragraph(
-                f'<font color="{position_color.hexval()}"><b>Market Position: #{rank} of {total} analyzed</b></font>',
-                self.styles["SubSection"]
-            ))
-            self.story.append(Spacer(1, 0.15*inch))
+            position_color = (
+                ReportColors.grade("A")
+                if rank <= 2
+                else ReportColors.grade("C")
+                if rank <= 4
+                else ReportColors.grade("F")
+            )
+            self.story.append(
+                Paragraph(
+                    f'<font color="{position_color.hexval()}"><b>Market Position: #{rank} of {total} analyzed</b></font>',
+                    self.styles["SubSection"],
+                )
+            )
+            self.story.append(Spacer(1, 0.15 * inch))
 
         # Vs market average table
         vs_avg = benchmark.get("vs_market_average", {})
@@ -452,26 +472,30 @@ class PremiumReportGenerator:
                 status = "Above Avg" if diff > 0 else "At Avg" if diff == 0 else "Below Avg"
                 data.append([name, str(score), diff_str, status])
 
-            table = Table(data, colWidths=[2.2*inch, 1.3*inch, 1.5*inch, 1.5*inch])
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
-                ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ]))
+            table = Table(data, colWidths=[2.2 * inch, 1.3 * inch, 1.5 * inch, 1.5 * inch])
+            table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
+                        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
             self.story.append(table)
 
         # Critical gaps
         gaps = benchmark.get("critical_gaps", [])
         if gaps:
-            self.story.append(Spacer(1, 0.2*inch))
+            self.story.append(Spacer(1, 0.2 * inch))
             self.story.append(Paragraph("<b>Critical Gaps</b>", self.styles["SubSection"]))
             for gap in gaps[:4]:
                 self.story.append(Paragraph(f"• {gap}", self.styles["Finding"]))
@@ -479,7 +503,7 @@ class PremiumReportGenerator:
         # AI opportunity
         ai_opportunity = landscape.get("ai_visibility_opportunity", "")
         if ai_opportunity:
-            self.story.append(Spacer(1, 0.2*inch))
+            self.story.append(Spacer(1, 0.2 * inch))
             self.story.append(CalloutBox("AI Visibility Opportunity", ai_opportunity, "warning"))
 
         self.story.append(PageBreak())
@@ -499,16 +523,20 @@ class PremiumReportGenerator:
         # Score indicator
         score_color = ReportColors.score_color(score)
         status = "Good" if score >= 70 else "Needs Work" if score >= 50 else "Critical"
-        self.story.append(Paragraph(
-            f'<font color="{score_color.hexval()}"><b>Score: {score}/100</b></font> - {status}',
-            self.styles["SubSection"]
-        ))
-        self.story.append(Spacer(1, 0.15*inch))
+        self.story.append(
+            Paragraph(
+                f'<font color="{score_color.hexval()}"><b>Score: {score}/100</b></font> - {status}',
+                self.styles["SubSection"],
+            )
+        )
+        self.story.append(Spacer(1, 0.15 * inch))
 
-        intro = ("Technical SEO forms the foundation of search visibility. "
-                "Issues here prevent search engines from properly crawling and indexing your content.")
+        intro = (
+            "Technical SEO forms the foundation of search visibility. "
+            "Issues here prevent search engines from properly crawling and indexing your content."
+        )
         self.story.append(Paragraph(intro, self.styles["BodyText"]))
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Spacer(1, 0.2 * inch))
 
         # Components breakdown chart
         components = tech.get("components", {})
@@ -526,16 +554,17 @@ class PremiumReportGenerator:
             if categories:
                 chart_path = str(self.charts_dir / "tech_components.png")
                 charts.create_ranked_bar_chart(
-                    categories, scores, max_scores,
-                    "Technical Component Scores", chart_path
+                    categories, scores, max_scores, "Technical Component Scores", chart_path
                 )
                 if os.path.exists(chart_path):
-                    img = Image(chart_path, width=6*inch, height=max(2, len(categories)*0.4)*inch)
-                    img.hAlign = 'CENTER'
+                    img = Image(
+                        chart_path, width=6 * inch, height=max(2, len(categories) * 0.4) * inch
+                    )
+                    img.hAlign = "CENTER"
                     self.story.append(img)
 
         # Key findings - deduplicated
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Spacer(1, 0.2 * inch))
         self.story.append(Paragraph("<b>Key Findings</b>", self.styles["SubSection"]))
 
         seen_descriptions = set()
@@ -573,17 +602,21 @@ class PremiumReportGenerator:
 
         score_color = ReportColors.score_color(score)
         status = "Good" if score >= 70 else "Needs Work" if score >= 50 else "Critical"
-        self.story.append(Paragraph(
-            f'<font color="{score_color.hexval()}"><b>Score: {score}/100</b></font> - {status}',
-            self.styles["SubSection"]
-        ))
-        self.story.append(Spacer(1, 0.15*inch))
+        self.story.append(
+            Paragraph(
+                f'<font color="{score_color.hexval()}"><b>Score: {score}/100</b></font> - {status}',
+                self.styles["SubSection"],
+            )
+        )
+        self.story.append(Spacer(1, 0.15 * inch))
 
-        intro = ("Content quality and authority signals determine how search engines "
-                "evaluate your expertise. E-E-A-T (Experience, Expertise, Authoritativeness, Trust) "
-                "is critical for ranking in competitive markets.")
+        intro = (
+            "Content quality and authority signals determine how search engines "
+            "evaluate your expertise. E-E-A-T (Experience, Expertise, Authoritativeness, Trust) "
+            "is critical for ranking in competitive markets."
+        )
         self.story.append(Paragraph(intro, self.styles["BodyText"]))
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Spacer(1, 0.2 * inch))
 
         # Components table
         components = content.get("components", {})
@@ -595,28 +628,34 @@ class PremiumReportGenerator:
                     max_score = comp_data.get("max", 100) or 100
                     pct = comp_score / max_score * 100 if max_score > 0 else 0
                     status = "Good" if pct >= 80 else "Needs Work" if pct >= 50 else "Poor"
-                    data.append([
-                        name.replace("_", " ").title(),
-                        str(comp_score),
-                        str(max_score),
-                        status
-                    ])
+                    data.append(
+                        [name.replace("_", " ").title(), str(comp_score), str(max_score), status]
+                    )
 
-            table = Table(data, colWidths=[2.5*inch, 1.2*inch, 1.2*inch, 1.6*inch])
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
-                ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ReportColors.background]),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ]))
+            table = Table(data, colWidths=[2.5 * inch, 1.2 * inch, 1.2 * inch, 1.6 * inch])
+            table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
+                        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+                        (
+                            "ROWBACKGROUNDS",
+                            (0, 1),
+                            (-1, -1),
+                            [colors.white, ReportColors.background],
+                        ),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
             self.story.append(table)
 
         self.story.append(PageBreak())
@@ -635,21 +674,25 @@ class PremiumReportGenerator:
 
         score_color = ReportColors.score_color(score)
         status = "Good" if score >= 70 else "Needs Work" if score >= 50 else "Critical"
-        self.story.append(Paragraph(
-            f'<font color="{score_color.hexval()}"><b>Score: {score}/100</b></font> - {status}',
-            self.styles["SubSection"]
-        ))
-        self.story.append(Spacer(1, 0.15*inch))
+        self.story.append(
+            Paragraph(
+                f'<font color="{score_color.hexval()}"><b>Score: {score}/100</b></font> - {status}',
+                self.styles["SubSection"],
+            )
+        )
+        self.story.append(Spacer(1, 0.15 * inch))
 
         # Why it matters callout
-        self.story.append(CalloutBox(
-            "Why AI Visibility Matters",
-            "AI-powered search (ChatGPT, Claude, Perplexity, Google AI Overviews) is rapidly "
-            "changing how customers find businesses. This analysis evaluates how your brand "
-            "appears in AI-generated responses - a competitive advantage most SEO agencies don't measure.",
-            "warning"
-        ))
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(
+            CalloutBox(
+                "Why AI Visibility Matters",
+                "AI-powered search (ChatGPT, Claude, Perplexity, Google AI Overviews) is rapidly "
+                "changing how customers find businesses. This analysis evaluates how your brand "
+                "appears in AI-generated responses - a competitive advantage most SEO agencies don't measure.",
+                "warning",
+            )
+        )
+        self.story.append(Spacer(1, 0.2 * inch))
 
         # Components table
         components = ai.get("components", {})
@@ -661,35 +704,43 @@ class PremiumReportGenerator:
                     max_score = comp_data.get("max", 100) or 100
                     pct = comp_score / max_score * 100 if max_score > 0 else 0
                     status = "Good" if pct >= 80 else "Needs Work" if pct >= 50 else "Poor"
-                    data.append([
-                        name.replace("_", " ").title(),
-                        str(comp_score),
-                        str(max_score),
-                        status
-                    ])
+                    data.append(
+                        [name.replace("_", " ").title(), str(comp_score), str(max_score), status]
+                    )
 
-            table = Table(data, colWidths=[2.5*inch, 1.2*inch, 1.2*inch, 1.6*inch])
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
-                ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ReportColors.background]),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ]))
+            table = Table(data, colWidths=[2.5 * inch, 1.2 * inch, 1.2 * inch, 1.6 * inch])
+            table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), TABLE_HEADER_COLOR),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("GRID", (0, 0), (-1, -1), 0.5, ReportColors.border),
+                        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+                        (
+                            "ROWBACKGROUNDS",
+                            (0, 1),
+                            (-1, -1),
+                            [colors.white, ReportColors.background],
+                        ),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
             self.story.append(table)
 
         # Recommendations
         recs = ai.get("recommendations", [])
         if recs:
-            self.story.append(Spacer(1, 0.2*inch))
-            self.story.append(Paragraph("<b>AI Optimization Actions</b>", self.styles["SubSection"]))
+            self.story.append(Spacer(1, 0.2 * inch))
+            self.story.append(
+                Paragraph("<b>AI Optimization Actions</b>", self.styles["SubSection"])
+            )
             for rec in recs[:4]:
                 if isinstance(rec, dict):
                     action = rec.get("action", "")
@@ -707,10 +758,12 @@ class PremiumReportGenerator:
 
         self.story.append(SectionTitle("30/60/90-Day Action Plan", number=section_num))
 
-        intro = ("The following tasks are prioritized by impact and effort. "
-                "Focus on Priority 1 items first for maximum return on investment.")
+        intro = (
+            "The following tasks are prioritized by impact and effort. "
+            "Focus on Priority 1 items first for maximum return on investment."
+        )
         self.story.append(Paragraph(intro, self.styles["BodyText"]))
-        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Spacer(1, 0.2 * inch))
 
         # Get detailed action plan
         detailed_plan = self.data.get("detailed_action_plan", {})
@@ -719,72 +772,90 @@ class PremiumReportGenerator:
             # Priority 1 - Immediate (30 days)
             p1_tasks = detailed_plan.get("priority_1_immediate", [])
             if p1_tasks:
-                self.story.append(Paragraph(
-                    '<font color="#DC2626"><b>PRIORITY 1: Immediate (30 Days)</b></font>',
-                    self.styles["SubSection"]
-                ))
-                self.story.append(Spacer(1, 0.1*inch))
+                self.story.append(
+                    Paragraph(
+                        '<font color="#DC2626"><b>PRIORITY 1: Immediate (30 Days)</b></font>',
+                        self.styles["SubSection"],
+                    )
+                )
+                self.story.append(Spacer(1, 0.1 * inch))
 
                 # Top 5 priorities callout
                 top_priorities = [t.get("action", "")[:60] for t in p1_tasks[:5]]
                 self.story.append(PriorityCallout(top_priorities))
-                self.story.append(Spacer(1, 0.15*inch))
+                self.story.append(Spacer(1, 0.15 * inch))
 
                 # Simplified 4-column table
                 tasks = []
                 for task in p1_tasks[:4]:
-                    tasks.append({
-                        "task": task.get("action", ""),
-                        "impact": task.get("impact", "").split("-")[0].strip() if task.get("impact") else "HIGH",
-                        "effort": task.get("effort", ""),
-                        "timeline": task.get("deadline", ""),
-                    })
+                    tasks.append(
+                        {
+                            "task": task.get("action", ""),
+                            "impact": task.get("impact", "").split("-")[0].strip()
+                            if task.get("impact")
+                            else "HIGH",
+                            "effort": task.get("effort", ""),
+                            "timeline": task.get("deadline", ""),
+                        }
+                    )
                 self.story.append(PlanTable(tasks))
-                self.story.append(Spacer(1, 0.25*inch))
+                self.story.append(Spacer(1, 0.25 * inch))
 
             # Priority 2 - Short Term (60 days)
             p2_tasks = detailed_plan.get("priority_2_short_term", [])
             if p2_tasks:
-                self.story.append(Paragraph(
-                    '<font color="#D97706"><b>PRIORITY 2: Short Term (30-60 Days)</b></font>',
-                    self.styles["SubSection"]
-                ))
-                self.story.append(Spacer(1, 0.1*inch))
+                self.story.append(
+                    Paragraph(
+                        '<font color="#D97706"><b>PRIORITY 2: Short Term (30-60 Days)</b></font>',
+                        self.styles["SubSection"],
+                    )
+                )
+                self.story.append(Spacer(1, 0.1 * inch))
 
                 tasks = []
                 for task in p2_tasks[:3]:
-                    tasks.append({
-                        "task": task.get("action", ""),
-                        "impact": task.get("impact", "").split("-")[0].strip() if task.get("impact") else "MEDIUM",
-                        "effort": task.get("effort", ""),
-                        "timeline": task.get("deadline", ""),
-                    })
+                    tasks.append(
+                        {
+                            "task": task.get("action", ""),
+                            "impact": task.get("impact", "").split("-")[0].strip()
+                            if task.get("impact")
+                            else "MEDIUM",
+                            "effort": task.get("effort", ""),
+                            "timeline": task.get("deadline", ""),
+                        }
+                    )
                 self.story.append(PlanTable(tasks))
-                self.story.append(Spacer(1, 0.25*inch))
+                self.story.append(Spacer(1, 0.25 * inch))
 
             # Priority 3 - Strategic (90 days)
             p3_tasks = detailed_plan.get("priority_3_strategic", [])
             if p3_tasks:
-                self.story.append(Paragraph(
-                    '<font color="#65A30D"><b>PRIORITY 3: Strategic (60-90 Days)</b></font>',
-                    self.styles["SubSection"]
-                ))
-                self.story.append(Spacer(1, 0.1*inch))
+                self.story.append(
+                    Paragraph(
+                        '<font color="#65A30D"><b>PRIORITY 3: Strategic (60-90 Days)</b></font>',
+                        self.styles["SubSection"],
+                    )
+                )
+                self.story.append(Spacer(1, 0.1 * inch))
 
                 tasks = []
                 for task in p3_tasks[:3]:
-                    tasks.append({
-                        "task": task.get("action", ""),
-                        "impact": task.get("impact", "").split("-")[0].strip() if task.get("impact") else "HIGH",
-                        "effort": task.get("effort", ""),
-                        "timeline": task.get("deadline", ""),
-                    })
+                    tasks.append(
+                        {
+                            "task": task.get("action", ""),
+                            "impact": task.get("impact", "").split("-")[0].strip()
+                            if task.get("impact")
+                            else "HIGH",
+                            "effort": task.get("effort", ""),
+                            "timeline": task.get("deadline", ""),
+                        }
+                    )
                 self.story.append(PlanTable(tasks))
         else:
             self._add_legacy_recommendations()
 
         # Next steps CTA
-        self.story.append(Spacer(1, 0.3*inch))
+        self.story.append(Spacer(1, 0.3 * inch))
         self._add_next_steps_cta()
 
     def _add_legacy_recommendations(self):
@@ -801,10 +872,11 @@ class PremiumReportGenerator:
 
         high_recs = [r for r in all_recs if r.get("priority") == "high"]
         if high_recs:
-            self.story.append(Paragraph(
-                '<font color="#DC2626"><b>HIGH PRIORITY</b></font>',
-                self.styles["SubSection"]
-            ))
+            self.story.append(
+                Paragraph(
+                    '<font color="#DC2626"><b>HIGH PRIORITY</b></font>', self.styles["SubSection"]
+                )
+            )
             for rec in high_recs[:5]:
                 action = rec.get("action", "")
                 details = rec.get("details", "")
@@ -835,21 +907,25 @@ class PremiumReportGenerator:
 
         content = Paragraph(
             f'<font color="#1F2937" size="14"><b>RECOMMENDED NEXT STEPS</b></font><br/><br/>'
-            f'{steps_text}<br/><br/>'
+            f"{steps_text}<br/><br/>"
             f'<font color="#DC2626">{urgency}</font><br/><br/>'
-            f'<b>Contact:</b> info@raaptech.com | www.raaptech.com',
-            content_style
+            f"<b>Contact:</b> info@raaptech.com | www.raaptech.com",
+            content_style,
         )
 
-        table = Table([[content]], colWidths=[6.5*inch])
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F0FDF4")),
-            ("BOX", (0, 0), (-1, -1), 2, ReportColors.success),
-            ("LEFTPADDING", (0, 0), (-1, -1), 20),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 20),
-            ("TOPPADDING", (0, 0), (-1, -1), 15),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 15),
-        ]))
+        table = Table([[content]], colWidths=[6.5 * inch])
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F0FDF4")),
+                    ("BOX", (0, 0), (-1, -1), 2, ReportColors.success),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 20),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 20),
+                    ("TOPPADDING", (0, 0), (-1, -1), 15),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 15),
+                ]
+            )
+        )
         self.story.append(table)
 
     def generate(self) -> str:
@@ -898,8 +974,11 @@ def generate_premium_report(json_path: str, output_path: str = None) -> str:
 
 if __name__ == "__main__":
     import sys
+
     if len(sys.argv) < 2:
-        print("Usage: python -m packages.seo_health_report.premium_report <json_file> [output_file]")
+        print(
+            "Usage: python -m packages.seo_health_report.premium_report <json_file> [output_file]"
+        )
         sys.exit(1)
 
     json_path = sys.argv[1]

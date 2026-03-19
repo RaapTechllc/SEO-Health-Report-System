@@ -43,15 +43,11 @@ async def handle_hello_audit(
         db_session, audit_id, job_id, "step_started", "Hello audit started", 0
     )
 
-    await write_progress_event(
-        db_session, audit_id, job_id, "step_started", f"Fetching {url}", 25
-    )
+    await write_progress_event(db_session, audit_id, job_id, "step_started", f"Fetching {url}", 25)
 
     result = await safe_fetch(url)
 
-    await write_progress_event(
-        db_session, audit_id, job_id, "step_started", "Parsing response", 50
-    )
+    await write_progress_event(db_session, audit_id, job_id, "step_started", "Parsing response", 50)
 
     title = extract_title(result.content)
     html_hash = hashlib.sha256(result.content).hexdigest()[:16]
