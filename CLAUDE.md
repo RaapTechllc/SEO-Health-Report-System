@@ -7,7 +7,7 @@ A production-grade SEO audit platform that generates branded health reports by o
 **Version:** 1.0.0
 **License:** MIT
 **Python:** 3.9+
-**Status:** MVP complete (~90%), post-MVP enhancements in progress
+**Status:** MVP complete (~90%); brownfield hardening pass complete (security, architecture consolidation, dead-code cleanup — see `COMPLETION.md`). Post-MVP enhancements in progress.
 
 ## Repository Structure
 
@@ -33,6 +33,10 @@ SEO-Health-Report-System/
 │   ├── core/                        # Core utilities (env, formatting, safe_fetch, cost_tracker)
 │   ├── schemas/                     # Pydantic data models (models.py)
 │   ├── storage/                     # Cloud storage abstraction (local + S3)
+│   ├── auth/                        # JWT auth + bcrypt password hashing (canonical; root auth.py is a shim)
+│   ├── database/                    # SQLAlchemy ORM models + session (canonical; root database.py is a shim)
+│   ├── payments/                    # Stripe payment integration (canonical; root payments.py is a shim)
+│   ├── rate_limiter/                # Rate limiting middleware (canonical; root rate_limiter.py is a shim)
 │   ├── ai_image_generator/          # Image generation (OpenAI DALL-E, Google Gemini)
 │   ├── seo_health_sdk/              # SDK for external consumers
 │   └── design-tokens/               # Design system tokens
@@ -46,15 +50,12 @@ SEO-Health-Report-System/
 ├── infrastructure/                  # DevOps & deployment
 │   ├── docker/                      # Dockerfiles (api.Dockerfile, worker.Dockerfile)
 │   ├── k8s/                         # Kubernetes manifests
-│   ├── migrations/                  # Alembic DB migrations (v001-v007)
+│   ├── migrations/                  # Alembic DB migrations (versions/v001-v008)
 │   ├── monitoring/                  # Prometheus + Grafana configs
 │   └── nginx/                       # Nginx configs
-├── tests/                           # Test suites
-│   ├── e2e/                         # End-to-end tests
-│   ├── chaos/                       # Chaos engineering tests
-│   ├── integration/                 # Integration tests
-│   └── fixtures/                    # Test fixtures & mock data
-├── docs/                            # Documentation
+├── tests/                           # Test suites (unit/, integration/, e2e/, chaos/, security/, smoke/, stress/, fixtures/ + root-level test_*.py)
+├── docs/                            # Documentation (planning/ holds PROGRESS, PLAN, DEVLOG, HANDOFF, etc.)
+├── archive/                         # Archived/deprecated modules (e.g. social-media-audit/)
 ├── config/                          # Tier environment files (tier_low.env, etc.)
 ├── competitive_intel/               # Competitive intelligence module
 ├── competitive_monitor/             # Competitive monitoring module
@@ -187,11 +188,22 @@ from schemas.models import AuditResult   # packages/schemas/
 from seo_health_report import ...        # packages/seo_health_report/
 ```
 
+Auth, database, payments, and rate limiting were consolidated into `packages/` during the
+brownfield pass. Import the canonical modules via the `packages.` prefix; the root-level
+`auth.py`, `database.py`, `payments.py`, and `rate_limiter.py` are thin re-export shims kept
+for backward compatibility — prefer the canonical path in new code:
+```python
+from packages.auth import require_auth, hash_password   # canonical
+from packages.database import get_db, User, Audit       # canonical
+# from auth import require_auth                         # legacy shim (still works)
+```
+
 ### Test Conventions
 
 - **Framework:** pytest with pytest-asyncio (asyncio_mode=auto)
-- **Structure:** `tests/{e2e,chaos,integration,fixtures}/` + root-level test files
-- **Markers:** `unit`, `integration`, `slow`, `async`, `email`, `scheduler`, `performance`
+- **Structure:** `tests/{unit,integration,e2e,chaos,security,smoke,stress,fixtures}/` + root-level `test_*.py` files
+- **Brownfield regression suite:** `tests/unit/test_brownfield_fixes.py` (32 tests covering auth enforcement, bcrypt, SSRF, rate limiting, migration chain, CORS, datetime consistency)
+- **Markers:** `unit`, `integration`, `slow`, `smoke`, `async`, `email`, `scheduler`, `performance`
 - **Strict mode:** `--strict-markers --strict-config` enforced
 - **CI environment:** `TESTING=true`, `DATABASE_URL=sqlite:///./test.db`, `JWT_SECRET_KEY=test-secret-key-for-ci`
 
@@ -201,13 +213,16 @@ GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | Trigger | Jobs |
 |----------|---------|------|
-| `ci.yml` | push/PR to main | lint, test, e2e, chaos, smoke, verify-release, frontend |
-| `test.yml` | push/PR | Test execution |
-| `lint.yml` | push/PR | Ruff, Black, MyPy |
+| `ci-cd.yml` | push/PR + manual | lint, test, build, deploy-staging, deploy-production |
+| `test.yml` | push/PR | test (matrix), test-summary |
+| `lint.yml` | push/PR | ruff, mypy, security, lint-summary |
+| `docker-build.yml` | push/PR | Docker image build |
 | `deploy-staging.yml` | manual/merge | Staging deployment |
 | `deploy-production.yml` | manual/tag | Production deployment |
-| `docker-build.yml` | push/PR | Docker image build |
 | `rollback.yml` | manual | Rollback procedures |
+
+> Note: the brownfield consolidation removed the standalone `ci.yml` (subsumed by `ci-cd.yml`)
+> and `docker.yml` (subsumed by `docker-build.yml`).
 
 CI runs on Python 3.11 with a matrix for 3.10-3.12. Frontend builds with Node 20.
 
@@ -225,9 +240,10 @@ CI runs on Python 3.11 with a matrix for 3.10-3.12. Frontend builds with Node 20
 | `packages/core/safe_fetch.py` | SSRF-protected HTTP client |
 | `apps/api/main.py` | FastAPI application |
 | `apps/worker/executor.py` | Job execution engine |
-| `database.py` | SQLAlchemy ORM models |
-| `auth.py` | JWT authentication |
-| `payments.py` | Stripe payment integration |
+| `packages/database/` | SQLAlchemy ORM models + session (root `database.py` is a shim) |
+| `packages/auth/` | JWT authentication + bcrypt hashing (root `auth.py` is a shim) |
+| `packages/payments/` | Stripe payment integration (root `payments.py` is a shim) |
+| `packages/rate_limiter/` | Rate limiting middleware (root `rate_limiter.py` is a shim) |
 | `alembic.ini` | Database migration config |
 | `pyproject.toml` | Build config, dependencies, tool settings |
 | `pytest.ini` | Test configuration and markers |
@@ -272,7 +288,11 @@ Project context and guidelines in `.kiro/steering/`:
 
 ## Progress Tracking
 
-- `docs/PROGRESS.md` - Current project status and sprint tracking
-- `docs/PLAN.md` - Development roadmap
-- `DEVLOG.md` - Development history log
-- `HANDOFF.md` - Project transition notes
+Planning and history docs were consolidated under `docs/planning/` during the brownfield pass:
+
+- `docs/planning/PROGRESS.md` - Current project status and sprint tracking
+- `docs/planning/PLAN.md` - Development roadmap
+- `docs/planning/DEVLOG.md` - Development history log
+- `docs/planning/HANDOFF.md` - Project transition notes
+- `docs/planning/sprint-plan.md`, `AUDIT.md`, `FINISH_PLAN.md`, `OPTIMIZATION_PLAN.md` - Additional planning docs
+- `COMPLETION.md` (repo root) - Brownfield cleanup completion report (security, architecture, cleanup, testing phases)

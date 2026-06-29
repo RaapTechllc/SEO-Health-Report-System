@@ -1,6 +1,7 @@
 """Backwards-compatible re-export. Use packages.core.safe_fetch directly."""
 
 from packages.core.safe_fetch import (  # noqa: F401
+    BLOCKED_RANGES,
     FetchResult,
     SSRFError,
     SSRFProtectionError,

@@ -71,8 +71,12 @@ def is_private_ip(ip: str) -> bool:
 
 
 def validate_ip(ip: str) -> None:
-    """Validate that an IP address is not in blocked ranges."""
-    if is_private_ip(ip):
+    """Validate that an IP address is well-formed and not in a blocked range."""
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+    except ValueError as e:
+        raise SSRFProtectionError(f"Invalid IP address: '{ip}'") from e
+    if any(ip_obj in net for net in BLOCKED_RANGES):
         raise SSRFProtectionError(f"SSRF blocked: IP '{ip}' is in a blocked range")
 
 
