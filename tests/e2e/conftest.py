@@ -35,7 +35,8 @@ def _create_audit_jobs_table(engine):
     from sqlalchemy import text
 
     with engine.connect() as conn:
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_jobs (
                 job_id TEXT PRIMARY KEY,
                 tenant_id TEXT NOT NULL DEFAULT 'default',
@@ -48,8 +49,10 @@ def _create_audit_jobs_table(engine):
                 finished_at TIMESTAMP,
                 error_message TEXT
             )
-        """))
-        conn.execute(text("""
+        """)
+        )
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS audit_progress_events (
                 event_id TEXT PRIMARY KEY,
                 audit_id TEXT NOT NULL,
@@ -59,7 +62,8 @@ def _create_audit_jobs_table(engine):
                 message TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """))
+        """)
+        )
         conn.commit()
 
 
