@@ -252,8 +252,8 @@ def _classify_issue(issue: dict[str, Any], audit_name: str, seen: set) -> dict[s
     description = issue.get("description", "")
     severity = issue.get("severity", "medium")
 
-    # Deduplicate by description
-    desc_hash = hashlib.md5(description.encode()).hexdigest()[:8]
+    # Deduplicate by description (non-cryptographic hash)
+    desc_hash = hashlib.md5(description.encode(), usedforsecurity=False).hexdigest()[:8]
     if desc_hash in seen:
         return None
     seen.add(desc_hash)
@@ -340,7 +340,7 @@ def _classify_recommendation(
     category = rec.get("category", "").lower()
     priority = rec.get("priority", "medium")
 
-    desc_hash = hashlib.md5(action_text.encode()).hexdigest()[:8]
+    desc_hash = hashlib.md5(action_text.encode(), usedforsecurity=False).hexdigest()[:8]
     if desc_hash in seen:
         return None
     seen.add(desc_hash)

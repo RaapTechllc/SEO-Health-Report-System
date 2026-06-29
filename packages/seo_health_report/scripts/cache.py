@@ -40,7 +40,8 @@ def get_cache(namespace: str = "default"):
 def cache_key(*args, **kwargs) -> str:
     """Generate cache key from arguments."""
     key_data = str(args) + str(sorted(kwargs.items()))
-    return hashlib.md5(key_data.encode()).hexdigest()
+    # Non-cryptographic hash used only to derive a cache key
+    return hashlib.md5(key_data.encode(), usedforsecurity=False).hexdigest()
 
 
 def cached(namespace: str, ttl: int):

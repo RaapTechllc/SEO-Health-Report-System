@@ -203,7 +203,7 @@ from packages.database import get_db, User, Audit       # canonical
 - **Framework:** pytest with pytest-asyncio (asyncio_mode=auto)
 - **Structure:** `tests/{unit,integration,e2e,chaos,security,smoke,stress,fixtures}/` + root-level `test_*.py` files
 - **Brownfield regression suite:** `tests/unit/test_brownfield_fixes.py` (32 tests covering auth enforcement, bcrypt, SSRF, rate limiting, migration chain, CORS, datetime consistency)
-- **Markers:** `unit`, `integration`, `slow`, `async`, `email`, `scheduler`, `performance`
+- **Markers:** `unit`, `integration`, `slow`, `smoke`, `async`, `email`, `scheduler`, `performance`
 - **Strict mode:** `--strict-markers --strict-config` enforced
 - **CI environment:** `TESTING=true`, `DATABASE_URL=sqlite:///./test.db`, `JWT_SECRET_KEY=test-secret-key-for-ci`
 

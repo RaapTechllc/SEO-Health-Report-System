@@ -1,6 +1,6 @@
 """Unit tests for dashboard session-based authentication."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -95,7 +95,7 @@ class TestGetSession:
     def test_returns_none_for_expired_session(self):
         session_id = create_session("user_123", None, "user")
 
-        expired_time = (datetime.utcnow() - timedelta(hours=1)).isoformat()
+        expired_time = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
         _sessions[session_id]["expires_at"] = expired_time
 
         session = get_session(session_id)
@@ -239,7 +239,7 @@ class TestCleanupExpiredSessions:
         valid_session = create_session("user_1", None, "user")
         expired_session = create_session("user_2", None, "user")
 
-        expired_time = (datetime.utcnow() - timedelta(hours=1)).isoformat()
+        expired_time = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
         _sessions[expired_session]["expires_at"] = expired_time
 
         removed = cleanup_expired_sessions()
