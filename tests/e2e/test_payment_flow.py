@@ -14,7 +14,7 @@ All external dependencies (Stripe, external APIs) are mocked.
 
 import os
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -216,7 +216,7 @@ class TestCompletePaymentToAuditFlow:
             "company_name": "Test Corp",
             "tier": "basic",
             "status": "pending",
-            "created_at": datetime.now(UTC).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
         # Verify audit can be created
@@ -297,7 +297,7 @@ class TestPaymentDatabaseIntegration:
             "amount": 80000,
             "tier": "basic",
             "status": "pending",
-            "created_at": datetime.now(UTC).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
         assert payment_record["status"] == "pending"
