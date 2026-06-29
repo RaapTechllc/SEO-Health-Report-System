@@ -106,7 +106,7 @@ async def login_page(request: Request, error: str = None, db: Session = Depends(
     if user:
         return RedirectResponse(url="/dashboard/audits", status_code=302)
 
-    return templates.TemplateResponse("login.html", {"request": request, "error": error})
+    return templates.TemplateResponse(request, "login.html", {"request": request, "error": error})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -120,6 +120,7 @@ async def login_submit(
     user = authenticate_user(db, email, password)
     if not user:
         return templates.TemplateResponse(
+            request,
             "login.html",
             {"request": request, "error": "Invalid email or password"},
             status_code=401,
@@ -216,6 +217,7 @@ async def audit_list(
     }
 
     return templates.TemplateResponse(
+        request,
         "audit_list.html",
         {
             "request": request,
@@ -237,6 +239,7 @@ async def audit_new(
     tenant_name = get_tenant_name(db, user.get("tenant_id"))
     quota = get_quota_for_user(db, user.get("tenant_id"))
     return templates.TemplateResponse(
+        request,
         "audit_new.html",
         {"request": request, "user": user, "tenant_name": tenant_name, "quota": quota},
     )
@@ -328,6 +331,7 @@ async def audit_create(
 
     if errors:
         return templates.TemplateResponse(
+            request,
             "audit_new.html",
             {
                 "request": request,
@@ -351,6 +355,7 @@ async def audit_create(
             quota_service.enforce_quota(tenant_id)
         except QuotaExceededError as e:
             return templates.TemplateResponse(
+                request,
                 "audit_new.html",
                 {
                     "request": request,
@@ -432,6 +437,7 @@ async def audit_create(
         db.commit()
 
         return templates.TemplateResponse(
+            request,
             "audit_new.html",
             {
                 "request": request,
@@ -463,6 +469,7 @@ async def audit_detail(
     audit = db.query(Audit).filter(Audit.id == audit_id).first()
     if not audit:
         return templates.TemplateResponse(
+            request,
             "audit_detail.html",
             {"request": request, "audit": None, "error": "Audit not found", "user": user},
             status_code=404,
@@ -470,6 +477,7 @@ async def audit_detail(
     tenant_name = get_tenant_name(db, user.get("tenant_id"))
     quota = get_quota_for_user(db, user.get("tenant_id"))
     return templates.TemplateResponse(
+        request,
         "audit_detail.html",
         {
             "request": request,
@@ -642,6 +650,7 @@ async def settings_page(
             }
 
     return templates.TemplateResponse(
+        request,
         "settings.html",
         {
             "request": request,

@@ -35,8 +35,7 @@ def _create_audit_jobs_table(engine):
     from sqlalchemy import text
 
     with engine.connect() as conn:
-        conn.execute(
-            text("""
+        conn.execute(text("""
             CREATE TABLE IF NOT EXISTS audit_jobs (
                 job_id TEXT PRIMARY KEY,
                 tenant_id TEXT NOT NULL DEFAULT 'default',
@@ -49,10 +48,8 @@ def _create_audit_jobs_table(engine):
                 finished_at TIMESTAMP,
                 error_message TEXT
             )
-        """)
-        )
-        conn.execute(
-            text("""
+        """))
+        conn.execute(text("""
             CREATE TABLE IF NOT EXISTS audit_progress_events (
                 event_id TEXT PRIMARY KEY,
                 audit_id TEXT NOT NULL,
@@ -62,9 +59,31 @@ def _create_audit_jobs_table(engine):
                 message TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
-        )
+        """))
         conn.commit()
+
+
+@pytest.fixture(autouse=True)
+def _restore_rate_limit_globals():
+    """Snapshot and restore mutable rate-limiter globals.
+
+    Some e2e tests raise the in-memory ``TIER_LIMITS``/``ENDPOINT_LIMITS`` to
+    disable throttling (see ``_reset_rate_limiters``). Those dicts are shared
+    module state, so without restoration the mutation leaks into other test
+    modules (e.g. the tier-limit unit tests) and corrupts their expectations.
+    """
+    import copy
+
+    import rate_limiter
+
+    tier_limits = copy.deepcopy(rate_limiter.TIER_LIMITS)
+    endpoint_limits = copy.deepcopy(rate_limiter.ENDPOINT_LIMITS)
+    try:
+        yield
+    finally:
+        rate_limiter.TIER_LIMITS.clear()
+        rate_limiter.TIER_LIMITS.update(tier_limits)
+        rate_limiter.ENDPOINT_LIMITS = endpoint_limits
 
 
 @pytest.fixture(scope="module")
