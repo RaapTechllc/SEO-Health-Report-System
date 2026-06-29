@@ -21,15 +21,6 @@ import type {
 const MAX_EXCERPT = 2000;
 
 /** Shape Claude is instructed to return. We validate/normalize it defensively. */
-interface RawAiCheck {
-  id?: unknown;
-  label?: unknown;
-  status?: unknown;
-  detail?: unknown;
-  score?: unknown;
-  max?: unknown;
-}
-
 interface RawAiRecommendation {
   id?: unknown;
   priority?: unknown;
@@ -41,32 +32,40 @@ interface RawAiRecommendation {
 interface RawAiResponse {
   score?: unknown;
   summary?: unknown;
-  checks?: unknown;
   recommendations?: unknown;
+}
+
+/** Advisory output extracted from the model — never factual page claims. */
+interface AiAdvisory {
+  score: number | null;
+  summary: string | null;
+  recommendations: Recommendation[];
 }
 
 const SYSTEM_PROMPT = [
   "You are an AI Answer Engine Optimization (AEO) analyst.",
-  "Your job is to assess how likely a web page is to be discovered, understood,",
-  "and cited by AI answer engines such as Claude, ChatGPT, Perplexity, Gemini,",
-  "and Grok. Evaluate entity/brand clarity, structured data, heading hierarchy,",
-  "answer-friendly Q&A content, concise metadata, and overall machine readability.",
+  "Assess how likely a web page is to be discovered, understood, and cited by AI",
+  "answer engines such as Claude, ChatGPT, Perplexity, Gemini, and Grok.",
+  "",
+  "CRITICAL — accuracy rules:",
+  "- Base your assessment ONLY on the page signals provided in the user message.",
+  "- Do NOT invent, assume, or assert any fact about the page that is not present",
+  "  in those signals. If a signal is absent, treat it as unknown, not as a claim.",
+  "- Your output is advisory (an overall score, a short summary, and suggested",
+  "  improvements). The factual per-signal checks are computed separately by the",
+  "  system from the raw page, so do not restate them as facts.",
   "",
   "Respond with STRICT JSON only — no markdown, no prose, no code fences.",
   "Use exactly this shape:",
   "{",
   '  "score": <number 0-100>,',
-  '  "summary": "<one or two sentences>",',
-  '  "checks": [',
-  '    { "id": "<slug>", "label": "<short>", "status": "pass|warn|fail|info",',
-  '      "detail": "<short>", "score": <number>, "max": <number> }',
-  "  ],",
+  '  "summary": "<one or two sentences, grounded only in the provided signals>",',
   '  "recommendations": [',
   '    { "id": "<slug>", "priority": "high|medium|low", "title": "<short>",',
   '      "detail": "<actionable>", "impact": "<why it matters for AI SEO>" }',
   "  ]",
   "}",
-  "Provide 5-7 checks and 3-5 recommendations.",
+  "Provide 3-5 recommendations.",
 ].join("\n");
 
 /** Build a compact, token-frugal prompt from the page signals. */
@@ -99,13 +98,6 @@ function buildUserPrompt(page: PageData): string {
   return lines.join("\n");
 }
 
-const VALID_STATUSES: ReadonlySet<string> = new Set([
-  "pass",
-  "warn",
-  "fail",
-  "info",
-]);
-
 function asString(v: unknown, fallback: string): string {
   return typeof v === "string" && v.trim().length > 0 ? v : fallback;
 }
@@ -114,58 +106,42 @@ function asNumber(v: unknown, fallback: number): number {
   return typeof v === "number" && Number.isFinite(v) ? v : fallback;
 }
 
-function asStatus(v: unknown): CheckStatus {
-  return typeof v === "string" && VALID_STATUSES.has(v)
-    ? (v as CheckStatus)
-    : "info";
-}
-
 function asPriority(v: unknown): Recommendation["priority"] {
   return v === "high" || v === "medium" || v === "low" ? v : "medium";
 }
 
-/** Convert a validated raw AI payload into an AiVisibilityResult. */
-function normalizeAiResponse(raw: RawAiResponse): AiVisibilityResult {
-  const rawChecks = Array.isArray(raw.checks) ? raw.checks : [];
-  const checks: CheckResult[] = rawChecks.map((c, i) => {
-    const rc = (c ?? {}) as RawAiCheck;
-    const max = clamp(asNumber(rc.max, 10), 0, 1000);
-    return {
-      id: asString(rc.id, `ai-${i + 1}`),
-      label: asString(rc.label, "AI visibility signal"),
-      status: asStatus(rc.status),
-      detail: asString(rc.detail, ""),
-      score: clamp(asNumber(rc.score, 0), 0, max),
-      max,
-    };
-  });
-
+/**
+ * Extract the model's ADVISORY output (score nudge, summary, recommendations).
+ * It deliberately ignores any factual "checks" — those are computed
+ * deterministically from the page so the model can never surface false claims.
+ */
+function extractAiAdvisory(raw: RawAiResponse): AiAdvisory {
   const rawRecs = Array.isArray(raw.recommendations) ? raw.recommendations : [];
-  const recommendations: Recommendation[] = rawRecs.map((r, i) => {
-    const rr = (r ?? {}) as RawAiRecommendation;
-    return {
-      id: asString(rr.id, `ai-rec-${i + 1}`),
-      pillar: "aiVisibility",
-      priority: asPriority(rr.priority),
-      title: asString(rr.title, "Improve AI visibility"),
-      detail: asString(rr.detail, ""),
-      impact: asString(rr.impact, ""),
-    };
-  });
+  const recommendations: Recommendation[] = rawRecs
+    .map((r, i): Recommendation | null => {
+      const rr = (r ?? {}) as RawAiRecommendation;
+      const title = asString(rr.title, "");
+      if (!title) return null;
+      return {
+        id: asString(rr.id, `ai-rec-${i + 1}`),
+        pillar: "aiVisibility",
+        priority: asPriority(rr.priority),
+        title,
+        detail: asString(rr.detail, ""),
+        impact: asString(rr.impact, ""),
+      };
+    })
+    .filter((r): r is Recommendation => r !== null);
 
-  // Prefer the model's own 0-100 score; if it's missing/garbage, derive it.
-  let score = asNumber(raw.score, NaN);
-  if (!Number.isFinite(score)) {
-    score = checks.length > 0 ? checksToScore(checks) : 0;
-  }
-  score = Math.round(clamp(score, 0, 100));
+  const rawScore = asNumber(raw.score, NaN);
+  const score = Number.isFinite(rawScore)
+    ? Math.round(clamp(rawScore, 0, 100))
+    : null;
 
-  const summary = asString(
-    raw.summary,
-    "AI answer-engine optimization analysis completed.",
-  );
+  const summaryRaw = asString(raw.summary, "");
+  const summary = summaryRaw.length > 0 ? summaryRaw : null;
 
-  return { score, summary, checks, recommendations, usedLiveAI: true };
+  return { score, summary, recommendations };
 }
 
 /**
@@ -554,21 +530,50 @@ function buildHeuristicRecommendations(checks: CheckResult[]): Recommendation[] 
 export async function analyzeAiVisibility(
   page: PageData,
 ): Promise<AiVisibilityResult> {
-  if (isLiveAIEnabled()) {
-    try {
-      const raw = await askClaudeJSON<RawAiResponse>(
-        SYSTEM_PROMPT,
-        buildUserPrompt(page),
-      );
-      const result = normalizeAiResponse(raw);
-      // Guard against a degenerate model reply with no usable content.
-      if (result.checks.length > 0 || result.recommendations.length > 0) {
-        return result;
-      }
-    } catch {
-      // Fall through to the heuristic below.
-    }
+  // The deterministic heuristic is always the factual backbone: its checks are
+  // computed directly from PageData, so they cannot contain false claims.
+  const heuristic = heuristicAnalysis(page);
+
+  if (!isLiveAIEnabled()) {
+    return heuristic;
   }
 
-  return heuristicAnalysis(page);
+  try {
+    const raw = await askClaudeJSON<RawAiResponse>(
+      SYSTEM_PROMPT,
+      buildUserPrompt(page),
+    );
+    const advisory = extractAiAdvisory(raw);
+
+    // Blend the score: average the grounded heuristic score with the model's
+    // advisory score so a single hallucinated number can't dominate the result.
+    const score =
+      advisory.score === null
+        ? heuristic.score
+        : Math.round((heuristic.score + advisory.score) / 2);
+
+    // Merge recommendations: keep the grounded heuristic ones, then append any
+    // distinct model suggestions (advisory items can't assert page facts).
+    const seen = new Set(
+      heuristic.recommendations.map((r) => r.title.trim().toLowerCase()),
+    );
+    const recommendations: Recommendation[] = [...heuristic.recommendations];
+    for (const r of advisory.recommendations) {
+      const key = r.title.trim().toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        recommendations.push(r);
+      }
+    }
+
+    return {
+      score,
+      summary: advisory.summary ?? heuristic.summary,
+      checks: heuristic.checks, // always the verified, deterministic facts
+      recommendations: recommendations.slice(0, 6),
+      usedLiveAI: true,
+    };
+  } catch {
+    return heuristic;
+  }
 }

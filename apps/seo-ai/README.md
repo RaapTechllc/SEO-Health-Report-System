@@ -80,11 +80,30 @@ ANTHROPIC_MODEL=claude-sonnet-4-6   # default
 npm run typecheck   # tsc --noEmit
 npm run build       # full production build
 npm run smoke       # offline analysis check against HTML fixtures (no network)
+npm run benchmark   # audit real sites + verify no false info (needs network)
 ```
 
 `npm run smoke` exercises the parser, all three analyzers, the heuristic AI-visibility path, and
 the weighted scoring against an optimized fixture and a thin one, demonstrating that scores
 discriminate correctly without needing outbound network access.
+
+`npm run benchmark` audits a list of real websites and, for each, **re-derives the page's facts
+independently from the raw HTML and asserts the audit never contradicts them** (see Accuracy
+below). Unreachable sites are skipped, not failed.
+
+## Accuracy — no false information
+
+An SEO tool is only useful if it tells the truth about a page. Two guarantees:
+
+1. **Factual checks are always measured, never generated.** Every per-check claim (title length,
+   H1 count, structured-data presence, word count, etc.) is computed deterministically from the
+   fetched page. The optional Claude integration is **advisory only** — it contributes an overall
+   score nudge, a summary, and extra recommendations, and is explicitly instructed not to assert
+   facts not present in the provided signals. A hallucinated model reply can never change what the
+   per-check facts say.
+2. **The benchmark fact-checks the output.** `npm run benchmark` parses each site's HTML with
+   independent regexes and fails if any reported claim disagrees (e.g. claiming structured data
+   exists when there is none). This catches both parser and analyzer regressions.
 
 ## API
 

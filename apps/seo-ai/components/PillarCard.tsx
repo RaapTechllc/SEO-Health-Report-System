@@ -14,17 +14,25 @@ export default function PillarCard({ pillar }: { pillar: PillarScore }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-start justify-between gap-4 text-left"
+        className="block w-full text-left"
       >
-        <div className="min-w-0">
-          <h3 className="text-lg font-semibold text-slate-100">{pillar.label}</h3>
-          <p className="mt-1 text-sm text-slate-400">{pillar.summary}</p>
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-base font-semibold leading-snug text-slate-100">{pillar.label}</h3>
+          <div className="flex shrink-0 items-baseline gap-1">
+            <span className="text-2xl font-bold tabular-nums text-slate-100">{score}</span>
+            <span className="text-xs text-slate-500">/100</span>
+          </div>
         </div>
-        <div className="flex shrink-0 items-baseline gap-2">
-          <span className="text-2xl font-bold tabular-nums text-slate-100">{score}</span>
-          <span className="text-sm text-slate-500">/100</span>
-          <span className={`text-2xl font-bold ${gradeColor(pillar.grade)}`}>{pillar.grade}</span>
+        <div className="mt-1">
+          <span
+            className={`inline-block rounded-md bg-white/5 px-2 py-0.5 text-xs font-semibold ${gradeColor(
+              pillar.grade,
+            )}`}
+          >
+            Grade {pillar.grade}
+          </span>
         </div>
+        <p className="mt-2 text-sm text-slate-400">{pillar.summary}</p>
       </button>
 
       <button
