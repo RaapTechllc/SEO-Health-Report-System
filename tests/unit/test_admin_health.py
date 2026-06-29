@@ -89,7 +89,7 @@ class TestAdminHealthEndpoints:
             async def check_admin():
                 return await require_admin(mock_user)
 
-            asyncio.get_event_loop().run_until_complete(check_admin())
+            asyncio.run(check_admin())
 
         assert exc_info.value.status_code == 403
         assert "Admin access required" in str(exc_info.value.detail)
@@ -103,7 +103,7 @@ class TestAdminHealthEndpoints:
         async def check_admin():
             return await require_admin(mock_admin_user)
 
-        result = asyncio.get_event_loop().run_until_complete(check_admin())
+        result = asyncio.run(check_admin())
         assert result == mock_admin_user
 
     def test_metrics_json_endpoint_returns_valid_data(self):
