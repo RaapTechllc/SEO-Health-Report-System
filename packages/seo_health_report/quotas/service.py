@@ -97,6 +97,9 @@ class QuotaService:
         """Calculate the next billing cycle reset date."""
         if not billing_cycle_start:
             billing_cycle_start = datetime.now(timezone.utc)
+        elif billing_cycle_start.tzinfo is None:
+            # Datetimes loaded from SQLite are naive; treat them as UTC.
+            billing_cycle_start = billing_cycle_start.replace(tzinfo=timezone.utc)
 
         next_reset = billing_cycle_start
         now = datetime.now(timezone.utc)

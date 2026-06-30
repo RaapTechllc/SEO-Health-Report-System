@@ -67,6 +67,29 @@ def _create_audit_jobs_table(engine):
         conn.commit()
 
 
+@pytest.fixture(autouse=True)
+def _restore_rate_limit_globals():
+    """Snapshot and restore mutable rate-limiter globals.
+
+    Some e2e tests raise the in-memory ``TIER_LIMITS``/``ENDPOINT_LIMITS`` to
+    disable throttling (see ``_reset_rate_limiters``). Those dicts are shared
+    module state, so without restoration the mutation leaks into other test
+    modules (e.g. the tier-limit unit tests) and corrupts their expectations.
+    """
+    import copy
+
+    import rate_limiter
+
+    tier_limits = copy.deepcopy(rate_limiter.TIER_LIMITS)
+    endpoint_limits = copy.deepcopy(rate_limiter.ENDPOINT_LIMITS)
+    try:
+        yield
+    finally:
+        rate_limiter.TIER_LIMITS.clear()
+        rate_limiter.TIER_LIMITS.update(tier_limits)
+        rate_limiter.ENDPOINT_LIMITS = endpoint_limits
+
+
 @pytest.fixture(scope="module")
 def app():
     """Get the FastAPI application instance with initialized database."""

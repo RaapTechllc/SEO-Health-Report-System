@@ -57,9 +57,9 @@ class AuditProgress:
             "overall_progress_pct": self.overall_progress_pct,
             "modules": [m.to_dict() for m in self.modules],
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "estimated_completion": self.estimated_completion.isoformat()
-            if self.estimated_completion
-            else None,
+            "estimated_completion": (
+                self.estimated_completion.isoformat() if self.estimated_completion else None
+            ),
             "elapsed_seconds": self.elapsed_seconds,
         }
 
@@ -160,6 +160,9 @@ def get_audit_progress(db: Session, audit_id: str) -> Optional[AuditProgress]:
     elapsed = 0
     estimated_completion = None
     if started_at:
+        if started_at.tzinfo is None:
+            # Datetimes loaded from SQLite are naive; treat them as UTC.
+            started_at = started_at.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         elapsed = int((now - started_at).total_seconds())
 
