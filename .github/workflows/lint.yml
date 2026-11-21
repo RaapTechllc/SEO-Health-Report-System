@@ -106,6 +106,7 @@ jobs:
         with:
           name: bandit-report
           path: bandit-report.json
+          retention-days: 3
 
       - name: Check for high/critical issues
         run: |
